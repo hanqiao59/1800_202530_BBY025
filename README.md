@@ -57,7 +57,7 @@ elmo-hikes/
 ## Contributors
 
 - Hanqiao - BCIT CST Student with a passion for outdoor adventures and user-friendly applications. Fun fact: Loves solving Rubik's Cubes in under a minute.
-- **Teammate Name** - BCIT CST Student, Frontend enthusiast with a knack for creative design. Fun fact: Has a collection of over 50 houseplants.
+- Hezekiah - BCIT CST Student. Stares at logical errors blankly while coding. Plays piano.
 - Minh Ngoc Ngo - BCIT CST Student with an interest in game development and likes to go outside sometimes. Hates socializing.
 
 ---
