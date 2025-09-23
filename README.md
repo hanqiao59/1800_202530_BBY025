@@ -60,6 +60,7 @@ elmo-hikes/
 
 ## Contributors
 - Minh Ngoc Ngo - BCIT CST Student with an interest in game development and likes to go outside sometimes. Hates socializing. 
+-Hanquiao Li - Great teammate. Fellow CST and Set D student.
 
 
 ---
