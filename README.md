@@ -57,7 +57,7 @@ elmo-hikes/
 ## Contributors
 
 - Hanqiao - CST student @ BCIT | Love exploring new tech & indie games. Fun fact: I have a kitten named Minnie.
-- Hezekiah - BCIT CST Student. Stares at logical errors blankly while coding. Plays piano.
+- Hezekiah - BCIT CST Student. Stares at logical errors blankly while coding. Plays piano. a change
 - Minh Ngoc Ngo - BCIT CST Student with an interest in game development and likes to go outside sometimes. Hates socializing.
 
 ---
