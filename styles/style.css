@@ -1,1 +1,158 @@
+/* ---------- Variables ---------- */
+:root {
+  --topbar-h: 72px; /* 顶栏高度 */
+  --panel-w: clamp(200px, 60vw, 260px); /* 抽屉面板宽度 */
+  --x-gap: 14px; /* X 与抽屉左侧的间距 */
+  --btn-top: 18px; /* 按钮距顶部距离 */
+  --drawer-pad-x: 1.5rem; /* Drawer 内部左右内边距 */
+}
 
+/* ---------- Base Layout ---------- */
+body {
+  padding-top: var(--topbar-h);
+  overflow-x: hidden;
+}
+
+#topbar {
+  z-index: 1100;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding-right 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#drawer {
+  z-index: 1200;
+}
+
+/* ---------- Drawer (no overlay) ---------- */
+.drawer {
+  background: transparent;
+  pointer-events: none;
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.menu-open #drawer {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Drawer Panel */
+.drawer-panel {
+  width: var(--panel-w);
+  max-width: 100vw;
+  height: 100%;
+  background: #f8f5ec;
+  box-shadow: -6px 0 16px rgba(0, 0, 0, 0.12);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  pointer-events: auto;
+  padding: 1.5rem var(--drawer-pad-x); /* 内边距左右统一 */
+}
+
+/* ---------- Navigation Push ---------- */
+.menu-open #topbar,
+.menu-open main,
+.menu-open footer {
+  transform: translateX(calc(-1 * var(--panel-w)));
+}
+
+.menu-open #topbar {
+  padding-right: var(--x-gap) !important; /* 为 X 留一点空间 */
+}
+
+/* ---------- Hamburger ⇄ X Icon Switch ---------- */
+#menuBtn .icon-wrap {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  display: inline-block;
+}
+
+#menuBtn .icon-hamburger,
+#menuBtn .icon-close {
+  position: absolute;
+  inset: 0;
+  line-height: 1;
+  font-size: 28px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* 默认：显示汉堡 */
+#menuBtn .icon-hamburger {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+/* 默认：隐藏 X */
+#menuBtn .icon-close {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+/* 打开时：显示 X，隐藏汉堡 */
+.menu-open #menuBtn .icon-hamburger {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+.menu-open #menuBtn .icon-close {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+/* ---------- Drawer Content Alignment ---------- */
+
+/* 上方导航列表 */
+.drawer-panel .nav {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 移除 Bootstrap nav-link 默认左右 padding，让它与抽屉边线对齐 */
+.drawer-panel .nav-link {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  color: #000;
+  font-weight: 600;
+}
+
+/* 下方社交图标区 */
+.drawer-panel .social-links {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 0;
+  margin-top: 1.5rem;
+}
+
+/* 保证上方文字和下方图标左边对齐 */
+.drawer-panel .nav,
+.drawer-panel .social-links {
+  margin-left: 0;
+}
+
+/* ---------- Brand animation ---------- */
+.menu-open .brand {
+  transform: translateX(-24px);
+  opacity: 0.6;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+#menuBtn:hover .icon-hamburger,
+#menuBtn:hover .icon-close {
+  color: #195787; /* Bootstrap 绿色，或你喜欢的主题色 */
+  transition: color 0.25s ease;
+}
+
+#menuBtn .icon-hamburger {
+  transform: scale(1.2); /* 放大 1.2 倍 */
+}
+
+/* ---------- Small Screen Tweaks ---------- */
+@media (max-width: 420px) {
+  :root {
+    --x-gap: 10px;
+    --btn-top: 14px;
+  }
+}
