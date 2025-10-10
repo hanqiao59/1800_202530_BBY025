@@ -1,10 +1,10 @@
 /* ---------- Variables ---------- */
 :root {
-  --topbar-h: 72px; /* 顶栏高度 */
-  --panel-w: clamp(200px, 60vw, 260px); /* 抽屉面板宽度 */
-  --x-gap: 14px; /* X 与抽屉左侧的间距 */
-  --btn-top: 18px; /* 按钮距顶部距离 */
-  --drawer-pad-x: 1.5rem; /* Drawer 内部左右内边距 */
+  --topbar-h: 72px;
+  --panel-w: clamp(200px, 60vw, 260px);
+  --x-gap: 14px;
+  --btn-top: 18px;
+  --drawer-pad-x: 1.5rem;
 }
 
 /* ---------- Base Layout ---------- */
@@ -45,7 +45,7 @@ body {
   box-shadow: -6px 0 16px rgba(0, 0, 0, 0.12);
   border-left: 1px solid rgba(0, 0, 0, 0.08);
   pointer-events: auto;
-  padding: 1.5rem var(--drawer-pad-x); /* 内边距左右统一 */
+  padding: 1.5rem var(--drawer-pad-x);
 }
 
 /* ---------- Navigation Push ---------- */
@@ -56,7 +56,7 @@ body {
 }
 
 .menu-open #topbar {
-  padding-right: var(--x-gap) !important; /* 为 X 留一点空间 */
+  padding-right: var(--x-gap) !important;
 }
 
 /* ---------- Hamburger ⇄ X Icon Switch ---------- */
@@ -101,14 +101,12 @@ body {
 
 /* ---------- Drawer Content Alignment ---------- */
 
-/* 上方导航列表 */
 .drawer-panel .nav {
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-/* 移除 Bootstrap nav-link 默认左右 padding，让它与抽屉边线对齐 */
 .drawer-panel .nav-link {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -116,7 +114,6 @@ body {
   font-weight: 600;
 }
 
-/* 下方社交图标区 */
 .drawer-panel .social-links {
   display: flex;
   gap: 1.25rem;
@@ -126,7 +123,6 @@ body {
   margin-top: 1.5rem;
 }
 
-/* 保证上方文字和下方图标左边对齐 */
 .drawer-panel .nav,
 .drawer-panel .social-links {
   margin-left: 0;
@@ -141,12 +137,12 @@ body {
 
 #menuBtn:hover .icon-hamburger,
 #menuBtn:hover .icon-close {
-  color: #195787; /* Bootstrap 绿色，或你喜欢的主题色 */
+  color: #195787;
   transition: color 0.25s ease;
 }
 
 #menuBtn .icon-hamburger {
-  transform: scale(1.2); /* 放大 1.2 倍 */
+  transform: scale(1.2);
 }
 
 /* ---------- Small Screen Tweaks ---------- */
