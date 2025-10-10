@@ -24,53 +24,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <link rel="stylesheet" href="./styles/style.css" />
-
-    <style>
-      .full-page-bg {
-        background-image: url("./images/discussion.jpg");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        color: white;
-        position: relative;
-      }
-
-      .full-page-bg::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1;
-      }
-
-      .full-page-bg .container {
-        position: relative;
-        z-index: 2;
-      }
-
-      .values-section {
-        padding: 100px 20px;
-        background-color: #f8f9fa;
-        text-align: center;
-      }
-
-      .drawer {
-        background: rgba(255, 255, 255, 0.95);
-        display: none;
-      }
-
-      .drawer.active {
-        display: block;
-      }
-    </style>
   </head>
 
   <body>
@@ -104,6 +57,7 @@
       </div>
     </header>
 
+    <!-- Drawer -->
     <div id="drawer" class="drawer position-fixed top-0 start-0 w-100 h-100">
       <div
         class="drawer-panel ms-auto h-100 d-flex flex-column justify-content-between p-4 shadow"
@@ -147,7 +101,6 @@
 
     <!------------------------------>
     <!-- Page Body Sections -->
-
     <section class="full-page-bg">
       <div class="container">
         <h1 class="mb-4">Lorem ipsum is simply dummy text of the printing</h1>
@@ -158,19 +111,71 @@
       </div>
     </section>
 
-    <section class="values-section">
+    <!-- ===== What We Value Section ===== -->
+    <section class="values-section" id="about">
       <div class="container">
-        <h2 class="mb-4">What We Value</h2>
-        <p class="lead">
-          Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry.
-        </p>
-        <p class="lead">
-          Lorem Ipsum has been the industry's standard dummy text.
-        </p>
-        <p class="lead">
-          Lorem Ipsum has been the industry's standard dummy text since forever.
-        </p>
+        <h2 class="mb-5 fw-bold text-center">What We Value</h2>
+
+        <div class="row g-4 text-start text-md-center">
+          <div class="col-12 col-md-4">
+            <figure
+              class="value-card m-0 h-100 d-flex flex-column align-items-start align-items-md-center"
+            >
+              <img
+                src="images/magic.png"
+                class="value-icon mb-3"
+                alt="Ice-breaker"
+              />
+              <figcaption>
+                <h4 class="h5 fw-semibold">Breaking the Ice, Naturally</h4>
+                <p class="lead fs-6 mb-0">
+                  The best connections start with small moments. We design
+                  low-pressure ice-breakers that feel natural and fun.
+                </p>
+              </figcaption>
+            </figure>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <figure
+              class="value-card m-0 h-100 d-flex flex-column align-items-start align-items-md-center"
+            >
+              <img
+                src="images/happy.png"
+                class="value-icon mb-3"
+                alt="Inclusive"
+              />
+              <figcaption>
+                <h4 class="h5 fw-semibold">Inclusive & Low-Pressure</h4>
+                <p class="lead fs-6 mb-0">
+                  Everyone deserves a comfy space to meet new people. We keep
+                  interactions easy, friendly, and stress-free.
+                </p>
+              </figcaption>
+            </figure>
+          </div>
+
+          <div class="col-12 col-md-4">
+            <figure
+              class="value-card m-0 h-100 d-flex flex-column align-items-start align-items-md-center"
+            >
+              <img
+                src="images/love.png"
+                class="value-icon mb-3"
+                alt="Belonging"
+              />
+              <figcaption>
+                <h4 class="h5 fw-semibold">
+                  Belonging through Shared Interests
+                </h4>
+                <p class="lead fs-6 mb-0">
+                  Belonging starts with common ground. Smart matching helps
+                  people find groups where they truly fit.
+                </p>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
       </div>
     </section>
 
