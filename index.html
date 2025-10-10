@@ -1,97 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>My BCIT Project</title>
+    <title>COMP1800-Project1-BBY025-PeerLink</title>
     <meta name="comp1800 template" content="My 1800 App" />
 
-    <!-- Required meta tags -->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Other libraries go here -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Google Icons (Material Design)-->
     <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <link
-      href="https://www.flaticon.com/icon?family=flaticon"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
       rel="stylesheet"
     />
 
-    <!-- Link to styles of your own -->
     <link rel="stylesheet" href="./styles/style.css" />
+
+    <style>
+      .full-page-bg {
+        background-image: url("./images/discussion.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: white;
+        position: relative;
+      }
+
+      .full-page-bg::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1;
+      }
+
+      .full-page-bg .container {
+        position: relative;
+        z-index: 2;
+      }
+
+      .values-section {
+        padding: 100px 20px;
+        background-color: #f8f9fa;
+        text-align: center;
+      }
+
+      .drawer {
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+      }
+
+      .drawer.active {
+        display: block;
+      }
+    </style>
   </head>
 
   <body>
     <!------------------------------>
-    <!-- Your HTML Layout go here -->
-    <!------------------------------>
-    <!-- Stuff for body goes here -->
-
-    <!--Footer-->
-    <footer class="fixed-bottom text-bg-dark p-3 text-center">
-      <div class="d-block p-3 opacity-75 fs-5">
-        <div>Home</div>
-        <br />
-        <div>Log In</div>
-        <br />
-        <div>Channel</div>
-        <br />
-        <div>Account</div>
-        <br />
-        <div>About</div>
-        <br />
-        <div>Support</div>
-      </div>
-
-      <br />
+    <!-- Header -->
+    <header>
       <div
-        class="flex-column container text-center mx-auto p-1 postion-relative"
-        style="width: 200px"
+        id="topbar"
+        class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white position-fixed top-0 w-100"
       >
-        <div class="d-flex p-2">
-          <img src="images/ice-cubes.png" width="35" height="35" />
-          <div class="fs-3 px-2 fw-bold">PeerLink</div>
+        <div class="brand d-flex align-items-center gap-2">
+          <img
+            src="./images/logo.png"
+            alt="PeerLink Logo"
+            width="32"
+            height="32"
+          />
+          <span class="fw-semibold fs-5">PeerLink</span>
+        </div>
+        <button
+          class="btn border-0 position-relative"
+          id="menuBtn"
+          aria-label="Open menu"
+          aria-expanded="false"
+        >
+          <span class="icon-wrap d-inline-block" aria-hidden="true">
+            <i class="bi bi-list icon-hamburger"></i>
+            <i class="bi bi-x-lg icon-close"></i>
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <div id="drawer" class="drawer position-fixed top-0 start-0 w-100 h-100">
+      <div
+        class="drawer-panel ms-auto h-100 d-flex flex-column justify-content-between p-4 shadow"
+      >
+        <div>
+          <ul class="nav flex-column fs-5 fw-semibold">
+            <li class="nav-item">
+              <a href="#home" class="nav-link text-dark">HOME</a>
+            </li>
+            <li class="nav-item">
+              <a href="#login" class="nav-link text-dark">LOG IN</a>
+            </li>
+            <li class="nav-item">
+              <a href="#channel" class="nav-link text-dark">CHANNEL</a>
+            </li>
+            <li class="nav-item">
+              <a href="#account" class="nav-link text-dark">ACCOUNT</a>
+            </li>
+            <li class="nav-item">
+              <a href="#about" class="nav-link text-dark">ABOUT</a>
+            </li>
+            <li class="nav-item">
+              <a href="#support" class="nav-link text-dark">SUPPORT</a>
+            </li>
+          </ul>
         </div>
 
-        <div
-          class="opacity-50 postion-absolute top-100 start-0 translate-middle text-center text-nowrap fs-6"
-        >
-          Lorem Ispum is simply dummy text of the printing and
+        <div class="d-flex gap-3 fs-4">
+          <a href="#instagram" class="text-dark" title="Instagram"
+            ><i class="bi bi-instagram"></i
+          ></a>
+          <a href="#facebook" class="text-dark" title="Facebook"
+            ><i class="bi bi-facebook"></i
+          ></a>
+          <a href="#discord" class="text-dark" title="Discord"
+            ><i class="bi bi-discord"></i
+          ></a>
         </div>
-        <span
-          class="d-flex flex-row mb-2 opacity-50 align-items-center text-center mx-auto px-3 py-2"
-        >
-          <img
-            src="images/instagram.png"
-            width="25"
-            height="25"
-            class="flex-grow-3 ms-1"
-          />
-          <img
-            src="images/communication.png"
-            width="25"
-            height="25"
-            class="flex-grow-3 ms-5"
-          />
-          <img
-            src="images/discord.png"
-            width="25"
-            height="25"
-            class="flex-grow-3 ms-5"
-          />
-        </span>
       </div>
-    </footer>
+    </div>
+
+    <!------------------------------>
+    <!-- Page Body Sections -->
+
+    <section class="full-page-bg">
+      <div class="container">
+        <h1 class="mb-4">Lorem ipsum is simply dummy text of the printing</h1>
+        <p class="lead mb-4">
+          Lorem ipsum blah blah blah blah blah blah blah blah.
+        </p>
+        <button class="btn btn-primary btn-lg" type="button">Log in Now</button>
+      </div>
+    </section>
+
+    <section class="values-section">
+      <div class="container">
+        <h2 class="mb-4">What We Value</h2>
+        <p class="lead">
+          Lorem Ipsum is simply dummy text of the printing and typesetting
+          industry.
+        </p>
+        <p class="lead">
+          Lorem Ipsum has been the industry's standard dummy text.
+        </p>
+        <p class="lead">
+          Lorem Ipsum has been the industry's standard dummy text since forever.
+        </p>
+      </div>
+    </section>
 
     <!---------------------------------------------->
-    <!-- Your own JavaScript functions go here    -->
+    <!-- Your own JavaScript functions go here -->
     <!---------------------------------------------->
 
     <!-- Link to scripts of your own -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>
