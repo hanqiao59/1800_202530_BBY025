@@ -21,7 +21,7 @@ body {
   z-index: 1200;
 }
 
-/* ---------- Drawer (no overlay) ---------- */
+/* == Menu == */
 .drawer {
   background: transparent;
   pointer-events: none;
@@ -46,7 +46,7 @@ body {
   padding: 1.5rem var(--drawer-pad-x);
 }
 
-/* ---------- Navigation Push ---------- */
+/* == Navigation Push == */
 .menu-open #topbar {
   transform: translateX(calc(-1 * var(--panel-w)));
 }
@@ -55,7 +55,7 @@ body {
   padding-right: var(--x-gap) !important;
 }
 
-/* ---------- Hamburger ⇄ X Icon Switch ---------- */
+/* == Hamburger Icon Switch == */
 #menuBtn .icon-wrap {
   width: 28px;
   height: 28px;
@@ -92,8 +92,7 @@ body {
   transform: rotate(0) scale(1);
 }
 
-/* ---------- Drawer Content Alignment ---------- */
-
+/* == Drawer Content == */
 .drawer-panel .nav {
   margin: 0;
   padding: 0;
@@ -121,7 +120,7 @@ body {
   margin-left: 0;
 }
 
-/* ---------- Brand animation ---------- */
+/* == Brand animation == */
 .menu-open .brand {
   transform: translateX(-24px);
   opacity: 0.6;
@@ -138,7 +137,6 @@ body {
   transform: scale(1.2);
 }
 
-/* ---------- Small Screen Tweaks ---------- */
 @media (max-width: 420px) {
   :root {
     --x-gap: 10px;
