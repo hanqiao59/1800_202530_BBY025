@@ -215,7 +215,7 @@ body {
   margin-inline: auto;
 }
 
-/* ===== Home Page ===== */
+/* ===== Main Page ===== */
 .btn-animate {
   transition: all 0.25s ease;
 }
@@ -249,4 +249,51 @@ body {
   background-color: #212529 !important;
   border-color: #212529 !important;
   color: #fff !important;
+}
+
+/* ===== Join Channel Modal Styles ===== */
+.modal-backdrop.show {
+  opacity: 0.25 !important;
+}
+
+.modal.fade .modal-dialog {
+  transform: translateY(16px);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+.modal.show .modal-dialog {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+::placeholder {
+  color: #bfbfbf !important;
+  opacity: 1;
+}
+
+.input-group .form-control,
+.input-group .btn {
+  border-color: #ced4da !important;
+  transition: border-color 0.2s ease, border-width 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-control:focus + .btn {
+  border-color: #000 !important;
+  border-width: 1.5px;
+  box-shadow: 0 0 0 0.15rem rgba(0, 0, 0, 0.25);
+}
+
+.input-group .btn:hover {
+  border-color: #000 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal.fade .modal-dialog,
+  .modal.show .modal-dialog {
+    transition: none;
+    transform: none;
+    opacity: 1;
+  }
 }

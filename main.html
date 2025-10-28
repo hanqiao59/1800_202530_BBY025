@@ -153,6 +153,8 @@
     <section class="container-fluid px-3 mt-4">
       <div class="section-title d-flex align-items-center mb-3 gap-2">
         <h2 class="mb-0">Your Channels</h2>
+
+        <!-- Tooltip -->
         <i
           class="bi bi-question-circle text-secondary"
           style="font-size: 1.25rem; position: relative; top: 1px"
@@ -164,13 +166,18 @@
 
       <!-- Buttons -->
       <div class="d-grid gap-3 mb-3">
-        <a
-          href="select_tags.html"
+        <!-- Join Channel -->
+        <button
+          type="button"
           class="btn btn-dark btn rounded-2 border-2 btn-join btn-animate"
+          data-bs-toggle="modal"
+          data-bs-target="#joinChannelModal"
         >
           <span>Join Channel</span>
           <i class="bi bi-plus-lg"></i>
-        </a>
+        </button>
+
+        <!-- Create Channel -->
         <a
           href="create-channel.html"
           class="btn btn-outline-dark btn rounded-2 border-2 btn-create btn-animate"
@@ -178,6 +185,79 @@
           <span>Create Channel</span>
           <i class="bi bi-plus-lg"></i>
         </a>
+      </div>
+
+      <!-- Join Channel Modal -->
+      <div
+        class="modal fade"
+        id="joinChannelModal"
+        tabindex="-1"
+        aria-labelledby="joinChannelLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0 rounded-4 shadow-sm">
+            <div class="modal-body p-4">
+              <div class="text-center mb-4">
+                <div
+                  class="rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center text-dark mb-3"
+                  style="width: 72px; height: 72px; font-size: 1.5rem"
+                >
+                  <i class="bi bi-link-45deg fs-1"></i>
+                </div>
+
+                <h3 id="joinChannelLabel" class="h5 mb-1 text-dark">
+                  Enter Shared Link
+                </h3>
+                <p class="text-secondary mb-0">
+                  Paste or type the shared link to join the channel.
+                </p>
+              </div>
+
+              <!-- Link input -->
+              <form class="text-start">
+                <div class="mb-3">
+                  <label for="inviteLink" class="form-label text-dark mb-1"
+                    >Link Address</label
+                  >
+                  <div class="input-group">
+                    <input
+                      type="url"
+                      class="form-control"
+                      id="inviteLink"
+                      placeholder="Enter or paste link url"
+                    />
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      id="pasteBtn"
+                      title="Paste from clipboard"
+                    >
+                      <i class="bi bi-clipboard"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Join Link -->
+                <div class="d-grid gap-2 mt-4">
+                  <a
+                    href="channel-preview.html"
+                    class="btn btn-dark btn-lg rounded-3"
+                  >
+                    Join Link
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-outline-dark btn-lg rounded-3"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Search Bar-->

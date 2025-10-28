@@ -30,9 +30,32 @@ window.addEventListener("keydown", (e) => {
 });
 
 /* Bootstrap Tooltips Initialization */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
   const tooltipTriggerList = document.querySelectorAll(
     '[data-bs-toggle="tooltip"]'
   );
   [...tooltipTriggerList].forEach((el) => new bootstrap.Tooltip(el));
+});
+
+/* Join Link Modal */
+const modalEl = document.getElementById("joinChannelModal");
+
+// Clear the input when the modal is hidden
+modalEl?.addEventListener("hidden.bs.modal", () => {
+  const input = document.getElementById("inviteLink");
+  if (input) input.value = "";
+});
+
+// Paste clipboard content into the input field when the "Paste" button is clicked
+document.getElementById("pasteBtn")?.addEventListener("click", async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    const input = document.getElementById("inviteLink");
+    if (text) {
+      input.value = text;
+      input.focus();
+    }
+  } catch (e) {
+    console.warn("Clipboard read not allowed");
+  }
 });
