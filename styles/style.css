@@ -214,3 +214,39 @@ body {
   max-width: 420px;
   margin-inline: auto;
 }
+
+/* ===== Home Page ===== */
+.btn-animate {
+  transition: all 0.25s ease;
+}
+
+.btn-animate span {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.btn-animate i {
+  opacity: 0;
+  margin-left: 6px;
+  transition: opacity 0.25s ease;
+}
+
+.btn-animate:hover span {
+  transform: translateX(-4px);
+}
+
+.btn-animate:hover i {
+  opacity: 1;
+}
+
+.btn-join.btn-dark:hover {
+  background-color: #212529 !important;
+  border-color: #212529 !important;
+  color: #fff !important;
+}
+
+.btn-create.btn-outline-secondary:hover {
+  background-color: #212529 !important;
+  border-color: #212529 !important;
+  color: #fff !important;
+}

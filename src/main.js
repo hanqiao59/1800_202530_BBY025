@@ -2,6 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
+/* Menu Drawer Functionality */
 const menuBtn = document.getElementById("menuBtn");
 const drawer = document.getElementById("drawer");
 const panel = drawer.querySelector(".drawer-panel");
@@ -26,4 +27,12 @@ drawer.addEventListener("click", (e) => {
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeMenu();
+});
+
+/* Bootstrap Tooltips Initialization */
+document.addEventListener("DOMContentLoaded", () => {
+  const tooltipTriggerList = document.querySelectorAll(
+    '[data-bs-toggle="tooltip"]'
+  );
+  [...tooltipTriggerList].forEach((el) => new bootstrap.Tooltip(el));
 });
