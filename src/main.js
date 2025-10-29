@@ -9,12 +9,10 @@ const panel = drawer.querySelector(".drawer-panel");
 
 function openMenu() {
   document.body.classList.add("menu-open");
-  menuBtn.setAttribute("aria-expanded", "true");
 }
 
 function closeMenu() {
   document.body.classList.remove("menu-open");
-  menuBtn.setAttribute("aria-expanded", "false");
 }
 
 menuBtn.addEventListener("click", () => {
