@@ -49,9 +49,6 @@ body {
 /* == Navigation Push == */
 .menu-open #topbar {
   transform: translateX(calc(-1 * var(--panel-w)));
-}
-
-.menu-open #topbar {
   padding-right: var(--x-gap) !important;
 }
 
@@ -93,7 +90,8 @@ body {
 }
 
 /* == Drawer Content == */
-.drawer-panel .nav {
+.drawer-panel .nav,
+.drawer-panel .social-links {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -102,8 +100,12 @@ body {
 .drawer-panel .nav-link {
   padding-left: 0 !important;
   padding-right: 0 !important;
-  color: #000;
   font-weight: 600;
+  transition: color 0.25s ease;
+}
+
+.drawer-panel .nav-link:hover {
+  color: #000 !important;
 }
 
 .drawer-panel .social-links {
@@ -111,13 +113,7 @@ body {
   gap: 1.25rem;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 0;
   margin-top: 1.5rem;
-}
-
-.drawer-panel .nav,
-.drawer-panel .social-links {
-  margin-left: 0;
 }
 
 /* == Brand animation == */
@@ -243,7 +239,7 @@ body {
   color: #fff !important;
 }
 
-.btn-create.btn-outline-secondary:hover {
+.btn-create.btn-outline-dark:hover {
   background-color: #212529 !important;
   border-color: #212529 !important;
   color: #fff !important;
