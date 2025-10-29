@@ -282,12 +282,3 @@ body {
 .input-group .btn:hover {
   border-color: #000 !important;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .modal.fade .modal-dialog,
-  .modal.show .modal-dialog {
-    transition: none;
-    transform: none;
-    opacity: 1;
-  }
-}
