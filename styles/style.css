@@ -210,6 +210,12 @@ body {
 }
 
 /* ===== Main Page ===== */
+.user-avatar {
+  width: 70px;
+  height: 70px;
+  font-size: 1.5rem;
+  border-radius: 50%;
+}
 .btn-animate {
   transition: all 0.25s ease;
 }
@@ -281,4 +287,19 @@ body {
 
 .input-group .btn:hover {
   border-color: #000 !important;
+}
+
+/* ===== Channel Preview Page ===== */
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  border-radius: 50%;
+}
+
+.owner-avatar {
+  width: 60px;
+  height: 60px;
+  font-size: 1.4rem;
+  border-radius: 50%;
 }
