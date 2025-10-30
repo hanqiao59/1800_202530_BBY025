@@ -1,0 +1,189 @@
+/* ========== ROOT VARIABLES ========== */
+:root {
+  --topbar-h: 72px;
+  --panel-w: clamp(200px, 60vw, 260px);
+  --x-gap: 14px;
+  --overlay-dark: rgba(0, 0, 0, 0.45);
+}
+
+/* ========== GLOBAL STYLES ========== */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  font-family: "Inter", sans-serif;
+  padding-top: var(--topbar-h);
+}
+
+#topbar {
+  z-index: 1100;
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    padding-right 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#drawer {
+  z-index: 1200;
+}
+
+/* ========== DRAWER STYLING ========== */
+.drawer {
+  background: transparent;
+  pointer-events: none;
+  transform: translateX(100%);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.menu-open #drawer {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.drawer-panel {
+  width: var(--panel-w);
+  max-width: 100vw;
+  height: 100%;
+  background: #eceef8;
+  box-shadow: -6px 0 16px rgba(0, 0, 0, 0.12);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+}
+
+/* ========== NAVIGATION ANIMATIONS ========== */
+.menu-open #topbar {
+  transform: translateX(calc(-1 * var(--panel-w)));
+  padding-right: var(--x-gap) !important;
+}
+
+/* Hamburger ⇄ X Icon Switch */
+#menuBtn .icon-wrap {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  display: inline-block;
+}
+
+#menuBtn .icon-hamburger,
+#menuBtn .icon-close {
+  position: absolute;
+  inset: 0;
+  font-size: 28px;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+#menuBtn .icon-hamburger {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+#menuBtn .icon-close {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+}
+
+.menu-open #menuBtn .icon-hamburger {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+.menu-open #menuBtn .icon-close {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+/* Brand animation */
+.menu-open .brand {
+  transform: translateX(-24px);
+  opacity: 0.6;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* Hover color */
+#menuBtn:hover .icon-hamburger,
+#menuBtn:hover .icon-close {
+  color: #195787;
+  transition: color 0.25s ease;
+}
+
+/* ========== PROFILE PAGE STYLING ========== */
+.profile-page {
+  margin-top: 72px; /* matches header height */
+  overflow-y: auto;
+  min-height: 100vh;
+}
+
+/* Banner now fills entire viewport */
+.banner {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Profile picture overlaps the bottom of the banner */
+.profile-pic-container {
+  position: relative;
+  margin-top: -90px;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-pic {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Profile text area */
+.profile-content {
+  background: #fff;
+  padding-top: 1rem;
+  padding-bottom: 3rem;
+}
+
+.bio {
+  max-width: 700px;
+  margin: 0 auto;
+  color: #555;
+}
+
+/* Tags */
+.tags-container .tag {
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: #f1f3f5;
+  color: #222;
+  font-weight: 500;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Buttons */
+.btn-group .btn {
+  max-width: 320px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+  .profile-pic {
+    width: 140px;
+    height: 140px;
+    border-width: 5px;
+  }
+  .profile-pic-container {
+    margin-top: -70px;
+  }
+  .tags-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
