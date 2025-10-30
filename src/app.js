@@ -14,4 +14,5 @@ import "/src/styles/style.css";
 function sayHello() {
   // TODO: implement your logic here
 }
+
 document.addEventListener("DOMContentLoaded", sayHello);
