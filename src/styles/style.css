@@ -302,4 +302,27 @@ body {
   height: 60px;
   font-size: 1.4rem;
   border-radius: 50%;
+/* inline icons in input fields 
+*  icons are placeholders for the functional ones
+*/
+.icon1 {
+  background-image: url(/images/envelope.svg);
+  background-repeat: no-repeat;
+  background-size: 15px;
+  background-position-x: 97%;
+  background-position-y: center;
+}
+.icon2 {
+  background-image: url(/images/eye.svg);
+  background-repeat: no-repeat;
+  background-position-x: 97%;
+  background-position-y: center;
+  background-size: 15px;
+}
+.icon3 {
+  background-image: url(/images/person-circle.svg);
+  background-repeat: no-repeat;
+  background-position-x: 97%;
+  background-position-y: center;
+  background-size: 15px;
 }
