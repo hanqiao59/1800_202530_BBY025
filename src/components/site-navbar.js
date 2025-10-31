@@ -22,7 +22,10 @@ class SiteNavbar extends HTMLElement {
         id="topbar"
         class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white position-fixed top-0 w-100"
       >
-        <div class="brand d-flex align-items-center gap-2">
+        <a
+          href="index.html"
+          class="brand d-flex align-items-center gap-2 text-decoration-none text-dark"
+        >
           <img
             src="./images/logo.png"
             alt="PeerLink Logo"
@@ -30,14 +33,10 @@ class SiteNavbar extends HTMLElement {
             height="32"
           />
           <span class="fw-semibold fs-5">PeerLink</span>
-        </div>
-        <button
-          class="btn border-0 position-relative"
-          id="menuBtn"
-          aria-label="Open menu"
-          aria-expanded="false"
-        >
-          <span class="icon-wrap d-inline-block" aria-hidden="true">
+        </a>
+
+        <button class="btn border-0 position-relative" id="menuBtn">
+          <span class="icon-wrap d-inline-block">
             <i class="bi bi-list icon-hamburger"></i>
             <i class="bi bi-x-lg icon-close"></i>
           </span>
@@ -46,40 +45,39 @@ class SiteNavbar extends HTMLElement {
     </header>
 
     <!-- Drawer -->
-    <div id="drawer" class="drawer position-fixed top-0 start-0 w-100 h-100">
+ <div id="drawer" class="drawer position-fixed top-0 start-0 w-100 h-100">
       <div
-        class="drawer-panel ms-auto h-100 d-flex flex-column justify-content-between p-4 shadow"
+        class="drawer-panel ms-auto h-100 d-flex flex-column justify-content-between p-4 shadow bg-light"
       >
-        <div>
+        <nav>
           <ul class="nav flex-column fs-5 fw-semibold">
             <li class="nav-item">
-              <a href="index.html" class="nav-link text-dark">HOME</a>
+              <a href="index.html" class="nav-link text-body-tertiary">HOME</a>
             </li>
             <li class="nav-item">
-              <a href="login.html" class="nav-link text-dark">LOG IN</a>
+              <a href="login.html" class="nav-link text-body-tertiary"
+                >LOG IN</a
+              >
             </li>
             <li class="nav-item">
-              <a href="main.html" class="nav-link text-dark">CHANNEL</a>
+              <a href="main.html" class="nav-link text-body-tertiary"
+                >CHANNEL</a
+              >
             </li>
             <li class="nav-item">
-              <a href="account.html" class="nav-link text-dark">ACCOUNT</a>
+              <a href="#account" class="nav-link text-body-tertiary">ACCOUNT</a>
             </li>
             <li class="nav-item">
-              <a href="#about" class="nav-link text-dark">ABOUT</a>
+              <a href="#about" class="nav-link text-body-tertiary">ABOUT</a>
             </li>
             <li class="nav-item">
-              <a href="#support" class="nav-link text-dark">SUPPORT</a>
-            </li>
-            <li class="nav-item">
-              <div class="d-flex text-dark" id="rightControls">
-                 <div id="authControls" class="auth-controls d-flex align-items-center text-dark"></div>
-              </div>
+              <a href="#support" class="nav-link text-body-tertiary">SUPPORT</a>
             </li>
           </ul>
-        </div>
+        </nav>
 
         <div class="d-flex gap-3 fs-4">
-          <a href="#instagram" class="text-dark" title="Instagram"
+          <a href="#instagram" class="text-black" title="Instagram"
             ><i class="bi bi-instagram"></i
           ></a>
           <a href="#facebook" class="text-dark" title="Facebook"
