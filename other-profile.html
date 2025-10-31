@@ -16,27 +16,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
     <link rel="stylesheet" href="./styles/style.css" />
+
+    <!-- Web Components for shared navbar and footer layout -->
+    <script type="module" src="/src/components/site-navbar.js"></script>
+    <script type="module" src="/src/components/site-footer.js"></script>
   </head>
 
   <body>
-    <!------------------------------>
-    <!-- Header -->
-    <header>
-      <div
-        id="topbar"
-        class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white position-fixed top-0 w-100"
-      >
-        <div class="brand d-flex align-items-center gap-2">
-          <img
-            src="./images/logo.png"
-            alt="PeerLink Logo"
-            width="32"
-            height="32"
-          />
-          <span class="fw-semibold fs-5">PeerLink</span>
-        </div>
-      </div>
-    </header>
+    <site-navbar></site-navbar>
 
     <div class="container-fluid d-flex flex-column">
       <div class="d-inline-flex mb-3 align-items-center gap-3 mt-5">
