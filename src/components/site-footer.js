@@ -1,3 +1,7 @@
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap";
+import "/src/styles/style.css";
+
 class SiteFooter extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `

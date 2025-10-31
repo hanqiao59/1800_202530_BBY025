@@ -42,3 +42,5 @@ const app = initializeApp(firebaseConfig);
 // or signout operations (that's why we export it).
 // ---------------------------------------------------------
 export const auth = getAuth(app);
+
+console.log("[env]", import.meta.env.VITE_FIREBASE_API_KEY);

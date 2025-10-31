@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>COMP1800-Project1-BBY025-PeerLink</title>
+    <meta name="comp1800 template" content="My 1800 App" />
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link rel="stylesheet" href="./src/styles/style.css" />
+
+    <!-- Web Components for shared navbar and footer layout -->
+    <script type="module" src="/src/components/site-navbar.js"></script>
+    <script type="module" src="/src/components/site-footer.js"></script>
+  </head>
+
+  <body>
+    <site-navbar></site-navbar>
+
+    <!-- Welcome Section -->
+    <div class="container-fluid welcome-section p-4 bg-body-secondary">
+      <!-- Avatar + welcome text -->
+      <div class="avatar-section d-flex align-items-center mb-4 pt-2">
+        <div
+          class="user-avatar bg-secondary-subtle d-flex justify-content-center align-items-center fw-bold text-dark me-3 flex-shrink-0"
+        >
+          G
+        </div>
+        <div class="p-2">
+          <h2 id="welcome-title" class="h4 mb-1 text-dark">
+            Welcome back, <span id="userName">Guest</span>!
+          </h2>
+          <p class="text-secondary mb-0 fs-6">Ready to break the ice?</p>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="row g-3 text-center pb-2">
+        <div class="col-4">
+          <div class="card bg-light-subtle border-0">
+            <div class="card-body py-3">
+              <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
+              <small class="text-secondary">Connections</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card bg-light-subtle border-0">
+            <div class="card-body py-3">
+              <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
+              <small class="text-secondary">Channels</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="card bg-light-subtle border-0">
+            <div class="card-body py-3">
+              <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
+              <small class="text-secondary">Activities</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Your Channels Section -->
+    <section class="container-fluid px-3 mt-4">
+      <div class="section-title d-flex align-items-center mb-3 gap-2">
+        <h2 class="mb-0">Your Channels</h2>
+
+        <!-- Tooltip -->
+        <i
+          class="bi bi-question-circle text-secondary"
+          style="font-size: 1.25rem; position: relative; top: 1px"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
+          title="A Channel is a space created by someone for others to join. After joining, you’ll choose your interest tags, and the system groups you with people who share them."
+        ></i>
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-grid gap-3 mb-3">
+        <!-- Join Channel -->
+        <button
+          type="button"
+          class="btn btn-dark btn rounded-2 border-2 btn-join btn-animate"
+          data-bs-toggle="modal"
+          data-bs-target="#joinChannelModal"
+        >
+          <span>Join Channel</span>
+          <i class="bi bi-plus-lg"></i>
+        </button>
+
+        <!-- Create Channel -->
+        <a
+          href="create-channel.html"
+          class="btn btn-outline-dark btn rounded-2 border-2 btn-create btn-animate"
+        >
+          <span>Create Channel</span>
+          <i class="bi bi-plus-lg"></i>
+        </a>
+      </div>
+
+      <!-- Join Channel Modal -->
+      <div class="modal fade" id="joinChannelModal">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0 rounded-4 shadow-sm">
+            <div class="modal-body p-4">
+              <div class="text-center mb-4">
+                <div
+                  class="rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center text-dark mb-3"
+                  style="width: 72px; height: 72px; font-size: 1.5rem"
+                >
+                  <i class="bi bi-link-45deg fs-1"></i>
+                </div>
+
+                <h3 id="joinChannelLabel" class="h5 mb-1 text-dark">
+                  Enter Shared Link
+                </h3>
+                <p class="text-secondary mb-0">
+                  Paste or type the shared link to join the channel.
+                </p>
+              </div>
+
+              <!-- Link input -->
+              <form class="text-start">
+                <div class="mb-3">
+                  <label for="inviteLink" class="form-label text-dark mb-1"
+                    >Link Address</label
+                  >
+                  <div class="input-group">
+                    <input
+                      type="url"
+                      class="form-control"
+                      id="inviteLink"
+                      placeholder="Enter or paste link url"
+                    />
+                    <button
+                      class="btn btn-outline-secondary"
+                      type="button"
+                      id="pasteBtn"
+                      title="Paste from clipboard"
+                    >
+                      <i class="bi bi-clipboard"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Join Link Button -->
+                <div class="d-grid gap-2 mt-4">
+                  <a
+                    href="channel-preview.html"
+                    class="btn btn-dark btn-lg rounded-3"
+                  >
+                    Join Link
+                  </a>
+                  <button
+                    type="button"
+                    class="btn btn-outline-dark btn-lg rounded-3"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Bar-->
+      <form class="p-0">
+        <div
+          class="d-flex align-items-center bg-light rounded-pill px-3 py-2 mt-2 mb-4"
+        >
+          <i class="bi bi-search text-secondary me-2"></i>
+          <input
+            type="search"
+            class="form-control bg-transparent border-0"
+            placeholder="search channel..."
+          />
+        </div>
+      </form>
+
+      <!-- Channel Card -->
+      <div class="card border-1 rounded-3 mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="mb-0 fw-semibold">Tech Meetup</h5>
+            <span class="badge bg-secondary-subtle text-secondary small"
+              >Past</span
+            >
+          </div>
+
+          <div class="mb-3">
+            <small class="text-secondary d-block mb-2">
+              <i class="bi bi-people-fill me-1"></i>12 members
+            </small>
+
+            <div class="d-flex flex-wrap">
+              <span
+                class="badge rounded-2 bg-light text-dark me-2 fw-normal px-2 py-2"
+                >📱 Tech</span
+              >
+              <span
+                class="badge rounded-2 bg-light text-dark me-2 fw-normal px-2 py-2"
+                >💻 Coding</span
+              >
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <span
+                class="rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-1"
+                style="width: 32px; height: 32px"
+                >B</span
+              >
+              <span
+                class="rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-1"
+                style="width: 32px; height: 32px"
+                >R</span
+              >
+              <span
+                class="rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-2"
+                style="width: 32px; height: 32px"
+                >T</span
+              >
+              <small class="text-secondary">+5 more</small>
+            </div>
+            <button class="btn btn-outline-dark btn-sm rounded-3 border-2">
+              View Group
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+
+  <!-- Link to scripts of your own -->
+  <script type="module" src="./src/main.js"></script>
+</html>

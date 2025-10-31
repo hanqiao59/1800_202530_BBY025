@@ -21,7 +21,7 @@ body {
   z-index: 1200;
 }
 
-/* ---------- Drawer (no overlay) ---------- */
+/* == Menu == */
 .drawer {
   background: transparent;
   pointer-events: none;
@@ -46,16 +46,13 @@ body {
   padding: 1.5rem var(--drawer-pad-x);
 }
 
-/* ---------- Navigation Push ---------- */
+/* == Navigation Push == */
 .menu-open #topbar {
   transform: translateX(calc(-1 * var(--panel-w)));
-}
-
-.menu-open #topbar {
   padding-right: var(--x-gap) !important;
 }
 
-/* ---------- Hamburger ⇄ X Icon Switch ---------- */
+/* == Hamburger Icon Switch == */
 #menuBtn .icon-wrap {
   width: 28px;
   height: 28px;
@@ -92,9 +89,9 @@ body {
   transform: rotate(0) scale(1);
 }
 
-/* ---------- Drawer Content Alignment ---------- */
-
-.drawer-panel .nav {
+/* == Drawer Content == */
+.drawer-panel .nav,
+.drawer-panel .social-links {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -103,8 +100,12 @@ body {
 .drawer-panel .nav-link {
   padding-left: 0 !important;
   padding-right: 0 !important;
-  color: #000;
   font-weight: 600;
+  transition: color 0.25s ease;
+}
+
+.drawer-panel .nav-link:hover {
+  color: #000 !important;
 }
 
 .drawer-panel .social-links {
@@ -112,16 +113,10 @@ body {
   gap: 1.25rem;
   align-items: center;
   justify-content: flex-start;
-  padding-left: 0;
   margin-top: 1.5rem;
 }
 
-.drawer-panel .nav,
-.drawer-panel .social-links {
-  margin-left: 0;
-}
-
-/* ---------- Brand animation ---------- */
+/* == Brand animation == */
 .menu-open .brand {
   transform: translateX(-24px);
   opacity: 0.6;
@@ -138,7 +133,6 @@ body {
   transform: scale(1.2);
 }
 
-/* ---------- Small Screen Tweaks ---------- */
 @media (max-width: 420px) {
   :root {
     --x-gap: 10px;
@@ -213,6 +207,101 @@ body {
   margin-top: 0.5rem;
   max-width: 420px;
   margin-inline: auto;
+}
+
+/* ===== Main Page ===== */
+.user-avatar {
+  width: 70px;
+  height: 70px;
+  font-size: 1.5rem;
+  border-radius: 50%;
+}
+.btn-animate {
+  transition: all 0.25s ease;
+}
+
+.btn-animate span {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.btn-animate i {
+  opacity: 0;
+  margin-left: 6px;
+  transition: opacity 0.25s ease;
+}
+
+.btn-animate:hover span {
+  transform: translateX(-4px);
+}
+
+.btn-animate:hover i {
+  opacity: 1;
+}
+
+.btn-join.btn-dark:hover {
+  background-color: #212529 !important;
+  border-color: #212529 !important;
+  color: #fff !important;
+}
+
+.btn-create.btn-outline-dark:hover {
+  background-color: #212529 !important;
+  border-color: #212529 !important;
+  color: #fff !important;
+}
+
+/* ===== Join Channel Modal Styles ===== */
+.modal-backdrop.show {
+  opacity: 0.25 !important;
+}
+
+.modal.fade .modal-dialog {
+  transform: translateY(16px);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+.modal.show .modal-dialog {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+::placeholder {
+  color: #bfbfbf !important;
+  opacity: 1;
+}
+
+.input-group .form-control,
+.input-group .btn {
+  border-color: #ced4da !important;
+  transition: border-color 0.2s ease, border-width 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-control:focus + .btn {
+  border-color: #000 !important;
+  border-width: 1.5px;
+  box-shadow: 0 0 0 0.15rem rgba(0, 0, 0, 0.25);
+}
+
+.input-group .btn:hover {
+  border-color: #000 !important;
+}
+
+/* ===== Channel Preview Page ===== */
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  border-radius: 50%;
+}
+
+.owner-avatar {
+  width: 60px;
+  height: 60px;
+  font-size: 1.4rem;
+  border-radius: 50%;
 }
 
 /* inline icons in input fields 
