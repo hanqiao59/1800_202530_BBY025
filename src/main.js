@@ -58,7 +58,7 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
   }
 });
 
-/* ===== Dashboard Greeting（动态导入 authentication.js） ===== */
+/* ===== Dashboard Greeting ===== */
 (async function showDashboard() {
   const nameEl = document.getElementById("name-goes-here");
   if (!nameEl) return;
@@ -76,6 +76,6 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
       nameEl.textContent = `${name}!`;
     });
   } catch (err) {
-    console.warn("[auth] authentication.js 加载失败：", err);
+    console.warn("[auth] authentication.js Failed:", err);
   }
 })();
