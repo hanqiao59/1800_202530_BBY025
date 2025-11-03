@@ -19,10 +19,9 @@
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
-    <script type="module" src="/src/components/site-footer.js"></script>
   </head>
 
-  <body>
+  <body data-cloak>
     <site-navbar></site-navbar>
 
     <!-- Welcome Section -->
@@ -91,7 +90,7 @@
         <!-- Join Channel -->
         <button
           type="button"
-          class="btn btn-dark btn rounded-2 border-2 btn-join btn-animate"
+          class="btn btn-dark btn rounded-2 border-2 btn-join btn-animate py-3"
           data-bs-toggle="modal"
           data-bs-target="#joinChannelModal"
         >
@@ -102,7 +101,7 @@
         <!-- Create Channel -->
         <a
           href="create-channel.html"
-          class="btn btn-outline-dark btn rounded-2 border-2 btn-create btn-animate"
+          class="btn btn-outline-dark btn rounded-2 border-2 btn-create btn-animate py-3"
         >
           <span>Create Channel</span>
           <i class="bi bi-plus-lg"></i>
@@ -131,7 +130,7 @@
               </div>
 
               <!-- Link input -->
-              <form class="text-start">
+              <form class="text-start" action="channel-preview.html">
                 <div class="mb-3">
                   <label for="inviteLink" class="form-label text-dark mb-1"
                     >Link Address</label
@@ -142,6 +141,7 @@
                       class="form-control"
                       id="inviteLink"
                       placeholder="Enter or paste link url"
+                      required
                     />
                     <button
                       class="btn btn-outline-secondary"
@@ -156,15 +156,15 @@
 
                 <!-- Join Link Button -->
                 <div class="d-grid gap-2 mt-4">
-                  <a
-                    href="channel-preview.html"
-                    class="btn btn-dark btn-lg rounded-3"
+                  <button
+                    type="submit"
+                    class="btn btn-dark btn-lg rounded-3 py-3"
                   >
                     Join Link
-                  </a>
+                  </button>
                   <button
                     type="button"
-                    class="btn btn-outline-dark btn-lg rounded-3"
+                    class="btn btn-outline-dark btn-lg rounded-3 py-3"
                     data-bs-dismiss="modal"
                   >
                     Cancel
@@ -179,7 +179,7 @@
       <!-- Search Bar-->
       <form class="p-0">
         <div
-          class="d-flex align-items-center bg-light rounded-pill px-3 py-2 mt-2 mb-4"
+          class="d-flex align-items-center bg-white rounded-pill px-3 py-2 mt-2 mb-4"
         >
           <i class="bi bi-search text-secondary me-2"></i>
           <input

@@ -49,11 +49,21 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
     const text = await navigator.clipboard.readText();
     const input = document.getElementById("inviteLink");
     if (text && input) {
-      input.value = text;
+      input.value = text.trim();
       input.focus();
     }
   } catch {
     console.warn("Clipboard read not allowed");
+  }
+});
+
+const joinForm = document.querySelector("#joinChannelModal form");
+
+joinForm?.addEventListener("submit", (e) => {
+  if (!joinForm.checkValidity()) {
+    e.preventDefault();
+    joinForm.reportValidity();
+    return;
   }
 });
 
@@ -76,3 +86,7 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
     console.warn("[auth] authentication.js Failed:", err);
   }
 })();
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.body.removeAttribute("data-cloak");
+});

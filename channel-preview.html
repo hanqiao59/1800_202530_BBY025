@@ -19,18 +19,18 @@
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
-    <script type="module" src="/src/components/site-footer.js"></script>
   </head>
 
-  <body>
+  <body class="bg-white" data-cloak>
     <site-navbar></site-navbar>
 
     <!-- Channel itle -->
     <div
-      class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative"
+      class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
     >
       <a
-        href="main.html"
+        href="#"
+        onclick="history.back(); return false;"
         class="position-absolute start-0 top-50 translate-middle-y ms-3 text-decoration-none d-flex align-items-center"
       >
         <i class="bi bi-arrow-left me-1"></i> Back
@@ -94,7 +94,7 @@
 
         <a
           href="select-tags.html"
-          class="btn btn-dark btn-lg w-100 rounded-8 py-2 fw-semibold fs-6"
+          class="btn btn-dark btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
         >
           Continue
         </a>
