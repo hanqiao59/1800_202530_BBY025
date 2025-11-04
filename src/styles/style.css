@@ -334,7 +334,6 @@ body[data-cloak] {
 }
 
 .profile-page {
-  margin-top: 72px;
   overflow-y: auto;
   min-height: 100vh;
 }
