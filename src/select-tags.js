@@ -27,7 +27,7 @@ let uid = auth.currentUser?.uid; // previous page already ensured login
 let selected = new Set();
 let groups = {}; // { category: [{name, emoji, order}], ... }
 
-// ---- helpers ----
+//  Helpers
 const el = (tag, attrs = {}, ...children) => {
   const n = document.createElement(tag);
   Object.entries(attrs).forEach(([k, v]) => {
@@ -41,7 +41,7 @@ const el = (tag, attrs = {}, ...children) => {
   return n;
 };
 
-// ---- data: load tags grouped + ordered ----
+//  Data: load tags grouped + ordered
 async function loadTags() {
   try {
     const q = query(
@@ -57,13 +57,12 @@ async function loadTags() {
         name,
         emoji = "",
         category = "Other",
-        alsoIn = [], //
+        alsoIn = [],
         order = 999,
       } = d.data();
       const item = { name, emoji, order };
-      (groups[category] ??= []).push(item); // category
+      (groups[category] ??= []).push(item);
       if (Array.isArray(alsoIn)) {
-        // alsoIn
         alsoIn.forEach((cat) => (groups[cat] ??= []).push(item));
       }
     });
@@ -79,7 +78,7 @@ async function loadTags() {
   }
 }
 
-// ---- data: preload user's existing interests ----
+// Data: preload user's existing interests
 async function preloadUser() {
   if (!uid) return;
   const ref = doc(db, "users", uid);
@@ -91,7 +90,7 @@ async function preloadUser() {
   selected = new Set(arr.slice(0, MAX));
 }
 
-// ---- UI: chip ----
+// UI: chip renderer
 function renderChip(item) {
   const chip = el(
     "button",
@@ -129,11 +128,11 @@ function renderChip(item) {
   return chip;
 }
 
-// ---- UI: full render (search + groups) ----
+// UI: full render (search + groups)
 function renderUI() {
   content.innerHTML = "";
 
-  // Search bar (matches your UI)
+  // Search bar
   const searchForm = el(
     "form",
     { class: "p-0" },
@@ -192,7 +191,7 @@ function renderUI() {
   redraw();
 }
 
-// ---- button + save ----
+// Button + save
 function updateContinue() {
   if (continueBtn) continueBtn.disabled = selected.size === 0;
 }
@@ -206,7 +205,7 @@ async function saveSelection() {
   );
 }
 
-// ---- boot ----
+// boot
 (async () => {
   try {
     loading && (loading.style.display = "block");
@@ -234,7 +233,7 @@ async function saveSelection() {
   }
 })();
 
-// ---- navigation ----
+//  Navigation
 continueBtn?.addEventListener("click", async () => {
   if (selected.size === 0) return;
   continueBtn.disabled = true;

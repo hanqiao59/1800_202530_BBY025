@@ -6,13 +6,13 @@ import { onAuthStateChanged } from "firebase/auth";
 const msgEl = document.getElementById("msg");
 const dotsEl = document.getElementById("dots");
 
-// === Adjustable parameters ===
+/* === Adjustable parameters === */
 const FAKE_MATCH_DELAY = 2000; // Duration of fake matching animation
 const AFTER_MATCH_PAUSE = 800; // Pause after showing "matched" message
 const HARD_TIMEOUT = 5000; // Hard timeout for entire process
 const DEV_FAKE_COUNT = 4 + Math.floor(Math.random() * 3); // 4–6 fake members
 
-// Dot animation
+/* === Dot animation === */
 let dotTimer = null;
 function startDots() {
   let n = 0;
@@ -26,7 +26,7 @@ function stopDots() {
   dotsEl.textContent = "";
 }
 
-// Display error visibly on the page
+/* === Display error visibly on the page === */
 function showError(e) {
   const div = document.createElement("div");
   div.className = "alert alert-danger mt-3";
@@ -35,7 +35,7 @@ function showError(e) {
   console.error(e);
 }
 
-// Utility helpers
+/* === Utility helpers === */
 function delay(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -46,7 +46,7 @@ function withTimeout(promise, ms, onTimeoutValue) {
   ]);
 }
 
-// Retrieve the user's main interest (fallback if unavailable)
+/* === Retrieve the user's main interest (fallback if unavailable) === */
 async function getMainTag(uid) {
   try {
     const snap = await withTimeout(getDoc(doc(db, "users", uid)), 2000, null);
@@ -67,7 +67,7 @@ async function getMainTag(uid) {
   return "gaming";
 }
 
-// Main flow
+/* === Main flow === */
 (async () => {
   // Global error handlers
   window.addEventListener("error", (e) => showError(e.error || e.message));
