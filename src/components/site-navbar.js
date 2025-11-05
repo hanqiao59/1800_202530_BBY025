@@ -53,7 +53,7 @@ class SiteNavbar extends HTMLElement {
                 <a href="main.html" class="nav-link text-body-tertiary">CHANNEL</a>
               </li>
               <li class="nav-item">
-                <a href="#account" class="nav-link text-body-tertiary">ACCOUNT</a>
+                <a href="account.html" class="nav-link text-body-tertiary">ACCOUNT</a>
               </li>
               <li class="nav-item">
                 <a href="#about" class="nav-link text-body-tertiary">ABOUT</a>
