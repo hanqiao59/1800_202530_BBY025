@@ -5,7 +5,7 @@ import "/src/styles/style.css";
 class SiteFooter extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
-            <footer class="text-bg-dark p-3 text-center">
+            <footer class=" p-3 text-center">
               <div class="d-block p-3 opacity-75 fs-5">
               <div>Home</div>
               <br />
