@@ -20,7 +20,7 @@ class SiteNavbar extends HTMLElement {
       <header>
         <div
           id="topbar"
-          class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white position-fixed top-0 w-100"
+          class="d-flex justify-content-between align-items-center p-3 border-bottom position-fixed top-0 w-100"
         >
           <a
             href="index.html"

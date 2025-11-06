@@ -1,5 +1,4 @@
 // src/main.js
-import * as bootstrap from "bootstrap";
 import { auth, db } from "/src/firebaseConfig.js";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";

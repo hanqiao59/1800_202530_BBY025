@@ -32,6 +32,7 @@
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
+    <script type="module" src="/src/components/site-footer.js"></script>
   </head>
 
   <body data-cloak>
@@ -358,9 +359,12 @@
         </div>
       </div>
     </section>
-  </body>
 
-  <!-- Link to scripts of your own -->
-  <script type="module" src="./src/app.js"></script>
-  <script type="module" src="./src/main.js"></script>
+    <!--Footer-->
+    <site-footer></site-footer>
+
+    <!-- Link to scripts of your own -->
+    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="./src/main.js"></script>
+  </body>
 </html>
