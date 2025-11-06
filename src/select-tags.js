@@ -1,7 +1,3 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "/src/styles/style.css";
-
 /* ========== Select Tags Page Logic ========== */
 // Logic for "Select Your Interests" page where users pick tags.
 import { auth, db } from "/src/firebaseConfig.js";

@@ -1,7 +1,5 @@
 // src/app.js
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css";
-import "/src/styles/style.css";
+import "bootstrap";
 
 /* ========== Menu Drawer ========== */
 const menuBtn = document.getElementById("menuBtn");
