@@ -3,6 +3,9 @@ import { auth, db } from "/src/firebaseConfig.js";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
+import * as bootstrap from "bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+
 /* ========== Bootstrap Tooltips ========== */
 document.addEventListener("DOMContentLoaded", () => {
   const tooltipTriggerList = document.querySelectorAll(
@@ -13,18 +16,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ========== Dashboard Greeting ========== */
 (async function showDashboard() {
-  const nameEl = document.getElementById("name-goes-here");
+  const nameEl = document.getElementById("userName");
+  const avatarEl = document.getElementById("userAvatar");
   if (!nameEl) return;
 
   try {
     const { onAuthReady } = await import("./authentication.js");
     onAuthReady((user) => {
       if (!user) {
-        location.href = "index.html";
+        location.href = "login.html";
         return;
       }
       const name = user.displayName || user.email;
       nameEl.textContent = `${name}!`;
+      if (!avatarEl) {
+        return (innerHTML = "${name.charAt(0).toUpperCase()}");
+      } else if (user.photoURL) {
+        avatarEl.src = user.photoURL;
+      } else {
+        avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+          name
+        )}&background=6c757d&color=ffffff&size=128&rounded=true`;
+      }
     });
   } catch (err) {
     console.warn("[auth] authentication.js Failed:", err);

@@ -62,11 +62,6 @@ function initLoginSignup() {
   // If none of these elements exist → not a login/signup page
   if (!loginForm && !signupForm && !loginView && !signupView) return;
 
-  // Redirect immediately if the user is already logged in
-  onAuthReady((user) => {
-    if (user) location.replace(REDIRECT_URL);
-  });
-
   // ----- Helper functions -----
   const setVisible = (el, visible) => el?.classList.toggle("d-none", !visible);
 
@@ -108,9 +103,12 @@ function initLoginSignup() {
     loginView?.querySelector("input")?.focus();
   });
 
+  let signingUp = false;
+
   // ----- Handle Login form submission -----
   loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    signingUp = true;
     hideError();
 
     const email = document.querySelector("#loginEmail")?.value?.trim() ?? "";
