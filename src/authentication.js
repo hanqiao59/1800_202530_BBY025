@@ -18,6 +18,9 @@ import {
   signOut,
 } from "firebase/auth";
 
+import { db } from "/src/firebaseConfig.js";
+import { doc, setDoc } from "firebase/firestore";
+
 // -------------------------------------------------------------
 // loginUser(email, password)
 // -------------------------------------------------------------
@@ -56,8 +59,23 @@ export async function signupUser(name, email, password) {
     email,
     password
   );
-  await updateProfile(userCredential.user, { displayName: name });
-  return userCredential.user;
+  const user = userCredential.user;
+  await updateProfile(user, { displayName: name });
+
+  try {
+    // Create a corresponding user document in Firestore
+    // You can add more fields as needed
+    await setDoc(doc(db, "users", user.uid), {
+      name: name,
+      email: email,
+      password: password,
+    });
+    console.log("Firestore user document created successfully!");
+  } catch (error) {
+    console.error("Error creating user document in Firestore:", error);
+  }
+
+  return user;
 }
 
 // -------------------------------------------------------------
