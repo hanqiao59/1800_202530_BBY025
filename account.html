@@ -28,14 +28,13 @@
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
-
-    <!--<script type="module" src="/src/components/site-footer.js"></script>-->
+    <script type="module" src="/src/components/site-default-footer.js"></script>
   </head>
 
   <body>
     <site-navbar></site-navbar>
 
-    <main class="profile-page">
+    <main class="vstack my-3">
       <div
         class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
       >
@@ -52,7 +51,7 @@
         <img src="./images/man.jpg" alt="Banner image" class="banner-img" />
       </section>
 
-      <section class="text-center position-relative">
+      <section class="text-center position-relative vstack">
         <div
           class="d-flex profile-pic-container position-relative justify-content-center"
         >
@@ -116,6 +115,9 @@
       </section>
     </main>
 
+    <div id="bottombar" class="w-100">
+      <site-default-footer></site-default-footer>
+    </div>
     <!-- Link to scripts of your own -->
     <script type="module" src="./src/app.js"></script>
     <script type="module" src="./src/account.js"></script>

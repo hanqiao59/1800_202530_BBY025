@@ -18,6 +18,11 @@ body {
   overflow-x: hidden;
 }
 
+#bottombar {
+  margin-top: 100px;
+  transform: translate(0px, 720px);
+}
+
 #topbar {
   background-color: #fff;
   z-index: 1100;
@@ -434,10 +439,9 @@ textarea {
   background-color: #13416c;
 }
 
-
 body {
   background-color: #fafafa;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .profile-section {

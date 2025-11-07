@@ -32,6 +32,7 @@
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
+    <script type="module" src="/src/components/site-default-footer.js"></script>
   </head>
 
   <body>
@@ -68,16 +69,24 @@
         />
         <datalist id="members-list"></datalist>
       </div>
-      <div class="container-fluid bg-secondary-subtle" id="members-go-here">
+      <div
+        class="container-fluid bg-secondary-subtle p-2 text-break text-wrap"
+        id="members-go-here"
+      >
         <div>
-          <span>No members found.</span>
-          <template>
-            <img />
-            <span>Member's name</span>
+          <template id="ListTemplate">
+            <img id="ProfilePic" />
+            <div id="Member-Name"></div>
           </template>
         </div>
       </div>
     </section>
+
+    <footer
+      class="position-absolute bottom-0 start-50 translate-middle-x w-100"
+    >
+      <site-default-footer></site-default-footer>
+    </footer>
 
     <!---------------------------------------------->
     <!-- Your own JavaScript functions go here -->
