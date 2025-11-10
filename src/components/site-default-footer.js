@@ -40,14 +40,14 @@ class DefaultFooter extends HTMLElement {
                     </a>
                   </div>
                   <div class="col">
-                    <a class="icon-link icon-link-hover opacity-50" style="--bs-icon-link-transform: matrix(1.5, 0, 0, 1.5, 0, -10);" href="#twitter-acc"><i class="bi bi-twitter" style="cornflowerblue"></i></a>
+                    <a class="icon-link icon-link-hover opacity-50" style="--bs-icon-link-transform: matrix(1.5, 0, 0, 1.5, 0, -10);" href="#twitter-acc"><i class="bi bi-twitter" style="color:white"></i></a>
                   </div>
                   <div class="col">
-                    <a class="icon-link icon-link-hover opacity-50" style="--bs-icon-link-transform: matrix(1.5, 0, 0, 1.5, 0, -10);" href="#discord-group"><i class="bi bi-discord" style="color: blue"></i></a>
+                    <a class="icon-link icon-link-hover opacity-50" style="--bs-icon-link-transform: matrix(1.5, 0, 0, 1.5, 0, -10);" href="#discord-group"><i class="bi bi-discord" style="color:white"></i></a>
                   </div>
                   <div class="col">
                     <a class="icon-link icon-link-hover opacity-50" style="--bs-icon-link-transform: matrix(1.5, 0, 0, 1.5, 0, -10);" href="#instagram-acc">
-                      <i class="bi bi-instagram" style="color:rgba(255, 255, 255, 1)"></i>
+                      <i class="bi bi-instagram" style="color:white"></i>
                     </a>
                   </div>
                   <div class="col">

@@ -1,27 +1,33 @@
 import { db } from "/src/firebaseConfig.js";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth } from "/src/firebaseConfig.js";
-import { onAuthStateChanged } from "firebase/auth";
+import { checkAuthState } from "/src/authentication.js";
 
-import {
-  loginUser,
-  signupUser,
-  authErrorMessage,
-  logoutUser,
-  onAuthReady,
-} from "./authentication.js";
+const search = document.getElementById("#members-go-here");
 
-async function showMember() {
-  const search = doc.querySelector("#members-go-here");
-  const dataList = doc.querySelector("#members-list");
-  const SearchTemplate = doc.querySelector("#ListTemplate");
-  if (search.textContent == null) {
-    const usersRef = doc(db, "users", uid);
-    const usersList = await getDoc(usersRef);
-  }
-  if (user) {
-    const currentUser = user.uid;
+const SearchTemplate = document.getElementById("#ListTemplate");
+
+checkAuthState(auth, (user) => {
+  if (!user) {
+    console.log("You are not signed in.");
   } else {
-    logoutUser({ redirectTo: "index.html" });
+    const userRef = doc(db, "users");
   }
+});
+
+const memberList = [];
+async function populateSearchList(dataListID, members) {
+  const dataList = document.getElementById(dataListID);
+
+  if (!Array.isArray(members)) {
+    console.log("The input is not an Array.");
+  }
+
+  members.forEach((member) => {
+    const options = document.createElement("option");
+    options.value = member;
+    dataList.appendChild(options);
+  });
 }
+
+populateSearchList("members-list", memberList);

@@ -54,37 +54,35 @@
         <h3 class="p-2 text-center me-auto">Members</h3>
       </div>
       <div class="input-group mb-3">
-        <button
-          type="button"
-          class="border border-secondary-subtle bg-white border-end-0"
-        >
-          <img src="/images/search.svg" alt="" width="20" height="20" />
-        </button>
-        <input
-          type="search"
-          class="border-start-0 form-control"
-          list="members-list"
-          id="memberSearch"
-          placeholder="Search group members"
-        />
-        <datalist id="members-list"></datalist>
+        <form class="w-100 hstack">
+          <button
+            type="button"
+            class="border border-secondary-subtle bg-white border-0 me-2"
+          >
+            <img src="/images/search.svg" alt="" width="20" height="20" />
+          </button>
+          <input
+            type="search"
+            class="form-control"
+            list="members-list"
+            id="memberSearch"
+            name="memberSearch"
+            placeholder="Search group members"
+          />
+          <datalist id="members-list"></datalist>
+        </form>
       </div>
       <div
         class="container-fluid bg-secondary-subtle p-2 text-break text-wrap"
         id="members-go-here"
       >
         <div>
-          <template id="ListTemplate">
-            <img id="ProfilePic" />
-            <div id="Member-Name"></div>
-          </template>
+          <template id="ListTemplate"></template>
         </div>
       </div>
     </section>
 
-    <footer
-      class="position-absolute bottom-0 start-50 translate-middle-x w-100"
-    >
+    <footer class="w-100 mt-5" style="transform: translate(0px, 400px)">
       <site-default-footer></site-default-footer>
     </footer>
 
