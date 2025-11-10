@@ -20,20 +20,19 @@ class SiteNavbar extends HTMLElement {
       <header>
         <div
           id="topbar"
-          class="d-flex justify-content-between align-items-center p-3 border-bottom position-fixed top-0 w-100"
+          class="d-flex justify-content-between align-items-center p-3 position-fixed top-0 w-100"
         >
           <a
             href="index.html"
-            class="brand d-flex align-items-center gap-2 text-decoration-none text-dark"
+            class="brand d-flex align-items-center gap-2 text-decoration-none text-white"
           >
-            <img src="./images/logo.png" alt="PeerLink Logo" width="32" height="32" />
-            <span class="fw-semibold fs-5">PeerLink</span>
+            <img src="./images/logo.png" alt="PeerLink Logo" width="40" height="40" />
+            <span class="fw-semibold fs-5 ms-2">PeerLink</span>
           </a>
-
           <button class="btn border-0 position-relative" id="menuBtn">
             <span class="icon-wrap d-inline-block">
-              <i class="bi bi-list icon-hamburger"></i>
-              <i class="bi bi-x-lg icon-close"></i>
+              <i class="bi bi-list icon-hamburger text-white"></i>
+              <i class="bi bi-x-lg icon-close text-white"></i>
             </span>
           </button>
         </div>
@@ -42,7 +41,7 @@ class SiteNavbar extends HTMLElement {
       <!-- Drawer -->
       <div id="drawer" class="drawer position-fixed top-0 start-0 w-100 h-100">
         <div
-          class="drawer-panel ms-auto h-100 d-flex flex-column justify-content-between p-4 shadow bg-light"
+          class="drawer-panel ms-auto h-100 d-flex flex-column justify-content-between p-4 shadow"
         >
           <nav>
             <ul class="nav flex-column fs-5 fw-semibold">
@@ -65,10 +64,10 @@ class SiteNavbar extends HTMLElement {
             </ul>
           </nav>
 
-          <div class="d-flex gap-3 fs-4 mt-3">
-            <a href="#instagram" class="text-black" title="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#facebook" class="text-dark" title="Facebook"><i class="bi bi-facebook"></i></a>
-            <a href="#discord" class="text-dark" title="Discord"><i class="bi bi-discord"></i></a>
+          <div class="social-links d-flex gap-3 fs-4 mt-3">
+            <a href="https://www.instagram.com" class="text-body-tertiary" title="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="https://www.facebook.com" class="text-body-tertiary" title="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.discord.com" class="text-body-tertiary" title="Discord"><i class="bi bi-discord"></i></a>
           </div>
         </div>
       </div>

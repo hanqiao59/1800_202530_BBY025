@@ -4,7 +4,6 @@
 * Light Blue (Secondary): #    (canvas background)
 * Dark  (Accent):    #
 */
-
 :root {
   --topbar-h: 72px;
   --panel-w: clamp(200px, 60vw, 260px);
@@ -16,6 +15,9 @@
 body {
   padding-top: var(--topbar-h);
   overflow-x: hidden;
+  font-family: "Poppins", sans-serif;
+  background-color: #fafafa;
+  margin: 0;
 }
 
 #bottombar {
@@ -23,86 +25,77 @@ body {
   transform: translate(0px, 720px);
 }
 
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+footer a {
+  color: #091540;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: color 0.25s ease, opacity 0.25s ease;
+}
+
+footer a:hover {
+  opacity: 1;
+  color: #2c6ea3;
+}
+
+footer a img {
+  opacity: 0.7;
+  transition: transform 0.25s ease, opacity 0.25s ease, filter 0.25s ease;
+}
+
+footer a:hover img {
+  opacity: 1;
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(89, 165, 216, 0.5)); /* 柔光效果 */
+}
+
+/* === Navigation Drawer === */
+/* Topbar & Brand */
 #topbar {
-  background-color: #fff;
+  background-color: #11a0ff;
   z-index: 1100;
   transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
     padding-right 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+#topbar .brand span {
+  letter-spacing: 0.06em;
+}
+
+.menu-open .brand {
+  transform: translateX(-24px);
+  opacity: 0.6;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* Drawer container & panel */
 #drawer {
   z-index: 1200;
 }
 
-/* == Menu == */
 .drawer {
   background: transparent;
   pointer-events: none;
-  transform: translateX(100%);
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.menu-open #drawer {
-  transform: translateX(0);
-  pointer-events: auto;
-}
-
-/* Drawer Panel */
 .drawer-panel {
   width: var(--panel-w);
   max-width: 100vw;
   height: 100%;
-  background: #eceef8;
+  background: #fff;
   box-shadow: -6px 0 16px rgba(0, 0, 0, 0.12);
   border-left: 1px solid rgba(0, 0, 0, 0.08);
   pointer-events: auto;
   padding: 1.5rem var(--drawer-pad-x);
+  transform: translate3d(100%, 0, 0);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* == Navigation Push == */
-.menu-open #topbar {
-  transform: translateX(calc(-1 * var(--panel-w)));
-  padding-right: var(--x-gap) !important;
-}
-
-/* == Hamburger Icon Switch == */
-#menuBtn .icon-wrap {
-  width: 28px;
-  height: 28px;
-  position: relative;
-  display: inline-block;
-}
-
-#menuBtn .icon-hamburger,
-#menuBtn .icon-close {
-  position: absolute;
-  inset: 0;
-  line-height: 1;
-  font-size: 28px;
-  transition: transform 0.25s ease, opacity 0.25s ease;
-}
-
-#menuBtn .icon-hamburger {
-  opacity: 1;
-  transform: rotate(0) scale(1);
-}
-
-#menuBtn .icon-close {
-  opacity: 0;
-  transform: rotate(-90deg) scale(0.6);
-}
-
-.menu-open #menuBtn .icon-hamburger {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.6);
-}
-
-.menu-open #menuBtn .icon-close {
-  opacity: 1;
-  transform: rotate(0) scale(1);
-}
-
-/* == Drawer Content == */
+/* Drawer content */
 .drawer-panel .nav,
 .drawer-panel .social-links {
   margin: 0;
@@ -118,7 +111,7 @@ body {
 }
 
 .drawer-panel .nav-link:hover {
-  color: #000 !important;
+  color: #0e1c36 !important;
 }
 
 .drawer-panel .social-links {
@@ -127,70 +120,218 @@ body {
   align-items: center;
   justify-content: flex-start;
   margin-top: 1.5rem;
+  transition: color 0.25s ease;
 }
 
-/* == Brand animation == */
-.menu-open .brand {
-  transform: translateX(-24px);
-  opacity: 0.6;
-  transition: transform 0.25s ease, opacity 0.25s ease;
+.drawer-panel .social-links a:hover {
+  color: #0e1c36 !important;
+}
+
+/* Menu button */
+#menuBtn .icon-wrap {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  line-height: 0;
+}
+
+#menuBtn .icon-hamburger,
+#menuBtn .icon-close {
+  position: absolute;
+  inset: 0;
+  line-height: 1;
+  font-size: 28px;
+  transition: transform 0.25s ease, opacity 0.25s ease, color 0.25s ease;
+}
+
+#menuBtn .icon-hamburger {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+#menuBtn .icon-close {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
 }
 
 #menuBtn:hover .icon-hamburger,
 #menuBtn:hover .icon-close {
   color: #195787;
-  transition: color 0.25s ease;
 }
 
-#menuBtn .icon-hamburger {
-  transform: scale(1.2);
+.menu-open #drawer {
+  pointer-events: auto;
+}
+
+.menu-open .drawer-panel {
+  transform: translate3d(0, 0, 0);
+}
+
+.menu-open #menuBtn .icon-hamburger {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.6);
+}
+
+.menu-open #menuBtn .icon-close {
+  opacity: 1;
+  transform: rotate(0) scale(1);
+}
+
+.menu-open #topbar {
+  transform: translateX(calc(-1 * var(--panel-w)));
+  padding-right: var(--x-gap) !important;
 }
 
 @media (max-width: 420px) {
   :root {
     --x-gap: 10px;
-    --btn-top: 14px;
   }
 }
 
-/* ---------- Main Content ---------- */
-:root {
-  --overlay-dark: rgba(0, 0, 0, 0.45);
+/* === Banner Section === */
+.page {
+  margin: 0;
+  padding: 0;
 }
 
-.full-page-bg {
+#home-banner {
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh - var(--topbar-h));
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: #fff;
-  background: url("../images/discussion.jpg") center/cover no-repeat;
+  background-color: #11a0ff;
+  /* background-color: #0e1c36; */
 }
 
-.full-page-bg::before {
+#home-banner img {
+  max-width: 500px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.55))
+    drop-shadow(0 0 28px rgba(205, 234, 255, 0.45))
+    drop-shadow(0 0 48px rgba(173, 216, 230, 0.35));
+}
+
+#home-banner h1 {
+  letter-spacing: 0.08em;
+}
+
+#home-banner p {
+  line-height: 1.6;
+}
+
+#home-banner .custom-btn {
+  background-color: #fff;
+  color: #0e1c36;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+#home-banner .custom-btn:hover {
+  background-color: #0e1c36;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(165, 216, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+#home-banner::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--overlay-dark);
-  z-index: 1;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.8) 0 1.5px,
+        transparent 2px
+      )
+      20px 40px/160px 160px,
+    radial-gradient(circle, rgba(216, 191, 255, 0.7) 0 1.5px, transparent 2px)
+      80px 20px/200px 200px,
+    radial-gradient(circle, rgba(255, 255, 153, 0.7) 0 1.5px, transparent 2px)
+      10px 90px/220px 220px;
+  opacity: 0.35;
+  animation: twinkle 3.6s ease-in-out infinite alternate,
+    layer-pan-3 52s linear infinite;
 }
 
-.full-page-bg .container {
-  position: relative;
-  z-index: 2;
+#home-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.9) 0 1.5px,
+        transparent 2px
+      )
+      0 0/140px 140px,
+    radial-gradient(circle, rgba(255, 182, 193, 0.8) 0 1.5px, transparent 2px)
+      40px 60px/180px 180px,
+    radial-gradient(circle, rgba(173, 216, 230, 0.8) 0 1.5px, transparent 2px)
+      90px 20px/220px 220px,
+    radial-gradient(circle, rgba(255, 255, 153, 0.7) 0 1.5px, transparent 2px)
+      60px 100px/160px 160px,
+    radial-gradient(circle, rgba(216, 191, 255, 0.7) 0 1.5px, transparent 2px)
+      120px 40px/200px 200px;
+
+  animation: star-pan-1 40s linear infinite,
+    star-pan-2 60s linear infinite reverse, star-pan-3 80s linear infinite;
+}
+@keyframes layer-pan-1 {
+  to {
+    background-position: 280px 0, 40px 60px, 90px 20px;
+  }
+}
+@keyframes layer-pan-2 {
+  to {
+    background-position: 0 0, -320px 60px, 90px 20px;
+  }
+}
+@keyframes layer-pan-3 {
+  to {
+    background-position: 160px -120px, -140px 100px, 120px 80px;
+  }
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.15;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.55;
+    filter: brightness(1.15);
+  }
+  100% {
+    opacity: 0.25;
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #home-banner::before,
+  #home-banner::after {
+    animation: none;
+  }
 }
 
 /* ===== What We Value Section ===== */
 .values-section {
   padding: 4rem 0 5rem;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   text-align: center;
 }
 
 .values-section h2 {
-  font-weight: 700;
+  font-size: 2rem;
   color: #212529;
 }
 
@@ -210,7 +351,7 @@ body {
 }
 
 .value-card h4 {
-  color: #343a40;
+  color: #212529;
   margin-top: 0.5rem;
 }
 
@@ -222,7 +363,66 @@ body {
   margin-inline: auto;
 }
 
-/* ===== Main Page ===== */
+/* ===== Features Section ===== */
+#features-section {
+  padding: 4rem 0 5rem;
+  background-color: #11a0ff;
+  /* background-color: #0e1c36; */
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+#features-section::before,
+#features-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+#features-section::before {
+  background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.9) 0 1.5px,
+        transparent 2px
+      )
+      0 0/140px 140px,
+    radial-gradient(circle, rgba(255, 182, 193, 0.8) 0 1.5px, transparent 2px)
+      40px 60px/180px 180px,
+    radial-gradient(circle, rgba(173, 216, 230, 0.8) 0 1.5px, transparent 2px)
+      90px 20px/220px 220px,
+    radial-gradient(circle, rgba(255, 255, 153, 0.7) 0 1.5px, transparent 2px)
+      60px 100px/160px 160px,
+    radial-gradient(circle, rgba(216, 191, 255, 0.7) 0 1.5px, transparent 2px)
+      120px 40px/200px 200px;
+  animation: twinkle 3.6s ease-in-out infinite alternate,
+    star-pan-3 80s linear infinite;
+  opacity: 0.35;
+}
+
+#features-section::after {
+  background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.8) 0 1.5px,
+        transparent 2px
+      )
+      20px 40px/160px 160px,
+    radial-gradient(circle, rgba(216, 191, 255, 0.7) 0 1.5px, transparent 2px)
+      80px 20px/200px 200px,
+    radial-gradient(circle, rgba(255, 255, 153, 0.7) 0 1.5px, transparent 2px)
+      10px 90px/220px 220px;
+  animation: layer-pan-3 52s linear infinite;
+  opacity: 0.25;
+}
+
+#features-section > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== Main.html Styles ===== */
 .user-avatar {
   width: 70px;
   height: 70px;
@@ -369,13 +569,6 @@ body {
   padding-bottom: 3rem;
 }
 
-body {
-  font-family: "Inter", sans-serif;
-  background-color: #f8f9fa;
-  margin: 0;
-  padding-top: 72px;
-}
-
 .edit-container {
   max-width: 700px;
   margin: 2rem auto;
@@ -437,11 +630,6 @@ textarea {
 
 .save-btn:hover {
   background-color: #13416c;
-}
-
-body {
-  background-color: #fafafa;
-  font-family: "Inter", sans-serif;
 }
 
 .profile-section {
