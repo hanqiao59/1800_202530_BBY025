@@ -9,6 +9,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -109,14 +110,11 @@ function renderChip(item) {
 
     if (selected.has(name)) {
       selected.delete(name);
-      chip.classList.remove("bg-dark", "text-white", "border-dark");
-      chip.setAttribute("aria-pressed", "false");
     } else {
       if (selected.size >= MAX) return;
       selected.add(name);
-      chip.classList.add("bg-dark", "text-white", "border-dark");
-      chip.setAttribute("aria-pressed", "true");
     }
+    syncChips(name);
 
     updateContinue();
   });
@@ -124,7 +122,21 @@ function renderChip(item) {
   return chip;
 }
 
-// UI: full render (search + groups)
+// Sync all duplicate chips with the same name across sections
+function syncChips(name) {
+  const safe = CSS?.escape ? CSS.escape(name) : name;
+  const sel = `[data-tag="${safe}"]`;
+
+  document.querySelectorAll(sel).forEach((chip) => {
+    const on = selected.has(name);
+    chip.classList.toggle("bg-dark", on);
+    chip.classList.toggle("text-white", on);
+    chip.classList.toggle("border-dark", on);
+    chip.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+
+// UI for search + groups
 function renderUI() {
   content.innerHTML = "";
 
@@ -136,7 +148,7 @@ function renderUI() {
       "div",
       {
         class:
-          "d-flex align-items-center bg-light rounded-pill px-3 py-2 mt-2 mb-4 border",
+          "d-flex align-items-center bg-light rounded-pill px-3 py-2 mb-4 border",
       },
       el("i", { class: "bi bi-search text-secondary me-2" }),
       el("input", {
@@ -147,6 +159,7 @@ function renderUI() {
       })
     )
   );
+
   searchForm.addEventListener("submit", (e) => e.preventDefault());
   content.appendChild(searchForm);
 
@@ -187,7 +200,7 @@ function renderUI() {
   redraw();
 }
 
-// Button + save
+// save button state
 function updateContinue() {
   if (continueBtn) continueBtn.disabled = selected.size === 0;
 }
@@ -196,17 +209,19 @@ async function saveSelection() {
   if (!uid) return;
   await setDoc(
     doc(db, "users", uid),
-    { interests: Array.from(selected), updatedAt: new Date() },
+    { interests: Array.from(selected), updatedAt: serverTimestamp() },
     { merge: true }
   );
 }
 
-// boot
+// Boot sequence: get auth -> fetch data (tags + user) -> render UI
 (async () => {
+  // Show a loading spinner while we prepare the page.
   try {
     loading && (loading.style.display = "block");
 
-    // Only wait for uid to hydrate (no second auth check or redirect)
+    // Make sure we have a UID before reading user-specific data.
+    // Wait for a single auth state change, then immediately unsubscribe.
     if (!uid) {
       await new Promise((resolve) => {
         const stop = onAuthStateChanged(auth, (u) => {
@@ -217,7 +232,9 @@ async function saveSelection() {
       });
     }
 
+    // Fetch interest tags and the user's existing interests in parallel.
     await Promise.all([loadTags(), preloadUser()]);
+    // Build the search bar + grouped chips, then update the CTA state.
     renderUI();
     updateContinue();
   } catch (err) {
@@ -235,7 +252,7 @@ continueBtn?.addEventListener("click", async () => {
   continueBtn.disabled = true;
   try {
     await saveSelection();
-    window.location.href = "/channels.html";
+    window.location.href = "ice-breaker-session.html";
   } catch (e) {
     console.error(e);
     continueBtn.disabled = false;

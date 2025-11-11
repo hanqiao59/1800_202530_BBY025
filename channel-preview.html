@@ -41,7 +41,7 @@
     <!--<script type="module" src="/src/components/site-footer.js"></script>-->
   </head>
 
-  <body class="bg-white">
+  <body id="channel-preview-page">
     <site-navbar></site-navbar>
 
     <!-- Channel Title -->
@@ -61,9 +61,9 @@
     <!-- Channel Preview Content -->
     <div
       class="container-sm px-3 py-4 d-flex flex-column align-items-center gap-4"
-      style="max-width: 720px; font-family: 'Inter', system-ui, sans-serif"
+      style="max-width: 720px"
     >
-      <div class="bg-light rounded-4 p-4 w-100 text-center">
+      <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
         <h5 id="channelTitle" class="fw-semibold mb-1 fs-3">Loading...</h5>
         <small class="text-secondary d-block mb-4"># Session 225</small>
 
@@ -71,9 +71,9 @@
         <div class="mb-4">
           <div class="text-dark mb-2 small">Owner</div>
           <div
-            class="owner-avatar bg-secondary-subtle d-inline-flex justify-content-center align-items-center fw-bold text-dark"
+            class="owner-avatar d-inline-flex justify-content-center align-items-center fw-bold text-dark"
           >
-            P
+            TH
           </div>
         </div>
 
@@ -93,13 +93,13 @@
               class="member-avatar rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-2"
               >F</span
             >
-            <a href="member-list.html" class="small">+130 more</a>
+            <a href="group-members.html" class="small">+130 more</a>
           </div>
         </div>
       </div>
 
       <!--Ready to Join -->
-      <div class="bg-light rounded-4 p-4 w-100 text-center">
+      <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
         <div
           class="user-avatar rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center fw-bold text-dark mb-3"
         >
@@ -107,14 +107,14 @@
         </div>
 
         <h4 class="fw-semibold mb-2 fs-5">Ready to Join?</h4>
-        <p class="text-secondary mb-4 small">
+        <p class="text-secondary mb-4 small px-5">
           Choose some interest tags on the next page, and we will group you with
           people with shared interest.
         </p>
 
         <a
           href="select-tags.html"
-          class="btn btn-dark btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
+          class="btn btn-lg w-100 rounded-8 py-3 fw-semibold fs-6 btn-join-link text-white"
         >
           Continue
         </a>

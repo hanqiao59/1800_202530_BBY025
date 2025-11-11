@@ -43,7 +43,8 @@
 
   <body class="bg-white d-flex flex-column">
     <site-navbar></site-navbar>
-    <!-- Top bar -->
+
+    <!-- Select Tags Title -->
     <div
       class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
     >
@@ -57,31 +58,36 @@
       <h3 class="mb-0">Select Your Interests</h3>
     </div>
 
-    <!-- Subtitle -->
-    <p class="text-secondary text-center mt-3 mb-0 px-3">
-      Choose tags that match your interests to group with like-minded people.
-    </p>
+    <!-- Main content  -->
+    <div
+      id="select-tags-page"
+      class="container-sm px-3 py-4 d-flex flex-column align-items-center gap-4"
+      style="max-width: 720px"
+    >
+      <p class="text-black mb-2 px-3">
+        Choose tags that match your interests to group with like-minded people.
+      </p>
 
-    <!-- Main content -->
-    <main class="flex-grow-1 overflow-auto py-4">
-      <div class="container" id="content">
-        <!-- Optional loading placeholder -->
-        <div class="text-center py-5" id="loading">
-          <div class="spinner-border" role="status" aria-hidden="true"></div>
-          <div class="mt-2 small text-secondary">Loading…</div>
+      <main class="flex-grow-1 overflow-auto">
+        <div class="container" id="content">
+          <!-- Optional loading placeholder -->
+          <div class="text-center py-5" id="loading">
+            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <div class="mt-2 small text-secondary">Loading…</div>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
 
-    <!--  Button -->
-    <div class="p-4 text-center">
-      <button
-        id="continue-btn"
-        class="btn btn-dark btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
-        disabled
-      >
-        Start Now
-      </button>
+      <!--  Button -->
+      <div class="p-4 text-center w-100">
+        <button
+          id="continue-btn"
+          class="btn btn-lg w-100 rounded-8 py-3 fw-semibold fs-6 btn-join-link text-white"
+          disabled
+        >
+          Start Now
+        </button>
+      </div>
     </div>
 
     <!---------------------------------------------->

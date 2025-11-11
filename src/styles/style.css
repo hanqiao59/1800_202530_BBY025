@@ -81,7 +81,7 @@ footer a:hover img {
   width: var(--panel-w);
   max-width: 100vw;
   height: 100%;
-  background: #fff;
+  background: #e0f1fa;
   box-shadow: -6px 0 16px rgba(0, 0, 0, 0.12);
   border-left: 1px solid rgba(0, 0, 0, 0.08);
   pointer-events: auto;
@@ -418,12 +418,34 @@ footer a:hover img {
 }
 
 /* ===== Main.html Styles ===== */
-.user-avatar {
+#main-page {
+  background-color: #e8f3ff;
+}
+
+#userAvatar {
+  background-color: #e6f2ff;
   width: 70px;
   height: 70px;
-  font-size: 1.5rem;
   border-radius: 50%;
+  object-fit: cover;
 }
+
+.stats {
+  background-color: #f0f7ff;
+  border-radius: 12px;
+}
+
+#main-page-button {
+  grid-template-columns: repeat(2, 200px);
+  justify-content: start;
+}
+
+#main-page-button .btn {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
 .btn-animate {
   transition: all 0.25s ease;
 }
@@ -447,16 +469,59 @@ footer a:hover img {
   opacity: 1;
 }
 
-.btn-join.btn-dark:hover {
-  background-color: #212529 !important;
-  border-color: #212529 !important;
+.btn-join {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
+.btn-join:hover {
+  background-color: #386fa4 !important;
   color: #fff !important;
 }
 
-.btn-create.btn-outline-dark:hover {
-  background-color: #212529 !important;
-  border-color: #212529 !important;
+.btn-create {
+  background-color: #f8f9fa;
+  color: #4e4e4e;
+  border: 1.5px solid #4e4e4e;
+  transition: all 0.25s ease;
+}
+
+.btn-create:hover {
+  background-color: #4a90e2;
+  border-color: #4a90e2;
+  color: #fff;
+}
+
+.button-view-group {
+  border-color: #c1cefe;
+  color: #c1cefe;
+}
+
+.button-view-group:hover {
+  background-color: #c1cefe;
   color: #fff !important;
+}
+
+.badge {
+  background-color: #d7eefb;
+  color: #232323 !important;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  border-radius: 50%;
+}
+
+.member-avatar:nth-child(1) {
+  background-color: #c5e2f9 !important;
+}
+.member-avatar:nth-child(2) {
+  background-color: #fce7cc !important;
+}
+.member-avatar:nth-child(3) {
+  background-color: #fad2d2 !important;
 }
 
 /* ===== Join Channel Modal Styles ===== */
@@ -485,27 +550,54 @@ footer a:hover img {
   transition: border-color 0.2s ease, border-width 0.2s ease,
     box-shadow 0.2s ease;
 }
-
+/* 
 .form-control:focus,
 .form-control:focus + .btn {
-  border-color: #000 !important;
+  border-color: #71a8ff !important;
   border-width: 1.5px;
   box-shadow: 0 0 0 0.15rem rgba(0, 0, 0, 0.25);
-}
+} */
 
 .input-group .btn:hover {
   border-color: #000 !important;
 }
 
-/* ===== Channel Preview Page ===== */
-.member-avatar {
-  width: 32px;
-  height: 32px;
-  font-size: 1rem;
-  border-radius: 50%;
+.btn-join-link {
+  background-color: #4a90e2;
+  border: none;
+  transition: background-color 0.25s ease, transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
+.btn-join-link:hover {
+  background-color: #386fa4;
+}
+
+.btn-cancel-link {
+  background-color: #f8f9fa;
+  color: #091540;
+  border: 1.5px solid #091540;
+  transition: all 0.25s ease;
+}
+.btn-cancel-link:hover {
+  background-color: #091540;
+  border-color: #091540;
+  color: #fff;
+}
+
+/* ===== Channel Preview Page ===== */
+#channel-preview-page {
+  background-color: #e8f3ff;
+}
 .owner-avatar {
+  width: 60px;
+  height: 60px;
+  font-size: 1.4rem;
+  border-radius: 50%;
+  background-color: #cee8fb;
+}
+
+.user-avatar {
   width: 60px;
   height: 60px;
   font-size: 1.4rem;
