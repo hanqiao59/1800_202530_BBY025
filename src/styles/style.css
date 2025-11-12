@@ -5,6 +5,51 @@
 * Dark  (Accent):    #
 */
 :root {
+  --brand-primary: #11a0ff;
+  --brand-deep: #091540;
+  --brand-light: #f5faff;
+}
+
+.bg-brand-light {
+  background-color: var(--brand-light) !important;
+}
+
+.btn-primary {
+  --bs-btn-bg: #11a0ff;
+  --bs-btn-border-color: #11a0ff;
+  --bs-btn-hover-bg: #0d93eb;
+  --bs-btn-hover-border-color: #0d93eb;
+  --bs-btn-active-bg: #091540;
+  --bs-btn-active-border-color: #091540;
+  --bs-btn-color: #fff;
+}
+
+.btn-invert {
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: #091540;
+  --bs-btn-color: #091540;
+  --bs-btn-hover-bg: #091540;
+  --bs-btn-hover-border-color: #091540;
+  --bs-btn-hover-color: #fff;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #11a0ff;
+  --bs-btn-border-color: #11a0ff;
+  --bs-btn-hover-bg: #0d93eb;
+  --bs-btn-hover-border-color: #0d93eb;
+  --bs-btn-hover-color: #fff;
+}
+
+.btn-outline-deep {
+  --bs-btn-color: #091540;
+  --bs-btn-border-color: #091540;
+  --bs-btn-hover-bg: #091540;
+  --bs-btn-hover-border-color: #091540;
+  --bs-btn-hover-color: #fff;
+}
+
+:root {
   --topbar-h: 72px;
   --panel-w: clamp(200px, 60vw, 260px);
   --x-gap: 14px;
@@ -362,7 +407,6 @@ footer a:hover img {
 #features-section {
   padding: 4rem 0 5rem;
   background-color: #11a0ff;
-  /* background-color: #0e1c36; */
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -418,9 +462,6 @@ footer a:hover img {
 }
 
 /* ===== Main.html Styles ===== */
-#main-page {
-  background-color: #e8f3ff;
-}
 
 #userAvatar {
   background-color: #e6f2ff;
@@ -469,7 +510,7 @@ footer a:hover img {
   opacity: 1;
 }
 
-.btn-join {
+/* .btn-join {
   background-color: #4a90e2;
   color: #fff;
 }
@@ -477,9 +518,9 @@ footer a:hover img {
 .btn-join:hover {
   background-color: #386fa4 !important;
   color: #fff !important;
-}
+} */
 
-.btn-create {
+/* .btn-create {
   background-color: #f8f9fa;
   color: #4e4e4e;
   border: 1.5px solid #4e4e4e;
@@ -490,7 +531,7 @@ footer a:hover img {
   background-color: #4a90e2;
   border-color: #4a90e2;
   color: #fff;
-}
+} */
 
 .button-view-group {
   border-color: #c1cefe;
@@ -562,33 +603,7 @@ footer a:hover img {
   border-color: #000 !important;
 }
 
-.btn-join-link {
-  background-color: #4a90e2;
-  border: none;
-  transition: background-color 0.25s ease, transform 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.btn-join-link:hover {
-  background-color: #386fa4;
-}
-
-.btn-cancel-link {
-  background-color: #f8f9fa;
-  color: #091540;
-  border: 1.5px solid #091540;
-  transition: all 0.25s ease;
-}
-.btn-cancel-link:hover {
-  background-color: #091540;
-  border-color: #091540;
-  color: #fff;
-}
-
 /* ===== Channel Preview Page ===== */
-#channel-preview-page {
-  background-color: #e8f3ff;
-}
 .owner-avatar {
   width: 60px;
   height: 60px;
@@ -603,6 +618,8 @@ footer a:hover img {
   font-size: 1.4rem;
   border-radius: 50%;
 }
+
+/* ===== Ice Breaker Page Styles ===== */
 
 /* inline icons in input fields 
 *  icons are placeholders for the functional ones

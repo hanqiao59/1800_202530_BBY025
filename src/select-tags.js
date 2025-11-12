@@ -148,7 +148,7 @@ function renderUI() {
       "div",
       {
         class:
-          "d-flex align-items-center bg-light rounded-pill px-3 py-2 mb-4 border",
+          "d-flex align-items-center bg-white rounded-pill px-3 py-2 mb-4 border",
       },
       el("i", { class: "bi bi-search text-secondary me-2" }),
       el("input", {
