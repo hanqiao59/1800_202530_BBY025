@@ -1,12 +1,12 @@
 /*  Color Palette:
-* Lightest (Text):         #    (text, contrast with dark)
-* Dark Blue (Primary):    #      
-* Light Blue (Secondary): #    (canvas background)
-* Dark  (Accent):    #
+* Lightest (Text):     Black or light gray (text, contrast with dark)
+* Blue (Primary):    #11a0ff
+* Light Blue (Secondary): #f5faff (canvas background)
+* Dark  (Accent):    #091540
 */
 :root {
   --brand-primary: #11a0ff;
-  --brand-deep: #091540;
+  --brand-deep: #0a1333;
   --brand-light: #f5faff;
 }
 
@@ -19,17 +19,17 @@
   --bs-btn-border-color: #11a0ff;
   --bs-btn-hover-bg: #0d93eb;
   --bs-btn-hover-border-color: #0d93eb;
-  --bs-btn-active-bg: #091540;
-  --bs-btn-active-border-color: #091540;
+  --bs-btn-active-bg: #0a1333;
+  --bs-btn-active-border-color: #0a1333;
   --bs-btn-color: #fff;
 }
 
 .btn-invert {
   --bs-btn-bg: #fff;
-  --bs-btn-border-color: #091540;
-  --bs-btn-color: #091540;
-  --bs-btn-hover-bg: #091540;
-  --bs-btn-hover-border-color: #091540;
+  --bs-btn-border-color: #0a1333;
+  --bs-btn-color: #0a1333;
+  --bs-btn-hover-bg: #0a1333;
+  --bs-btn-hover-border-color: #0a1333;
   --bs-btn-hover-color: #fff;
 }
 
@@ -42,10 +42,10 @@
 }
 
 .btn-outline-deep {
-  --bs-btn-color: #091540;
-  --bs-btn-border-color: #091540;
-  --bs-btn-hover-bg: #091540;
-  --bs-btn-hover-border-color: #091540;
+  --bs-btn-color: #0a1333;
+  --bs-btn-border-color: #0a1333;
+  --bs-btn-hover-bg: #0a1333;
+  --bs-btn-hover-border-color: #0a1333;
   --bs-btn-hover-color: #fff;
 }
 
@@ -71,7 +71,7 @@ footer {
 }
 
 footer a {
-  color: #091540;
+  color: #0a1333;
   text-decoration: none;
   opacity: 0.8;
   transition: color 0.25s ease, opacity 0.25s ease;
@@ -510,29 +510,6 @@ footer a:hover img {
   opacity: 1;
 }
 
-/* .btn-join {
-  background-color: #4a90e2;
-  color: #fff;
-}
-
-.btn-join:hover {
-  background-color: #386fa4 !important;
-  color: #fff !important;
-} */
-
-/* .btn-create {
-  background-color: #f8f9fa;
-  color: #4e4e4e;
-  border: 1.5px solid #4e4e4e;
-  transition: all 0.25s ease;
-}
-
-.btn-create:hover {
-  background-color: #4a90e2;
-  border-color: #4a90e2;
-  color: #fff;
-} */
-
 .button-view-group {
   border-color: #c1cefe;
   color: #c1cefe;
@@ -591,13 +568,6 @@ footer a:hover img {
   transition: border-color 0.2s ease, border-width 0.2s ease,
     box-shadow 0.2s ease;
 }
-/* 
-.form-control:focus,
-.form-control:focus + .btn {
-  border-color: #71a8ff !important;
-  border-width: 1.5px;
-  box-shadow: 0 0 0 0.15rem rgba(0, 0, 0, 0.25);
-} */
 
 .input-group .btn:hover {
   border-color: #000 !important;

@@ -29,12 +29,12 @@ onAuthStateChanged(auth, (u) => {
   console.log("[auth] uid=", uid);
 });
 
-/* ===== Auth snapshot (assumed non-null) ===== */
+/* ===== Auth snapshot ===== */
 let uid = auth.currentUser?.uid || null;
 let displayName =
   auth.currentUser?.displayName || auth.currentUser?.email || "Anon";
 
-/* ===== Title (null-safe) ===== */
+/* ===== Title  ===== */
 if (titleEl) titleEl.textContent = `Ice-Breaker: ${channelId} / ${sessionId}`;
 
 /* ===== Utils ===== */
@@ -62,7 +62,7 @@ const msgsRef = collection(
   "messages"
 );
 
-/* ===== Render one message bubble ===== */
+/* ===== message bubble ===== */
 function renderMsg(docSnap) {
   const data = docSnap.data();
   const mine = data.uid === uid;
@@ -202,7 +202,7 @@ function wireComposer() {
     panel.style.visibility = "hidden";
     panel.style.display = "block";
 
-    const m = 8; // 边距
+    const m = 8;
     const r = summary.getBoundingClientRect();
     const pw = panel.offsetWidth;
     const ph = panel.offsetHeight;
@@ -211,7 +211,7 @@ function wireComposer() {
     let top = r.bottom + m;
 
     if (top + ph > window.innerHeight - m) {
-      top = r.top - ph - m; // 翻到上方
+      top = r.top - ph - m;
     }
     if (left + pw > window.innerWidth - m) left = window.innerWidth - pw - m;
     if (left < m) left = m;
