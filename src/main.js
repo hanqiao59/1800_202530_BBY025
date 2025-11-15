@@ -9,8 +9,8 @@ import {
   limit,
   getDocs,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
 
+import { onAuthStateChanged } from "firebase/auth";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 

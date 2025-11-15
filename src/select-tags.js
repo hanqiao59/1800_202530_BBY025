@@ -11,6 +11,7 @@ import {
   setDoc,
   serverTimestamp,
 } from "firebase/firestore";
+
 import { onAuthStateChanged } from "firebase/auth";
 
 // DOM
@@ -31,6 +32,7 @@ const MAX = 3;
 let uid = auth.currentUser?.uid; // previous page already ensured login
 let selected = new Set();
 let groups = {}; // { category: [{name, emoji, order}], ... }
+let locked = false;
 
 //  Helpers
 const el = (tag, attrs = {}, ...children) => {
@@ -114,6 +116,9 @@ function renderChip(item) {
     chip.classList.add("bg-dark", "text-white", "border-dark");
 
   chip.addEventListener("click", () => {
+    // Do nothing if interests are locked
+    if (locked) return;
+
     const name = item.name;
 
     if (selected.has(name)) {
@@ -210,7 +215,13 @@ function renderUI() {
 
 // save button state
 function updateContinue() {
-  if (continueBtn) continueBtn.disabled = selected.size === 0;
+  if (!continueBtn) return;
+
+  if (locked) {
+    continueBtn.disabled = false;
+    return;
+  }
+  continueBtn.disabled = selected.size === 0;
 }
 
 async function saveSelection() {
@@ -241,11 +252,6 @@ async function saveSelection() {
   }
 
   await Promise.all(writes);
-
-  if (saveStatus) {
-    saveStatus.textContent =
-      "Your interests are saved. Waiting for owner to start the activity.";
-  }
 }
 
 // Boot sequence: get auth -> fetch data (tags + user) -> render UI
@@ -280,20 +286,72 @@ async function saveSelection() {
   }
 })();
 
-// Navigation: just save and stay on this page
+// Navigation: toggle between "ready" (locked) and "edit" (unlocked)
 continueBtn?.addEventListener("click", async () => {
-  if (selected.size === 0) return;
-  continueBtn.disabled = true;
-  try {
-    await saveSelection();
-    // don't navigate away; wait for the channel owner to start the activity
-  } catch (e) {
-    console.error(e);
-    if (saveStatus) {
-      saveStatus.textContent =
-        "Failed to save your interests. Please try again.";
+  // currently unlocked → user is saying "I'm ready"
+  if (!locked) {
+    if (selected.size === 0) return; // Must select at least one
+
+    continueBtn.disabled = true;
+
+    try {
+      await saveSelection();
+
+      // Lock: prevent further changes to tags
+      locked = true;
+
+      // Disable all interest chips
+      document.querySelectorAll("[data-tag]").forEach((chip) => {
+        chip.disabled = true;
+      });
+
+      // Optionally disable search box
+      const qInput = document.getElementById("q");
+      if (qInput) qInput.disabled = true;
+
+      // Update status message
+      if (saveStatus) {
+        saveStatus.textContent =
+          "Your interests are saved. Please wait for the owner to start the ice-breaker session.";
+      }
+
+      // Change button to "Change my interest tags"
+      continueBtn.textContent = "Change my interest tags";
+      continueBtn.classList.remove("btn-primary");
+      continueBtn.classList.add("btn-outline-secondary");
+
+      // Update button state (will be forced enabled when locked = true)
+      updateContinue();
+    } catch (e) {
+      console.error(e);
+      if (saveStatus) {
+        saveStatus.textContent =
+          "Failed to save your interests. Please try again.";
+      }
+      continueBtn.disabled = false;
     }
-  } finally {
-    continueBtn.disabled = false;
+  } else {
+    // currently locked → user wants to edit interests again
+    locked = false;
+
+    // re-enable tags
+    document.querySelectorAll("[data-tag]").forEach((chip) => {
+      chip.disabled = false;
+    });
+
+    // re-enable search box
+    const qInput = document.getElementById("q");
+    if (qInput) qInput.disabled = false;
+
+    // Change button back to "I'm ready!"
+    continueBtn.textContent = "I'm ready!";
+    continueBtn.classList.remove("btn-outline-secondary");
+    continueBtn.classList.add("btn-primary");
+
+    updateContinue();
+
+    if (saveStatus) {
+      saveStatus.textContent = "Click the button again when you're ready.";
+    }
   }
 });
