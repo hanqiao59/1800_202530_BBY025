@@ -1,9 +1,54 @@
 /*  Color Palette:
-* Lightest (Text):         #    (text, contrast with dark)
-* Dark Blue (Primary):    #      
-* Light Blue (Secondary): #    (canvas background)
-* Dark  (Accent):    #
+* Lightest (Text):     Black or light gray (text, contrast with dark)
+* Blue (Primary):    #11a0ff
+* Light Blue (Secondary): #f5faff (canvas background)
+* Dark  (Accent):    #091540
 */
+:root {
+  --brand-primary: #11a0ff;
+  --brand-deep: #0a1333;
+  --brand-light: #f5faff;
+}
+
+.bg-brand-light {
+  background-color: var(--brand-light) !important;
+}
+
+.btn-primary {
+  --bs-btn-bg: #11a0ff;
+  --bs-btn-border-color: #11a0ff;
+  --bs-btn-hover-bg: #0d93eb;
+  --bs-btn-hover-border-color: #0d93eb;
+  --bs-btn-active-bg: #0a1333;
+  --bs-btn-active-border-color: #0a1333;
+  --bs-btn-color: #fff;
+}
+
+.btn-invert {
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: #0a1333;
+  --bs-btn-color: #0a1333;
+  --bs-btn-hover-bg: #0a1333;
+  --bs-btn-hover-border-color: #0a1333;
+  --bs-btn-hover-color: #fff;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #11a0ff;
+  --bs-btn-border-color: #11a0ff;
+  --bs-btn-hover-bg: #0d93eb;
+  --bs-btn-hover-border-color: #0d93eb;
+  --bs-btn-hover-color: #fff;
+}
+
+.btn-outline-deep {
+  --bs-btn-color: #0a1333;
+  --bs-btn-border-color: #0a1333;
+  --bs-btn-hover-bg: #0a1333;
+  --bs-btn-hover-border-color: #0a1333;
+  --bs-btn-hover-color: #fff;
+}
+
 :root {
   --topbar-h: 72px;
   --panel-w: clamp(200px, 60vw, 260px);
@@ -26,7 +71,7 @@ footer {
 }
 
 footer a {
-  color: #091540;
+  color: #0a1333;
   text-decoration: none;
   opacity: 0.8;
   transition: color 0.25s ease, opacity 0.25s ease;
@@ -81,7 +126,7 @@ footer a:hover img {
   width: var(--panel-w);
   max-width: 100vw;
   height: 100%;
-  background: #fff;
+  background: #e0f1fa;
   box-shadow: -6px 0 16px rgba(0, 0, 0, 0.12);
   border-left: 1px solid rgba(0, 0, 0, 0.08);
   pointer-events: auto;
@@ -362,7 +407,6 @@ footer a:hover img {
 #features-section {
   padding: 4rem 0 5rem;
   background-color: #11a0ff;
-  /* background-color: #0e1c36; */
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -418,12 +462,31 @@ footer a:hover img {
 }
 
 /* ===== Main.html Styles ===== */
-.user-avatar {
+
+#userAvatar {
+  background-color: #e6f2ff;
   width: 70px;
   height: 70px;
-  font-size: 1.5rem;
   border-radius: 50%;
+  object-fit: cover;
 }
+
+.stats {
+  background-color: #f0f7ff;
+  border-radius: 12px;
+}
+
+#main-page-button {
+  grid-template-columns: repeat(2, 200px);
+  justify-content: start;
+}
+
+#main-page-button .btn {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
 .btn-animate {
   transition: all 0.25s ease;
 }
@@ -447,16 +510,36 @@ footer a:hover img {
   opacity: 1;
 }
 
-.btn-join.btn-dark:hover {
-  background-color: #212529 !important;
-  border-color: #212529 !important;
+.button-view-group {
+  border-color: #c1cefe;
+  color: #c1cefe;
+}
+
+.button-view-group:hover {
+  background-color: #c1cefe;
   color: #fff !important;
 }
 
-.btn-create.btn-outline-dark:hover {
-  background-color: #212529 !important;
-  border-color: #212529 !important;
-  color: #fff !important;
+.badge {
+  background-color: #d7eefb;
+  color: #232323 !important;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  border-radius: 50%;
+}
+
+.member-avatar:nth-child(1) {
+  background-color: #c5e2f9 !important;
+}
+.member-avatar:nth-child(2) {
+  background-color: #fce7cc !important;
+}
+.member-avatar:nth-child(3) {
+  background-color: #fad2d2 !important;
 }
 
 /* ===== Join Channel Modal Styles ===== */
@@ -486,31 +569,27 @@ footer a:hover img {
     box-shadow 0.2s ease;
 }
 
-.form-control:focus,
-.form-control:focus + .btn {
-  border-color: #000 !important;
-  border-width: 1.5px;
-  box-shadow: 0 0 0 0.15rem rgba(0, 0, 0, 0.25);
-}
-
 .input-group .btn:hover {
   border-color: #000 !important;
 }
 
 /* ===== Channel Preview Page ===== */
-.member-avatar {
-  width: 32px;
-  height: 32px;
-  font-size: 1rem;
-  border-radius: 50%;
-}
-
 .owner-avatar {
   width: 60px;
   height: 60px;
   font-size: 1.4rem;
   border-radius: 50%;
+  background-color: #cee8fb;
 }
+
+.user-avatar {
+  width: 60px;
+  height: 60px;
+  font-size: 1.4rem;
+  border-radius: 50%;
+}
+
+/* ===== Ice Breaker Page Styles ===== */
 
 /* inline icons in input fields 
 *  icons are placeholders for the functional ones

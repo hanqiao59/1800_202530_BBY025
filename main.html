@@ -41,152 +41,313 @@
     <!--<script type="module" src="/src/components/site-footer.js"></script>-->
   </head>
 
-  <body data-cloak>
+  <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
-    <!-- Welcome Section -->
-    <div class="container-fluid welcome-section p-4 bg-body-secondary">
-      <!-- Avatar + welcome text -->
-      <div class="avatar-section d-flex align-items-center mb-4 pt-2">
+    <div class="container-lg" style="max-width: 720px">
+      <!-- Welcome Section -->
+      <div class="px-3">
         <div
-          class="d-flex justify-content-center align-items-center fw-bold text-dark me-3 flex-shrink-0"
+          id="welcome-section"
+          class="container-lg bg-white rounded-4 shadow-sm mt-4 p-4 px-3"
         >
-          <img src="..." alt="User Avatar" class="img-fluid" id="userAvatar" />
-        </div>
-        <div class="p-2">
-          <h2 id="welcome-title" class="h4 mb-1 text-dark">
-            Welcome back, <span id="userName">Guest</span>!
-          </h2>
-          <p class="text-secondary mb-0 fs-6">Ready to break the ice?</p>
+          <!-- Avatar + welcome text -->
+          <div class="avatar-section d-flex align-items-center mb-4 pt-2">
+            <div
+              class="d-flex justify-content-center align-items-center fw-bold me-3 flex-shrink-0"
+            >
+              <img
+                src="..."
+                alt="User Avatar"
+                class="img-fluid"
+                id="userAvatar"
+              />
+            </div>
+            <div class="p-2">
+              <h2 id="welcome-title" class="h4 mb-1 text-dark">
+                Welcome back, <span id="userName">Guest</span>!
+              </h2>
+              <p class="text-secondary mb-0 fs-6">Ready to break the ice?</p>
+            </div>
+          </div>
+
+          <!-- Stats row -->
+          <div class="row g-3 text-center pb-2">
+            <div class="col-4">
+              <div class="card border-0">
+                <div class="card-body py-3 stats">
+                  <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
+                  <small class="text-secondary">Connections</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="card border-0">
+                <div class="card-body py-3 stats">
+                  <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
+                  <small class="text-secondary">Channels</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="card border-0">
+                <div class="card-body py-3 stats">
+                  <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
+                  <small class="text-secondary">Activities</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+      <!-- Your Channels Section -->
+      <section class="container-lg px-3 mt-4">
+        <div class="section-title d-flex align-items-center mb-3 gap-2">
+          <h2 class="mb-0">Your Channels</h2>
 
-      <!-- Stats row -->
-      <div class="row g-3 text-center pb-2">
-        <div class="col-4">
-          <div class="card bg-light-subtle border-0">
-            <div class="card-body py-3">
-              <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
-              <small class="text-secondary">Connections</small>
+          <!-- Tooltip -->
+          <i
+            class="bi bi-question-circle text-secondary"
+            style="font-size: 1.25rem; position: relative; top: 1px"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            title="A Channel is a space created by someone for others to join. After joining, you’ll choose your interest tags, and the system groups you with people who share them."
+          ></i>
+        </div>
+
+        <!-- Hosted channel banner: only visible when user is hosting at least one channel -->
+        <div
+          id="hostedChannelBanner"
+          class="alert alert-info d-flex justify-content-between align-items-center mb-3 d-none"
+        >
+          <div>
+            <strong class="me-1">You are hosting a channel:</strong>
+            <span id="hostedChannelName"></span>
+          </div>
+          <a
+            id="hostedChannelLink"
+            href="#"
+            class="btn btn-sm btn-outline-primary fw-semibold"
+          >
+            Open
+          </a>
+        </div>
+
+        <!-- Buttons -->
+        <div id="main-page-button" class="d-grid gap-3 mb-4">
+          <!-- Join Channel -->
+          <button
+            type="button"
+            class="btn btn-primary rounded-3 border-2 btn-join btn-animate py-3 fw-semibold"
+            data-bs-toggle="modal"
+            data-bs-target="#joinChannelModal"
+          >
+            <span>Join Channel</span>
+            <i class="bi bi-plus-lg"></i>
+          </button>
+
+          <!-- Create Channel -->
+          <button
+            type="button"
+            class="btn rounded-3 border-2 btn-outline-deep btn-animate py-3 fw-semibold"
+            data-bs-toggle="modal"
+            data-bs-target="#createChannelModal"
+          >
+            <span>Create Channel</span>
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </div>
+
+        <!-- Search Bar-->
+        <form class="p-0 mb-2">
+          <div
+            class="d-flex align-items-center bg-white rounded-pill px-3 py-2 mt-2 mb-3 border"
+          >
+            <i class="bi bi-search text-secondary me-2"></i>
+            <input
+              type="search"
+              class="form-control bg-transparent border-0"
+              placeholder="search channel..."
+            />
+          </div>
+        </form>
+
+        <!-- Channel Card -->
+        <div class="card border-1 rounded-3 mb-4">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h5 class="mb-0 fw-semibold">Tech Meetup</h5>
+              <span class="badge bg-secondary-subtle text-secondary small"
+                >Past</span
+              >
+            </div>
+
+            <div class="mb-3">
+              <small class="text-secondary d-block mb-2">
+                <i class="bi bi-people-fill me-1"></i>8 members
+              </small>
+
+              <div class="d-flex flex-wrap">
+                <span class="badge rounded-2 text-dark me-2 fw-normal px-2 py-2"
+                  >📱 Tech</span
+                >
+                <span class="badge rounded-2 text-dark me-2 fw-normal px-2 py-2"
+                  >💻 Coding</span
+                >
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <span
+                  class="member-avatar rounded-circle text-secondary d-inline-flex justify-content-center align-items-center me-1"
+                  style="width: 32px; height: 32px"
+                  >B</span
+                >
+                <span
+                  class="member-avatar rounded-circle text-secondary d-inline-flex justify-content-center align-items-center me-1"
+                  style="width: 32px; height: 32px"
+                  >R</span
+                >
+                <span
+                  class="member-avatar rounded-circle text-secondary d-inline-flex justify-content-center align-items-center me-2"
+                  style="width: 32px; height: 32px"
+                  >T</span
+                >
+                <small class="text-secondary">+5 more</small>
+              </div>
+              <button
+                class="btn btn-sm rounded-3 border-2 button-view-group fw-semibold"
+              >
+                View Group
+              </button>
             </div>
           </div>
         </div>
-        <div class="col-4">
-          <div class="card bg-light-subtle border-0">
-            <div class="card-body py-3">
-              <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
-              <small class="text-secondary">Channels</small>
+      </section>
+    </div>
+
+    <!-- Join Channel Modal -->
+    <div class="modal fade" id="joinChannelModal">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-sm">
+          <div class="modal-body p-4">
+            <div class="text-center mb-4">
+              <div
+                class="rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center text-dark mb-3"
+                style="width: 72px; height: 72px; font-size: 1.5rem"
+              >
+                <i class="bi bi-link-45deg fs-1"></i>
+              </div>
+
+              <h3 id="joinChannelLabel" class="h5 mb-1 text-dark">
+                Enter Shared Link
+              </h3>
+              <p class="text-secondary mb-0">
+                Paste or type the shared link to join the channel.
+              </p>
             </div>
-          </div>
-        </div>
-        <div class="col-4">
-          <div class="card bg-light-subtle border-0">
-            <div class="card-body py-3">
-              <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
-              <small class="text-secondary">Activities</small>
-            </div>
+
+            <!-- Link input -->
+            <form class="text-start" action="channel-preview.html">
+              <div class="mb-3">
+                <label for="inviteLink" class="form-label text-dark mb-1"
+                  >Link Address</label
+                >
+                <div class="input-group">
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="inviteLink"
+                    placeholder="Enter or paste link url"
+                    required
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="pasteBtn"
+                    title="Paste from clipboard"
+                  >
+                    <i class="bi bi-clipboard"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Join Link Button -->
+              <div class="d-grid gap-2 mt-4">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-lg rounded-3 py-3"
+                >
+                  Join Link
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-deep btn-lg rounded-3 py-3 btn-cancel-link"
+                  data-bs-dismiss="modal"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Your Channels Section -->
-    <section class="container-fluid px-3 mt-4">
-      <div class="section-title d-flex align-items-center mb-3 gap-2">
-        <h2 class="mb-0">Your Channels</h2>
-
-        <!-- Tooltip -->
-        <i
-          class="bi bi-question-circle text-secondary"
-          style="font-size: 1.25rem; position: relative; top: 1px"
-          data-bs-toggle="tooltip"
-          data-bs-placement="right"
-          title="A Channel is a space created by someone for others to join. After joining, you’ll choose your interest tags, and the system groups you with people who share them."
-        ></i>
-      </div>
-
-      <!-- Buttons -->
-      <div class="d-grid gap-3 mb-3">
-        <!-- Join Channel -->
-        <button
-          type="button"
-          class="btn btn-dark btn rounded-2 border-2 btn-join btn-animate py-3"
-          data-bs-toggle="modal"
-          data-bs-target="#joinChannelModal"
-        >
-          <span>Join Channel</span>
-          <i class="bi bi-plus-lg"></i>
-        </button>
-
-        <!-- Create Channel -->
-        <button
-          type="button"
-          class="btn btn-outline-dark btn rounded-2 border-2 btn-create btn-animate py-3"
-          data-bs-toggle="modal"
-          data-bs-target="#createChannelModal"
-        >
-          <span>Create Channel</span>
-          <i class="bi bi-plus-lg"></i>
-        </button>
-      </div>
-
-      <!-- Join Channel Modal -->
-      <div class="modal fade" id="joinChannelModal">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content border-0 rounded-4 shadow-sm">
-            <div class="modal-body p-4">
+    <!-- Create Channel Modal -->
+    <div
+      class="modal fade"
+      id="createChannelModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-sm">
+          <div class="modal-body p-4">
+            <div id="createChannelStep1">
               <div class="text-center mb-4">
                 <div
                   class="rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center text-dark mb-3"
                   style="width: 72px; height: 72px; font-size: 1.5rem"
                 >
-                  <i class="bi bi-link-45deg fs-1"></i>
+                  <i class="bi bi-people-fill"></i>
                 </div>
-
-                <h3 id="joinChannelLabel" class="h5 mb-1 text-dark">
-                  Enter Shared Link
-                </h3>
+                <h3 class="h5 mb-1 text-dark">Create a Channel</h3>
                 <p class="text-secondary mb-0">
-                  Paste or type the shared link to join the channel.
+                  Enter a channel name to get started.
                 </p>
               </div>
 
-              <!-- Link input -->
-              <form class="text-start" action="channel-preview.html">
+              <form id="createChannelForm" class="text-start">
                 <div class="mb-3">
-                  <label for="inviteLink" class="form-label text-dark mb-1"
-                    >Link Address</label
+                  <label for="channelName" class="form-label text-dark mb-1"
+                    >Channel Name</label
                   >
-                  <div class="input-group">
-                    <input
-                      type="url"
-                      class="form-control"
-                      id="inviteLink"
-                      placeholder="Enter or paste link url"
-                      required
-                    />
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      id="pasteBtn"
-                      title="Paste from clipboard"
-                    >
-                      <i class="bi bi-clipboard"></i>
-                    </button>
-                  </div>
+                  <input
+                    id="channelName"
+                    class="form-control"
+                    placeholder="e.g. new intakes 2025"
+                    required
+                  />
                 </div>
 
-                <!-- Join Link Button -->
+                <div
+                  id="createChannelError"
+                  class="text-danger small d-none"
+                ></div>
+
                 <div class="d-grid gap-2 mt-4">
                   <button
+                    id="createChannelSubmit"
                     type="submit"
-                    class="btn btn-dark btn-lg rounded-3 py-3"
+                    class="btn btn-primary btn-lg rounded-3 py-3 btn-join-link"
                   >
-                    Join Link
+                    Create
                   </button>
                   <button
                     type="button"
-                    class="btn btn-outline-dark btn-lg rounded-3 py-3"
+                    class="btn btn-outline-deep btn-lg rounded-3 py-3 btn-cancel-link"
                     data-bs-dismiss="modal"
                   >
                     Cancel
@@ -194,177 +355,52 @@
                 </div>
               </form>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Create Channel Modal -->
-      <div
-        class="modal fade"
-        id="createChannelModal"
-        tabindex="-1"
-        aria-hidden="true"
-      >
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content border-0 rounded-4 shadow-sm">
-            <div class="modal-body p-4">
-              <div id="createChannelStep1">
-                <div class="text-center mb-4">
-                  <div
-                    class="rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center text-dark mb-3"
-                    style="width: 72px; height: 72px; font-size: 1.5rem"
-                  >
-                    <i class="bi bi-people-fill"></i>
-                  </div>
-                  <h3 class="h5 mb-1 text-dark">Create a Channel</h3>
-                  <p class="text-secondary mb-0">
-                    Enter a channel name to get started.
-                  </p>
+            <!-- Show generated link -->
+            <div id="createChannelStep2" class="d-none text-center">
+              <div class="text-center mb-4">
+                <div
+                  class="rounded-circle bg-success-subtle d-inline-flex justify-content-center align-items-center text-success mb-3"
+                  style="width: 72px; height: 72px; font-size: 1.5rem"
+                >
+                  <i class="bi bi-check-lg fs-1"></i>
                 </div>
-
-                <form id="createChannelForm" class="text-start">
-                  <div class="mb-3">
-                    <label for="channelName" class="form-label text-dark mb-1"
-                      >Channel Name</label
-                    >
-                    <input
-                      id="channelName"
-                      class="form-control"
-                      placeholder="e.g. new intakes 2025"
-                      required
-                    />
-                  </div>
-
-                  <div
-                    id="createChannelError"
-                    class="text-danger small d-none"
-                  ></div>
-
-                  <div class="d-grid gap-2 mt-4">
-                    <button
-                      id="createChannelSubmit"
-                      type="submit"
-                      class="btn btn-dark btn-lg rounded-3 py-3"
-                    >
-                      Create
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-dark btn-lg rounded-3 py-3"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+                <h3 class="h5 mb-1 text-dark">Channel Created!</h3>
+                <p class="text-secondary mb-0">Here’s your invite link:</p>
               </div>
 
-              <!-- Show generated link -->
-              <div id="createChannelStep2" class="d-none text-center">
-                <div class="text-center mb-4">
-                  <div
-                    class="rounded-circle bg-success-subtle d-inline-flex justify-content-center align-items-center text-success mb-3"
-                    style="width: 72px; height: 72px; font-size: 1.5rem"
-                  >
-                    <i class="bi bi-check-lg fs-1"></i>
-                  </div>
-                  <h3 class="h5 mb-1 text-dark">Channel Created!</h3>
-                  <p class="text-secondary mb-0">Here’s your invite link:</p>
-                </div>
+              <div class="input-group mb-3">
+                <input id="inviteLinkOutput" class="form-control" readonly />
+                <button
+                  id="copyLinkBtn"
+                  class="btn btn-outline-secondary"
+                  type="button"
+                >
+                  <i class="bi bi-copy"></i>
+                </button>
+              </div>
 
-                <div class="input-group mb-3">
-                  <input id="inviteLinkOutput" class="form-control" readonly />
-                  <button
-                    id="copyLinkBtn"
-                    class="btn btn-outline-secondary"
-                    type="button"
-                  >
-                    <i class="bi bi-copy"></i>
-                  </button>
-                </div>
-
-                <div class="d-grid">
-                  <button
-                    type="button"
-                    class="btn btn-dark btn-lg rounded-3 py-3"
-                    data-bs-dismiss="modal"
-                  >
-                    Done
-                  </button>
-                </div>
+              <div class="d-grid gap-2">
+                <a
+                  id="openChannelBtn"
+                  class="btn btn-primary btn-lg rounded-3 py-3"
+                  href="#"
+                >
+                  Open channel
+                </a>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-lg rounded-3 py-3"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <!-- Search Bar-->
-      <form class="p-0">
-        <div
-          class="d-flex align-items-center bg-white rounded-pill px-3 py-2 mt-2 mb-4"
-        >
-          <i class="bi bi-search text-secondary me-2"></i>
-          <input
-            type="search"
-            class="form-control bg-transparent border-0"
-            placeholder="search channel..."
-          />
-        </div>
-      </form>
-
-      <!-- Channel Card -->
-      <div class="card border-1 rounded-3 mb-4">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h5 class="mb-0 fw-semibold">Tech Meetup</h5>
-            <span class="badge bg-secondary-subtle text-secondary small"
-              >Past</span
-            >
-          </div>
-
-          <div class="mb-3">
-            <small class="text-secondary d-block mb-2">
-              <i class="bi bi-people-fill me-1"></i>12 members
-            </small>
-
-            <div class="d-flex flex-wrap">
-              <span
-                class="badge rounded-2 bg-light text-dark me-2 fw-normal px-2 py-2"
-                >📱 Tech</span
-              >
-              <span
-                class="badge rounded-2 bg-light text-dark me-2 fw-normal px-2 py-2"
-                >💻 Coding</span
-              >
-            </div>
-          </div>
-
-          <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center">
-              <span
-                class="rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-1"
-                style="width: 32px; height: 32px"
-                >B</span
-              >
-              <span
-                class="rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-1"
-                style="width: 32px; height: 32px"
-                >R</span
-              >
-              <span
-                class="rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-2"
-                style="width: 32px; height: 32px"
-                >T</span
-              >
-              <small class="text-secondary">+5 more</small>
-            </div>
-            <button class="btn btn-outline-dark btn-sm rounded-3 border-2">
-              View Group
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
 
     <!--Footer-->
     <site-footer></site-footer>

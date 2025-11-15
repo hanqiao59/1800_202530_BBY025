@@ -41,7 +41,7 @@
     <!--<script type="module" src="/src/components/site-footer.js"></script>-->
   </head>
 
-  <body class="bg-white">
+  <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
     <!-- Channel Title -->
@@ -61,19 +61,18 @@
     <!-- Channel Preview Content -->
     <div
       class="container-sm px-3 py-4 d-flex flex-column align-items-center gap-4"
-      style="max-width: 720px; font-family: 'Inter', system-ui, sans-serif"
+      style="max-width: 720px"
     >
-      <div class="bg-light rounded-4 p-4 w-100 text-center">
+      <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
         <h5 id="channelTitle" class="fw-semibold mb-1 fs-3">Loading...</h5>
-        <small class="text-secondary d-block mb-4"># Session 225</small>
 
         <!-- Owner -->
         <div class="mb-4">
           <div class="text-dark mb-2 small">Owner</div>
           <div
-            class="owner-avatar bg-secondary-subtle d-inline-flex justify-content-center align-items-center fw-bold text-dark"
+            class="owner-avatar d-inline-flex justify-content-center align-items-center fw-bold text-dark"
           >
-            P
+            TH
           </div>
         </div>
 
@@ -93,13 +92,16 @@
               class="member-avatar rounded-circle bg-secondary-subtle text-secondary fw-bold d-inline-flex justify-content-center align-items-center me-2"
               >F</span
             >
-            <a href="member-list.html" class="small">+130 more</a>
+            <a href="group-members.html" class="small">+130 more</a>
           </div>
         </div>
       </div>
 
-      <!--Ready to Join -->
-      <div class="bg-light rounded-4 p-4 w-100 text-center">
+      <!-- Member view: Ready to Join -->
+      <div
+        id="memberJoinCard"
+        class="bg-white rounded-4 shadow-sm p-4 w-100 text-center"
+      >
         <div
           class="user-avatar rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center fw-bold text-dark mb-3"
         >
@@ -107,22 +109,68 @@
         </div>
 
         <h4 class="fw-semibold mb-2 fs-5">Ready to Join?</h4>
-        <p class="text-secondary mb-4 small">
+        <p class="text-secondary mb-4 small px-5">
           Choose some interest tags on the next page, and we will group you with
           people with shared interest.
         </p>
 
         <a
-          href="select-tags.html"
-          class="btn btn-dark btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
+          id="continueBtn"
+          href="#"
+          class="btn btn-primary btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
         >
           Continue
         </a>
       </div>
+
+      <!-- Owner view: Host controls -->
+      <div
+        id="ownerHostCard"
+        class="bg-white rounded-4 shadow-sm p-4 w-100 text-center d-none"
+      >
+        <p class="text-secondary mb-3 small px-5">
+          Use the link or scan this QR code to join the channel
+        </p>
+
+        <!-- QR code placeholder -->
+        <div class="d-flex justify-content-center mb-3">
+          <div
+            class="border rounded-3 p-2 bg-light d-inline-flex justify-content-center align-items-center"
+            style="width: 180px; height: 180px"
+          >
+            <img id="joinQr" src="" alt="Join link QR code" class="img-fluid" />
+          </div>
+        </div>
+
+        <!-- Session status -->
+        <div
+          id="sessionLiveBadge"
+          class="badge rounded-pill bg-success-subtle text-success small px-3 py-2 mb-3 d-none"
+        >
+          Session is live
+        </div>
+
+        <!-- Start session button (owner only) -->
+        <button
+          id="startIceBreakerBtn"
+          type="button"
+          class="btn btn-primary btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
+        >
+          Start ice breaker session
+        </button>
+
+        <!-- End session button (owner only, hidden until session is live) -->
+        <button
+          id="endIceBreakerBtn"
+          type="button"
+          class="btn btn-outline-danger btn-lg w-100 rounded-8 py-3 fw-semibold fs-6 mt-3 d-none"
+        >
+          End ice breaker session
+        </button>
+      </div>
     </div>
 
-    <!---------------------------------
-    ------------->
+    <!---------------------------------------------->
     <!-- Your own JavaScript functions go here -->
     <!---------------------------------------------->
 
