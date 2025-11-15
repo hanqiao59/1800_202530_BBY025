@@ -69,7 +69,7 @@ onAuthStateChanged(auth, async (user) => {
       ownerHostCard?.classList.remove("d-none");
       memberJoinCard?.classList.add("d-none");
 
-      // Optional: generate a QR code for the invite link
+      // generate a QR code for the invite link
       // Here we use a simple third-party QR service. You can swap it later.
       if (joinQrImg) {
         const qrApi = "https://api.qrserver.com/v1/create-qr-code/";
@@ -80,24 +80,30 @@ onAuthStateChanged(auth, async (user) => {
 
       // Wire the "Start ice breaker session" button
       startIceBreakerBtn?.addEventListener("click", async () => {
+        if (!user) return;
+
+        startIceBreakerBtn.disabled = true;
+
         try {
-          // Create a new session under this channel
+          // Create a new, ACTIVE session under this channel
           const sessionsRef = collection(db, "channels", channelId, "sessions");
           const sessionDoc = await addDoc(sessionsRef, {
             ownerId: user.uid,
-            status: "pending",
+            status: "active", // ← 直接标记为 active
             createdAt: serverTimestamp(),
             endedAt: null,
           });
 
-          // Navigate to the ice-breaker session page
-          const url = new URL("ice-breaker-session.html", window.location.href);
-          url.searchParams.set("channelId", channelId);
-          url.searchParams.set("sessionId", sessionDoc.id);
-          window.location.href = url.href;
+          console.log("[host] session started with id =", sessionDoc.id);
+
+          // 给 owner 一点反馈（留在这个页面）
+          startIceBreakerBtn.textContent = "Session started";
+          startIceBreakerBtn.classList.remove("btn-primary");
+          startIceBreakerBtn.classList.add("btn-outline-secondary");
         } catch (err) {
           console.error("Failed to create session:", err);
           alert("Failed to start the ice breaker. Please try again.");
+          startIceBreakerBtn.disabled = false;
         }
       });
     } else {
