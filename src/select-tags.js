@@ -10,17 +10,18 @@ import {
   getDoc,
   setDoc,
   serverTimestamp,
+  limit,
+  onSnapshot,
 } from "firebase/firestore";
-
 import { onAuthStateChanged } from "firebase/auth";
 
 // DOM
 const content = document.getElementById("content");
 const loading = document.getElementById("loading");
-const continueBtn = document.getElementById("continue-btn");
+const continueButton = document.getElementById("continue-btn");
 const saveStatus = document.getElementById("saveStatus");
 
-//get channelId from URL
+// Get channelId from URL
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 if (!channelId) {
@@ -29,12 +30,12 @@ if (!channelId) {
 
 // State
 const MAX = 3;
-let uid = auth.currentUser?.uid; // previous page already ensured login
+let uid = auth.currentUser?.uid || null; // previous page ensured login
 let selected = new Set();
 let groups = {}; // { category: [{name, emoji, order}], ... }
 let locked = false;
 
-//  Helpers
+// Helper: create element with attributes and children
 const el = (tag, attrs = {}, ...children) => {
   const n = document.createElement(tag);
   Object.entries(attrs).forEach(([k, v]) => {
@@ -48,7 +49,7 @@ const el = (tag, attrs = {}, ...children) => {
   return n;
 };
 
-//  Data: load tags grouped + ordered
+/* ==== Load tags from Firestore ==== */
 async function loadTags() {
   try {
     const q = query(
@@ -85,7 +86,7 @@ async function loadTags() {
   }
 }
 
-// Data: preload user's existing interests
+/* ==== Preload user's previous interests ==== */
 async function preloadUser() {
   if (!uid) return;
   const ref = doc(db, "users", uid);
@@ -97,7 +98,7 @@ async function preloadUser() {
   selected = new Set(arr.slice(0, MAX));
 }
 
-// UI: chip renderer
+/* ==== Chip renderer ==== */
 function renderChip(item) {
   const chip = el(
     "button",
@@ -112,8 +113,9 @@ function renderChip(item) {
     el("span", { class: "small fw-semibold" }, item.name)
   );
 
-  if (selected.has(item.name))
+  if (selected.has(item.name)) {
     chip.classList.add("bg-dark", "text-white", "border-dark");
+  }
 
   chip.addEventListener("click", () => {
     // Do nothing if interests are locked
@@ -128,14 +130,13 @@ function renderChip(item) {
       selected.add(name);
     }
     syncChips(name);
-
     updateContinue();
   });
 
   return chip;
 }
 
-// Sync all duplicate chips with the same name across sections
+/* ==== Sync chips with same name ==== */
 function syncChips(name) {
   const safe = CSS?.escape ? CSS.escape(name) : name;
   const sel = `[data-tag="${safe}"]`;
@@ -149,7 +150,7 @@ function syncChips(name) {
   });
 }
 
-// UI for search + groups
+/* ==== Render search + groups UI ==== */
 function renderUI() {
   content.innerHTML = "";
 
@@ -213,17 +214,19 @@ function renderUI() {
   redraw();
 }
 
-// save button state
+/* ==== Continue button state ==== */
 function updateContinue() {
-  if (!continueBtn) return;
+  if (!continueButton) return;
 
   if (locked) {
-    continueBtn.disabled = false;
+    // When locked (waiting for host), always keep button enabled for "edit" option
+    continueButton.disabled = false;
     return;
   }
-  continueBtn.disabled = selected.size === 0;
+  continueButton.disabled = selected.size === 0;
 }
 
+/* ==== Save selection to Firestore ==== */
 async function saveSelection() {
   if (!uid) return;
 
@@ -254,14 +257,50 @@ async function saveSelection() {
   await Promise.all(writes);
 }
 
-// Boot sequence: get auth -> fetch data (tags + user) -> render UI
+/* ==== Watch sessions for an active one ==== */
+function watchForActiveSession() {
+  if (!channelId) return;
+
+  const sessionsRef = collection(db, "channels", channelId, "sessions");
+
+  // Only order by createdAt, take a few newest docs, filter status === "active" on client
+  const q = query(sessionsRef, orderBy("createdAt", "desc"), limit(5));
+
+  onSnapshot(
+    q,
+    (snap) => {
+      if (snap.empty) {
+        // Host has not started any session yet
+        return;
+      }
+
+      const activeDoc = snap.docs.find((d) => d.data().status === "active");
+
+      if (!activeDoc) {
+        return;
+      }
+
+      const sessionId = activeDoc.id;
+      console.log("[select-tags] Found active session:", sessionId);
+
+      const url = new URL("ice-breaker-session.html", window.location.href);
+      url.searchParams.set("channelId", channelId);
+      url.searchParams.set("sessionId", sessionId);
+
+      window.location.href = url.href;
+    },
+    (err) => {
+      console.error("[select-tags] Failed to watch sessions:", err);
+    }
+  );
+}
+
+/* ==== Boot sequence ==== */
 (async () => {
-  // Show a loading spinner while we prepare the page.
   try {
     loading && (loading.style.display = "block");
 
-    // Make sure we have a UID before reading user-specific data.
-    // Wait for a single auth state change, then immediately unsubscribe.
+    // Ensure we have a UID
     if (!uid) {
       await new Promise((resolve) => {
         const stop = onAuthStateChanged(auth, (u) => {
@@ -272,9 +311,7 @@ async function saveSelection() {
       });
     }
 
-    // Fetch interest tags and the user's existing interests in parallel.
     await Promise.all([loadTags(), preloadUser()]);
-    // Build the search bar + grouped chips, then update the CTA state.
     renderUI();
     updateContinue();
   } catch (err) {
@@ -286,72 +323,70 @@ async function saveSelection() {
   }
 })();
 
-// Navigation: toggle between "ready" (locked) and "edit" (unlocked)
-continueBtn?.addEventListener("click", async () => {
-  // currently unlocked → user is saying "I'm ready"
-  if (!locked) {
-    if (selected.size === 0) return; // Must select at least one
+/* ==== Button: toggle ready / edit ==== */
+if (continueButton) {
+  continueButton.addEventListener("click", async () => {
+    // State 1: not locked yet → user says "I'm ready"
+    if (!locked) {
+      if (selected.size === 0) return;
 
-    continueBtn.disabled = true;
+      continueButton.disabled = true;
 
-    try {
-      await saveSelection();
+      try {
+        await saveSelection();
 
-      // Lock: prevent further changes to tags
-      locked = true;
+        // Start watching for an active session created by the host
+        watchForActiveSession();
 
-      // Disable all interest chips
+        locked = true;
+
+        // Disable all chips
+        document.querySelectorAll("[data-tag]").forEach((chip) => {
+          chip.disabled = true;
+        });
+
+        // Disable search box
+        const qInput = document.getElementById("q");
+        if (qInput) qInput.disabled = true;
+
+        if (saveStatus) {
+          saveStatus.textContent =
+            "Your interests are saved. Please wait for the owner to start the ice-breaker session.";
+        }
+
+        continueButton.textContent = "Change my interest tags";
+        continueButton.classList.remove("btn-primary");
+        continueButton.classList.add("btn-outline-secondary");
+
+        updateContinue();
+      } catch (e) {
+        console.error(e);
+        if (saveStatus) {
+          saveStatus.textContent =
+            "Failed to save your interests. Please try again.";
+        }
+        continueButton.disabled = false;
+      }
+    } else {
+      // State 2: locked → user wants to edit interests again
+      locked = false;
+
       document.querySelectorAll("[data-tag]").forEach((chip) => {
-        chip.disabled = true;
+        chip.disabled = false;
       });
 
-      // Optionally disable search box
       const qInput = document.getElementById("q");
-      if (qInput) qInput.disabled = true;
+      if (qInput) qInput.disabled = false;
 
-      // Update status message
-      if (saveStatus) {
-        saveStatus.textContent =
-          "Your interests are saved. Please wait for the owner to start the ice-breaker session.";
-      }
+      continueButton.textContent = "I'm ready!";
+      continueButton.classList.remove("btn-outline-secondary");
+      continueButton.classList.add("btn-primary");
 
-      // Change button to "Change my interest tags"
-      continueBtn.textContent = "Change my interest tags";
-      continueBtn.classList.remove("btn-primary");
-      continueBtn.classList.add("btn-outline-secondary");
-
-      // Update button state (will be forced enabled when locked = true)
       updateContinue();
-    } catch (e) {
-      console.error(e);
+
       if (saveStatus) {
-        saveStatus.textContent =
-          "Failed to save your interests. Please try again.";
+        saveStatus.textContent = "Click the button again when you're ready.";
       }
-      continueBtn.disabled = false;
     }
-  } else {
-    // currently locked → user wants to edit interests again
-    locked = false;
-
-    // re-enable tags
-    document.querySelectorAll("[data-tag]").forEach((chip) => {
-      chip.disabled = false;
-    });
-
-    // re-enable search box
-    const qInput = document.getElementById("q");
-    if (qInput) qInput.disabled = false;
-
-    // Change button back to "I'm ready!"
-    continueBtn.textContent = "I'm ready!";
-    continueBtn.classList.remove("btn-outline-secondary");
-    continueBtn.classList.add("btn-primary");
-
-    updateContinue();
-
-    if (saveStatus) {
-      saveStatus.textContent = "Click the button again when you're ready.";
-    }
-  }
-});
+  });
+}

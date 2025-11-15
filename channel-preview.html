@@ -142,6 +142,14 @@
           </div>
         </div>
 
+        <!-- Session status -->
+        <div
+          id="sessionLiveBadge"
+          class="badge rounded-pill bg-success-subtle text-success small px-3 py-2 mb-3 d-none"
+        >
+          Session is live
+        </div>
+
         <!-- Start session button (owner only) -->
         <button
           id="startIceBreakerBtn"
@@ -149,6 +157,15 @@
           class="btn btn-primary btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
         >
           Start ice breaker session
+        </button>
+
+        <!-- End session button (owner only, hidden until session is live) -->
+        <button
+          id="endIceBreakerBtn"
+          type="button"
+          class="btn btn-outline-danger btn-lg w-100 rounded-8 py-3 fw-semibold fs-6 mt-3 d-none"
+        >
+          End ice breaker session
         </button>
       </div>
     </div>

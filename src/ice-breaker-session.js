@@ -15,12 +15,24 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-/* ===== IDs: from URL (fallback to test IDs) ===== */
-
-// Try to read from ?channelId=...&sessionId=...
+/* ===== URL params ===== */
 const params = new URLSearchParams(window.location.search);
-const channelId = params.get("channelId") || "6SW6tqQxJuPop1Z7xbIP"; // your test channel
-const sessionId = params.get("sessionId") || "pR87qS0FqDBO60MGKZo1"; // your test session
+const channelId = params.get("channelId");
+const sessionId = params.get("sessionId");
+
+// Basic validation
+if (!channelId || !sessionId) {
+  console.error("Missing channelId or sessionId in URL");
+  const listEl = document.getElementById("messages");
+  const presence = document.getElementById("presence");
+  if (presence) presence.textContent = "Session not found.";
+  if (listEl) {
+    listEl.innerHTML =
+      '<div class="text-center text-muted small py-4">Session link is invalid.</div>';
+  }
+  // Stop further execution
+  throw new Error("Missing channelId or sessionId in URL");
+}
 
 /* ===== DOM ===== */
 const titleEl = document.getElementById("session-title");
@@ -190,10 +202,13 @@ function applySessionStatus() {
     if (presence) {
       presence.textContent = "This session has ended.";
     }
-    if (listEl) {
-      listEl.innerHTML =
-        '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
-    }
+
+    // Redirect everyone in this session to the end screen
+    const url = new URL("activity-end.html", window.location.href);
+    url.searchParams.set("channelId", channelId);
+    url.searchParams.set("sessionId", sessionId);
+
+    window.location.href = url.href;
   }
 }
 
@@ -286,10 +301,10 @@ function wireComposer() {
 
 /* ===== Boot ===== */
 (function bootChat() {
+  if (!channelId || !sessionId) return; // safety check
+
   try {
     wireComposer();
-    // Instead of always starting the live query,
-    // first load the session and react to its status.
     watchSession().catch(console.error);
   } catch (err) {
     console.error(err);
