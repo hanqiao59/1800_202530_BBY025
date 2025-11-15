@@ -115,6 +115,24 @@
           ></i>
         </div>
 
+        <!-- Hosted channel banner: only visible when user is hosting at least one channel -->
+        <div
+          id="hostedChannelBanner"
+          class="alert alert-info d-flex justify-content-between align-items-center mb-3 d-none"
+        >
+          <div>
+            <strong class="me-1">You are hosting a channel:</strong>
+            <span id="hostedChannelName"></span>
+          </div>
+          <a
+            id="hostedChannelLink"
+            href="#"
+            class="btn btn-sm btn-outline-primary fw-semibold"
+          >
+            Open
+          </a>
+        </div>
+
         <!-- Buttons -->
         <div id="main-page-button" class="d-grid gap-3 mb-4">
           <!-- Join Channel -->
@@ -362,13 +380,20 @@
                 </button>
               </div>
 
-              <div class="d-grid">
+              <div class="d-grid gap-2">
+                <a
+                  id="openChannelBtn"
+                  class="btn btn-primary btn-lg rounded-3 py-3"
+                  href="#"
+                >
+                  Open channel
+                </a>
                 <button
                   type="button"
-                  class="btn btn-dark btn-lg rounded-3 py-3"
+                  class="btn btn-outline-secondary btn-lg rounded-3 py-3"
                   data-bs-dismiss="modal"
                 >
-                  Done
+                  Close
                 </button>
               </div>
             </div>

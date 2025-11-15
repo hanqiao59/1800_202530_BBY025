@@ -65,7 +65,6 @@
     >
       <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
         <h5 id="channelTitle" class="fw-semibold mb-1 fs-3">Loading...</h5>
-        <small class="text-secondary d-block mb-4"># Session 225</small>
 
         <!-- Owner -->
         <div class="mb-4">
@@ -98,8 +97,11 @@
         </div>
       </div>
 
-      <!--Ready to Join -->
-      <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
+      <!-- Member view: Ready to Join (non-owner only) -->
+      <div
+        id="memberJoinCard"
+        class="bg-white rounded-4 shadow-sm p-4 w-100 text-center"
+      >
         <div
           class="user-avatar rounded-circle bg-secondary-subtle d-inline-flex justify-content-center align-items-center fw-bold text-dark mb-3"
         >
@@ -113,11 +115,41 @@
         </p>
 
         <a
-          href="select-tags.html"
+          id="continueBtn"
+          href="#"
           class="btn btn-primary btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
         >
           Continue
         </a>
+      </div>
+
+      <!-- Owner view: Host controls (owner only) -->
+      <div
+        id="ownerHostCard"
+        class="bg-white rounded-4 shadow-sm p-4 w-100 text-center d-none"
+      >
+        <p class="text-secondary mb-3 small px-5">
+          Use the link or scan this QR code to join the channel
+        </p>
+
+        <!-- QR code placeholder -->
+        <div class="d-flex justify-content-center mb-3">
+          <div
+            class="border rounded-3 p-2 bg-light d-inline-flex justify-content-center align-items-center"
+            style="width: 180px; height: 180px"
+          >
+            <img id="joinQr" src="" alt="Join link QR code" class="img-fluid" />
+          </div>
+        </div>
+
+        <!-- Start session button (owner only) -->
+        <button
+          id="startIceBreakerBtn"
+          type="button"
+          class="btn btn-primary btn-lg w-100 rounded-8 py-3 fw-semibold fs-6"
+        >
+          Start ice breaker session
+        </button>
       </div>
     </div>
 

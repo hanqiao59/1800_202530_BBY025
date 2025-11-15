@@ -17,6 +17,14 @@ import { onAuthStateChanged } from "firebase/auth";
 const content = document.getElementById("content");
 const loading = document.getElementById("loading");
 const continueBtn = document.getElementById("continue-btn");
+const saveStatus = document.getElementById("saveStatus");
+
+//get channelId from URL
+const params = new URLSearchParams(window.location.search);
+const channelId = params.get("channelId");
+if (!channelId) {
+  console.warn("No channelId provided in URL.");
+}
 
 // State
 const MAX = 3;
@@ -207,11 +215,37 @@ function updateContinue() {
 
 async function saveSelection() {
   if (!uid) return;
-  await setDoc(
-    doc(db, "users", uid),
-    { interests: Array.from(selected), updatedAt: serverTimestamp() },
-    { merge: true }
-  );
+
+  const interests = Array.from(selected);
+  const payload = {
+    interests,
+    updatedAt: serverTimestamp(),
+  };
+
+  if (saveStatus) {
+    saveStatus.textContent = "Saving your interests…";
+  }
+
+  const writes = [];
+
+  // Save to global user profile
+  writes.push(setDoc(doc(db, "users", uid), payload, { merge: true }));
+
+  // Also save under this channel, if we have a channelId
+  if (channelId) {
+    writes.push(
+      setDoc(doc(db, "channels", channelId, "members", uid), payload, {
+        merge: true,
+      })
+    );
+  }
+
+  await Promise.all(writes);
+
+  if (saveStatus) {
+    saveStatus.textContent =
+      "Your interests are saved. Waiting for owner to start the activity.";
+  }
 }
 
 // Boot sequence: get auth -> fetch data (tags + user) -> render UI
@@ -246,15 +280,20 @@ async function saveSelection() {
   }
 })();
 
-//  Navigation
+// Navigation: just save and stay on this page
 continueBtn?.addEventListener("click", async () => {
   if (selected.size === 0) return;
   continueBtn.disabled = true;
   try {
     await saveSelection();
-    window.location.href = "ice-breaker-session.html";
+    // don't navigate away; wait for the channel owner to start the activity
   } catch (e) {
     console.error(e);
+    if (saveStatus) {
+      saveStatus.textContent =
+        "Failed to save your interests. Please try again.";
+    }
+  } finally {
     continueBtn.disabled = false;
   }
 });

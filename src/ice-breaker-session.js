@@ -1,4 +1,6 @@
-// Ice-Breaker text chat
+// src/ice-breaker-session.js
+// Ice-Breaker text chat with session status (pending / active / end)
+
 import { auth, db } from "/src/firebaseConfig.js";
 import {
   collection,
@@ -8,11 +10,17 @@ import {
   orderBy,
   limit,
   onSnapshot,
+  doc,
+  getDoc,
 } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 
-/* ===== Fixed IDs===== */
-const channelId = "6SW6tqQxJuPop1Z7xbIP";
-const sessionId = "pR87qS0FqDBO60MGKZo1";
+/* ===== IDs: from URL (fallback to test IDs) ===== */
+
+// Try to read from ?channelId=...&sessionId=...
+const params = new URLSearchParams(window.location.search);
+const channelId = params.get("channelId") || "6SW6tqQxJuPop1Z7xbIP"; // your test channel
+const sessionId = params.get("sessionId") || "pR87qS0FqDBO60MGKZo1"; // your test session
 
 /* ===== DOM ===== */
 const titleEl = document.getElementById("session-title");
@@ -22,20 +30,43 @@ const formEl = document.getElementById("composer");
 const inputEl = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
 
-import { onAuthStateChanged } from "firebase/auth";
-onAuthStateChanged(auth, (u) => {
-  uid = u?.uid || null;
-  displayName = u?.displayName || u?.email || "Anon";
-  console.log("[auth] uid=", uid);
-});
-
-/* ===== Auth snapshot ===== */
+/* ===== Auth state ===== */
 let uid = auth.currentUser?.uid || null;
 let displayName =
   auth.currentUser?.displayName || auth.currentUser?.email || "Anon";
 
+onAuthStateChanged(auth, (u) => {
+  uid = u?.uid || null;
+  displayName = u?.displayName || u?.email || "Anon";
+  console.log("[auth] uid=", uid);
+
+  // If we already loaded session data, re-apply owner-related logic later if needed
+});
+
 /* ===== Title  ===== */
-if (titleEl) titleEl.textContent = `Ice-Breaker: ${channelId} / ${sessionId}`;
+if (titleEl) {
+  titleEl.textContent = `Ice-Breaker: ${channelId} / ${sessionId}`;
+}
+
+/* ===== Firestore refs ===== */
+
+// Session document: channels/{channelId}/sessions/{sessionId}
+const sessionRef = doc(db, "channels", channelId, "sessions", sessionId);
+
+// Messages subcollection: channels/{channelId}/sessions/{sessionId}/messages
+const msgsRef = collection(
+  db,
+  "channels",
+  channelId,
+  "sessions",
+  sessionId,
+  "messages"
+);
+
+/* ===== Session status ===== */
+
+// "pending" | "active" | "end"
+let status = "active"; // default; will be overwritten from Firestore
 
 /* ===== Utils ===== */
 function atBottom(el, th = 48) {
@@ -53,16 +84,13 @@ function fmtTime(ts) {
   }
 }
 
-const msgsRef = collection(
-  db,
-  "channels",
-  channelId,
-  "sessions",
-  sessionId,
-  "messages"
-);
+function setComposerEnabled(enabled) {
+  if (!formEl || !inputEl || !sendBtn) return;
+  inputEl.disabled = !enabled;
+  sendBtn.disabled = !enabled || !inputEl.value.trim();
+}
 
-/* ===== message bubble ===== */
+/* ===== Message bubble ===== */
 function renderMsg(docSnap) {
   const data = docSnap.data();
   const mine = data.uid === uid;
@@ -91,9 +119,12 @@ function renderMsg(docSnap) {
   return row;
 }
 
-/* ===== Live query ===== */
+/* ===== Live query for messages (only when active) ===== */
 let unsub = null;
+
 async function startLiveQuery() {
+  if (unsub) return; // already running
+
   const q = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
 
   listEl.innerHTML = "";
@@ -105,10 +136,12 @@ async function startLiveQuery() {
       wasAtBtm = atBottom(listEl);
       listEl.innerHTML = "";
       snap.forEach((docSnap) => listEl.appendChild(renderMsg(docSnap)));
-      if (presence)
+
+      if (presence) {
         presence.textContent = `${snap.size} message${
           snap.size === 1 ? "" : "s"
         }`;
+      }
       if (wasAtBtm) scrollToBottom(listEl);
     },
     (err) => {
@@ -118,9 +151,94 @@ async function startLiveQuery() {
   );
 }
 
+function stopLiveQuery() {
+  if (unsub) {
+    unsub();
+    unsub = null;
+  }
+}
+
+/* ===== Status → UI ===== */
+
+function applySessionStatus() {
+  console.log("[session] status =", status);
+
+  if (status === "pending") {
+    // Waiting for host to start
+    stopLiveQuery();
+    setComposerEnabled(false);
+
+    if (presence) {
+      presence.textContent = "Waiting for owner to start…";
+    }
+    if (listEl) {
+      listEl.innerHTML =
+        '<div class="text-center text-muted small py-4">Waiting for owner to start this session…</div>';
+    }
+  } else if (status === "active") {
+    // Normal chat
+    setComposerEnabled(true);
+    if (presence && !unsub) {
+      presence.textContent = "Session is active";
+    }
+    startLiveQuery().catch(console.error);
+  } else if (status === "end") {
+    // Session ended
+    stopLiveQuery();
+    setComposerEnabled(false);
+
+    if (presence) {
+      presence.textContent = "This session has ended.";
+    }
+    if (listEl) {
+      listEl.innerHTML =
+        '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
+    }
+  }
+}
+
+/* ===== Watch session doc for status changes ===== */
+async function watchSession() {
+  try {
+    const firstSnap = await getDoc(sessionRef);
+    if (!firstSnap.exists()) {
+      console.warn("Session document does not exist:", sessionRef.path);
+      if (presence) {
+        presence.textContent = "Session not found.";
+      }
+      return;
+    }
+
+    const data = firstSnap.data();
+    status = data.status || "active";
+    applySessionStatus();
+
+    // Live updates for status
+    onSnapshot(
+      sessionRef,
+      (snap) => {
+        if (!snap.exists()) return;
+        const d = snap.data();
+        status = d.status || "active";
+        applySessionStatus();
+      },
+      (err) => {
+        console.error("Session snapshot error:", err);
+      }
+    );
+  } catch (err) {
+    console.error("Failed to watch session:", err);
+    if (presence) {
+      presence.textContent = "Failed to load session.";
+    }
+  }
+}
+
 /* ===== Send ===== */
 async function sendMessage(text) {
   if (!text || !uid) return;
+  if (status !== "active") return; // only allow sending when session is active
+
   await addDoc(msgsRef, {
     text: text.trim(),
     uid,
@@ -134,8 +252,13 @@ function wireComposer() {
   if (!formEl || !inputEl || !sendBtn) return;
 
   const updateBtn = () => {
-    sendBtn.disabled = !inputEl.value.trim();
+    if (inputEl.disabled) {
+      sendBtn.disabled = true;
+    } else {
+      sendBtn.disabled = !inputEl.value.trim();
+    }
   };
+
   inputEl.addEventListener("input", updateBtn);
   updateBtn();
 
@@ -165,7 +288,9 @@ function wireComposer() {
 (function bootChat() {
   try {
     wireComposer();
-    startLiveQuery().catch(console.error);
+    // Instead of always starting the live query,
+    // first load the session and react to its status.
+    watchSession().catch(console.error);
   } catch (err) {
     console.error(err);
     listEl.innerHTML = `<div class="alert alert-danger">Failed to start the chat. Please refresh.</div>`;
@@ -191,7 +316,7 @@ function wireComposer() {
     inputEl.value = inputEl.value.slice(0, s) + emo + inputEl.value.slice(t);
     const pos = s + emo.length;
     requestAnimationFrame(() => inputEl.setSelectionRange(pos, pos));
-    if (sendBtn) sendBtn.disabled = !inputEl.value.trim();
+    if (!inputEl.disabled && sendBtn) sendBtn.disabled = !inputEl.value.trim();
     picker.open = false;
     inputEl.focus();
   });
