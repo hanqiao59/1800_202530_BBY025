@@ -1,5 +1,6 @@
 // src/ice-breaker-session.js
-// Ice-Breaker text chat with session status (pending / active / end)
+// Ice-breaker text chat with session status (pending / active / end)
+// and interest-based activity prompts.
 
 import { auth, db } from "/src/firebaseConfig.js";
 import {
@@ -12,29 +13,30 @@ import {
   onSnapshot,
   doc,
   getDoc,
+  where,
+  getDocs,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-/* ===== URL params ===== */
+/* ============================================================
+   1) IDs from URL
+   ============================================================ */
+
+// Expect ?channelId=...&sessionId=... in the URL
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
+const sessionNameEl = document.getElementById("sessionChannelName");
+const sessionTagsEl = document.getElementById("sessionTags");
 
-// Basic validation
 if (!channelId || !sessionId) {
-  console.error("Missing channelId or sessionId in URL");
-  const listEl = document.getElementById("messages");
-  const presence = document.getElementById("presence");
-  if (presence) presence.textContent = "Session not found.";
-  if (listEl) {
-    listEl.innerHTML =
-      '<div class="text-center text-muted small py-4">Session link is invalid.</div>';
-  }
-  // Stop further execution
-  throw new Error("Missing channelId or sessionId in URL");
+  console.warn("[session] Missing channelId or sessionId in URL.");
 }
 
-/* ===== DOM ===== */
+/* ============================================================
+   2) DOM references
+   ============================================================ */
+
 const titleEl = document.getElementById("session-title");
 const presence = document.getElementById("presence");
 const listEl = document.getElementById("messages");
@@ -42,7 +44,13 @@ const formEl = document.getElementById("composer");
 const inputEl = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
 
-/* ===== Auth state ===== */
+// Activity prompt area
+const activityTitleEl = document.getElementById("activityTitle");
+const activityPromptEl = document.getElementById("activityPrompt");
+
+/* ============================================================
+   3) Auth state
+   ============================================================ */
 let uid = auth.currentUser?.uid || null;
 let displayName =
   auth.currentUser?.displayName || auth.currentUser?.email || "Anon";
@@ -50,43 +58,55 @@ let displayName =
 onAuthStateChanged(auth, (u) => {
   uid = u?.uid || null;
   displayName = u?.displayName || u?.email || "Anon";
-  console.log("[auth] uid=", uid);
-
-  // If we already loaded session data, re-apply owner-related logic later if needed
+  console.log("[auth] uid =", uid);
 });
 
-/* ===== Title  ===== */
-if (titleEl) {
+/* ============================================================
+   4) Firestore references
+   ============================================================ */
+if (titleEl && channelId && sessionId) {
   titleEl.textContent = `Ice-Breaker: ${channelId} / ${sessionId}`;
 }
 
-/* ===== Firestore refs ===== */
+const sessionRef =
+  channelId && sessionId
+    ? doc(db, "channels", channelId, "sessions", sessionId)
+    : null;
 
-// Session document: channels/{channelId}/sessions/{sessionId}
-const sessionRef = doc(db, "channels", channelId, "sessions", sessionId);
+const msgsRef =
+  channelId && sessionId
+    ? collection(db, "channels", channelId, "sessions", sessionId, "messages")
+    : null;
 
-// Messages subcollection: channels/{channelId}/sessions/{sessionId}/messages
-const msgsRef = collection(
-  db,
-  "channels",
-  channelId,
-  "sessions",
-  sessionId,
-  "messages"
-);
+// Load channel name once for the session info header
+async function loadChannelMeta() {
+  if (!channelId || !sessionNameEl) return;
 
-/* ===== Session status ===== */
+  try {
+    const snap = await getDoc(doc(db, "channels", channelId));
+    if (snap.exists()) {
+      const data = snap.data();
+      sessionNameEl.textContent = data.name || "Untitled channel";
+    }
+  } catch (err) {
+    console.error("[session] Failed to load channel name:", err);
+  }
+}
 
+/* ============================================================
+   5) Session status + helpers
+   ============================================================ */
 // "pending" | "active" | "end"
-let status = "active"; // default; will be overwritten from Firestore
+let status = "pending"; // will be overwritten from Firestore
 
-/* ===== Utils ===== */
 function atBottom(el, th = 48) {
   return el.scrollHeight - el.scrollTop - el.clientHeight < th;
 }
+
 function scrollToBottom(el) {
   el.scrollTop = el.scrollHeight;
 }
+
 function fmtTime(ts) {
   try {
     const d = ts?.toDate ? ts.toDate() : new Date();
@@ -102,7 +122,9 @@ function setComposerEnabled(enabled) {
   sendBtn.disabled = !enabled || !inputEl.value.trim();
 }
 
-/* ===== Message bubble ===== */
+/* ============================================================
+   6) Message rendering + live query
+   ============================================================ */
 function renderMsg(docSnap) {
   const data = docSnap.data();
   const mine = data.uid === uid;
@@ -131,18 +153,17 @@ function renderMsg(docSnap) {
   return row;
 }
 
-/* ===== Live query for messages (only when active) ===== */
-let unsub = null;
+let unsubMsgs = null;
 
 async function startLiveQuery() {
-  if (unsub) return; // already running
+  if (!msgsRef || unsubMsgs) return; // already running or no ref
 
   const q = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
 
   listEl.innerHTML = "";
   let wasAtBtm = true;
 
-  unsub = onSnapshot(
+  unsubMsgs = onSnapshot(
     q,
     (snap) => {
       wasAtBtm = atBottom(listEl);
@@ -164,14 +185,99 @@ async function startLiveQuery() {
 }
 
 function stopLiveQuery() {
-  if (unsub) {
-    unsub();
-    unsub = null;
+  if (unsubMsgs) {
+    unsubMsgs();
+    unsubMsgs = null;
   }
 }
 
-/* ===== Status → UI ===== */
+/* ============================================================
+   7) Interest-based activity prompt
+   ============================================================ */
+let activityLoaded = false;
 
+async function loadActivityPromptForUser() {
+  if (activityLoaded) return;
+  if (!channelId || !sessionId || !uid) return;
+
+  activityLoaded = true;
+
+  try {
+    // 1) Read this member's interests under the current channel
+    const memberRef = doc(db, "channels", channelId, "members", uid);
+    const memberSnap = await getDoc(memberRef);
+
+    let interests = [];
+    if (memberSnap.exists()) {
+      const data = memberSnap.data();
+      if (Array.isArray(data.interests)) {
+        interests = data.interests;
+      }
+    }
+
+    const { category, label } = pickCategoryFromInterests(interests);
+    renderSessionTag(label);
+
+    if (!category) {
+      console.warn("[activity] No matching category found, skipping.");
+      if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
+      if (activityPromptEl)
+        activityPromptEl.textContent = "Something went wrong!!";
+      return;
+    }
+
+    // 2) Query /activities for this category
+    const activitiesRef = collection(db, "activities");
+    const q = query(
+      activitiesRef,
+      where("category", "==", category),
+      limit(10)
+    );
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      console.warn("[activity] No activities for category:", category);
+      if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
+      if (activityPromptEl)
+        activityPromptEl.textContent =
+          "No prompt found for this category. Feel free to chat about your interests!";
+      return;
+    }
+
+    // 3) Pick one random document from the result
+    const docs = snap.docs;
+    const chosen = docs[Math.floor(Math.random() * docs.length)];
+    const data = chosen.data();
+
+    if (activityTitleEl) {
+      activityTitleEl.textContent = data.title || "Ice-breaker prompt";
+    }
+    if (activityPromptEl) {
+      activityPromptEl.textContent =
+        data.prompt || "Share something about your interests!";
+    }
+
+    console.log(
+      "[activity] Loaded prompt:",
+      data.title,
+      " / ",
+      data.prompt,
+      "(category:",
+      category,
+      ")"
+    );
+  } catch (err) {
+    console.error("[activity] Failed to load prompt:", err);
+    if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
+    if (activityPromptEl)
+      activityPromptEl.textContent =
+        "Failed to load the prompt. Please try refreshing the page.";
+  }
+}
+
+/* ============================================================
+   8) Session status → UI
+   ============================================================ */
 function applySessionStatus() {
   console.log("[session] status =", status);
 
@@ -185,35 +291,58 @@ function applySessionStatus() {
     }
     if (listEl) {
       listEl.innerHTML =
-        '<div class="text-center text-muted small py-4">Waiting for owner to start this session…</div>';
+        '<div class="text-center text-muted small py-4">Something went wrong.</div>';
     }
   } else if (status === "active") {
-    // Normal chat
+    // Normal live chat
     setComposerEnabled(true);
-    if (presence && !unsub) {
-      presence.textContent = "Session is active";
+    if (presence) {
+      presence.textContent = "Session is live";
+      presence.classList.add(
+        "badge",
+        "bg-success-subtle",
+        "text-success",
+        "px-3",
+        "py-2",
+        "rounded-pill"
+      );
     }
     startLiveQuery().catch(console.error);
+
+    // Load activity prompt once when the session becomes active
+    loadActivityPromptForUser().catch(console.error);
   } else if (status === "end") {
-    // Session ended
+    // Session has ended
     stopLiveQuery();
     setComposerEnabled(false);
 
     if (presence) {
       presence.textContent = "This session has ended.";
+      presence.classList.remove(
+        "badge",
+        "bg-success-subtle",
+        "text-success",
+        "px-3",
+        "py-2",
+        "rounded-pill"
+      );
     }
-
-    // Redirect everyone in this session to the end screen
-    const url = new URL("activity-end.html", window.location.href);
-    url.searchParams.set("channelId", channelId);
-    url.searchParams.set("sessionId", sessionId);
-
-    window.location.href = url.href;
+    if (listEl) {
+      listEl.innerHTML =
+        '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
+    }
   }
 }
 
-/* ===== Watch session doc for status changes ===== */
+/* ============================================================
+   9) Watch session doc for status changes
+   ============================================================ */
 async function watchSession() {
+  if (!sessionRef) {
+    if (presence) presence.textContent = "Session not found.";
+    return;
+  }
+
   try {
     const firstSnap = await getDoc(sessionRef);
     if (!firstSnap.exists()) {
@@ -228,7 +357,7 @@ async function watchSession() {
     status = data.status || "active";
     applySessionStatus();
 
-    // Live updates for status
+    // Subscribe to further status changes
     onSnapshot(
       sessionRef,
       (snap) => {
@@ -249,10 +378,13 @@ async function watchSession() {
   }
 }
 
-/* ===== Send ===== */
+/* ============================================================
+   10) Sending messages
+   ============================================================ */
+
 async function sendMessage(text) {
-  if (!text || !uid) return;
-  if (status !== "active") return; // only allow sending when session is active
+  if (!text || !uid || !msgsRef) return;
+  if (status !== "active") return; // only allow sending when active
 
   await addDoc(msgsRef, {
     text: text.trim(),
@@ -262,7 +394,10 @@ async function sendMessage(text) {
   });
 }
 
-/* ===== Composer  ===== */
+/* ============================================================
+   11) Composer wiring
+   ============================================================ */
+
 function wireComposer() {
   if (!formEl || !inputEl || !sendBtn) return;
 
@@ -299,20 +434,28 @@ function wireComposer() {
   });
 }
 
-/* ===== Boot ===== */
-(function bootChat() {
-  if (!channelId || !sessionId) return; // safety check
+/* ============================================================
+   12) Boot
+   ============================================================ */
 
+(function bootChat() {
   try {
     wireComposer();
+    loadChannelMeta().catch(console.error);
     watchSession().catch(console.error);
   } catch (err) {
     console.error(err);
-    listEl.innerHTML = `<div class="alert alert-danger">Failed to start the chat. Please refresh.</div>`;
+    if (listEl) {
+      listEl.innerHTML =
+        '<div class="alert alert-danger">Failed to start the chat. Please refresh.</div>';
+    }
   }
 })();
 
-/* ===== Emoji picker  ===== */
+/* ============================================================
+   13) Emoji picker
+   ============================================================ */
+
 (() => {
   const picker = document.getElementById("emojiPicker");
   if (!picker) return;
@@ -368,7 +511,10 @@ function wireComposer() {
   });
 })();
 
-/* ===== Quick reactions ===== */
+/* ============================================================
+   14) Quick reactions 
+   ============================================================ */
+
 (() => {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".rxn");
@@ -385,3 +531,59 @@ function wireComposer() {
     }
   });
 })();
+
+// Decide which category to use based on user's interests.
+// If multiple tags match (e.g. "Gaming" and "Traveling"),
+// randomly pick ONE of them.
+// Returns { category: "gaming" | "tech" | "traveling" | null, label: string | null }
+function pickCategoryFromInterests(interests = []) {
+  const candidates = [];
+
+  interests.forEach((raw) => {
+    const s = String(raw).toLowerCase();
+
+    if (s.includes("gaming")) {
+      candidates.push({ category: "gaming", label: raw });
+    }
+    if (s.includes("tech") || s.includes("code")) {
+      candidates.push({ category: "tech", label: raw });
+    }
+    if (s.includes("travel")) {
+      candidates.push({ category: "traveling", label: raw });
+    }
+  });
+
+  if (!candidates.length) {
+    return { category: null, label: null };
+  }
+
+  const choice = candidates[Math.floor(Math.random() * candidates.length)];
+  return choice;
+}
+
+// Render ONLY the chosen interest tag in the session info card
+function renderSessionTag(label) {
+  if (!sessionTagsEl) return;
+
+  sessionTagsEl.innerHTML = "";
+
+  const pill = document.createElement("span");
+  pill.className = "tag-pill me-1";
+
+  if (label) {
+    pill.textContent = label;
+  } else {
+    pill.textContent = "No interest selected";
+    pill.classList.add("text-muted");
+  }
+
+  sessionTagsEl.appendChild(pill);
+}
+
+// Leave session: go back to dashboard (or channel preview)
+const leaveSessionBtn = document.getElementById("leaveSessionBtn");
+leaveSessionBtn?.addEventListener("click", () => {
+  // Change this to the page you want:
+  // e.g. "main.html" (dashboard) or `channel-preview.html?id=${channelId}`
+  window.location.href = "main.html";
+});
