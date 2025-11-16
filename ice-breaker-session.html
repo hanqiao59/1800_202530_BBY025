@@ -71,6 +71,16 @@
         justify-content: center;
       }
 
+      .member-avatar-sm {
+        transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+        transform-origin: center;
+      }
+
+      .member-avatar-sm:hover {
+        transform: translateY(-1px) scale(1.1);
+        box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12); /* soft dark shadow */
+      }
+
       .avatar-color-1 {
         background: #ffe2e5; /* soft pink */
       }
@@ -217,15 +227,33 @@
 
           <!-- Members row (static avatars for demo) -->
           <div class="d-flex align-items-center gap-2 pt-1">
-            <span class="member-avatar-sm avatar-color-1">A</span>
-            <span class="member-avatar-sm avatar-color-2">C</span>
-            <span class="member-avatar-sm avatar-color-3">F</span>
-            <span class="member-avatar-sm avatar-color-4">J</span>
-            <span class="member-avatar-sm avatar-color-5">M</span>
-            <span class="member-avatar-sm avatar-color-1">N</span>
-            <span class="member-avatar-sm avatar-color-2">S</span>
-            <span class="member-avatar-sm avatar-color-3">L</span>
-            <span class="member-avatar-sm avatar-color-4">K</span>
+            <a href="others-profile.html"
+              ><span class="member-avatar-sm avatar-color-1">A</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-2">C</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-3">F</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-4">J</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-5">M</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-1">N</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-2">S</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-3">L</span></a
+            >
+            <a href="#"
+              ><span class="member-avatar-sm avatar-color-4">K</span></a
+            >
           </div>
         </div>
       </div>
