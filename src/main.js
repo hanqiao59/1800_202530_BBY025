@@ -1,4 +1,3 @@
-// src/main.js
 import { auth, db } from "/src/firebaseConfig.js";
 import {
   addDoc,
@@ -8,9 +7,10 @@ import {
   where,
   limit,
   getDocs,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 
-import { onAuthStateChanged } from "firebase/auth";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
           name
-        )}&background=6c757d&color=ffffff&size=128&rounded=true`;
+        )}&background=transparent&color=ffffff&size=128&rounded=true`;
       }
     });
   } catch (err) {
@@ -52,16 +52,60 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 })();
 
+/* ========== Hosted channel banner ========== */
+async function showHostedChannel() {
+  const banner = document.getElementById("hostedChannelBanner");
+  const nameEl = document.getElementById("hostedChannelName");
+  const linkEl = document.getElementById("hostedChannelLink");
+
+  const { onAuthReady } = await import("./authentication.js");
+
+  onAuthReady(async (user) => {
+    if (!user) {
+      banner.classList.add("d-none");
+      return;
+    }
+
+    try {
+      const q = query(
+        collection(db, "channels"),
+        where("createdBy", "==", user.uid),
+        limit(1)
+      );
+      const snap = await getDocs(q);
+
+      //hide banner if no hosted channel
+      if (snap.empty) {
+        banner.classList.add("d-none");
+        return;
+      }
+
+      const docSnap = snap.docs[0];
+      const data = docSnap.data();
+
+      nameEl.textContent = data.name || "Untitled Channel";
+
+      const url = new URL("channel-preview.html", window.location.href);
+      url.searchParams.set("id", docSnap.id);
+      linkEl.href = url.href;
+      banner.classList.remove("d-none");
+    } catch (err) {
+      console.error("[dashboard] Failed to load hosted channel:", err);
+      banner.classList.add("d-none");
+    }
+  });
+}
+showHostedChannel();
+
 /* ========== Join Channel Modal ========== */
 const modalEl = document.getElementById("joinChannelModal");
-
-// Clear the input when the modal is closed
+// Reset input when modal is closed
 modalEl?.addEventListener("hidden.bs.modal", () => {
   const input = document.getElementById("inviteLink");
   if (input) input.value = "";
 });
 
-// Handle the Paste button (reads from clipboard)
+// Handle Paste button
 document.getElementById("pasteBtn")?.addEventListener("click", async () => {
   try {
     const text = await navigator.clipboard.readText();
@@ -75,18 +119,18 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
   }
 });
 
+// Reset input when modal is closed
 const joinForm = document.querySelector("#joinChannelModal form");
 const inviteInput = document.getElementById("inviteLink");
-const joinSubmitBtn = joinForm?.querySelector('button[type="submit"]');
+const joinSubmitBtn = document.getElementById("joinSubmitBtn");
 
 // Disable the default form submission behavior
 joinForm?.addEventListener("submit", (e) => e.preventDefault());
-// Change the submit button to a regular button so it won't trigger the form
-joinSubmitBtn?.setAttribute("type", "button");
 
 // Extract the channel ID from a full link or raw ID string
 function extractChannelId(value) {
   if (!value) return null;
+
   const raw = value.trim();
 
   // Try parsing as a full URL first
@@ -130,18 +174,17 @@ joinSubmitBtn?.addEventListener("click", () => {
 });
 
 /* ========== Create Channel Modal ========== */
+
 const createModalEl = document.getElementById("createChannelModal");
 const form = document.getElementById("createChannelForm");
 const nameInput = document.getElementById("channelName");
 const submitBtn = document.getElementById("createChannelSubmit");
 const errEl = document.getElementById("createChannelError");
-
 const step1 = document.getElementById("createChannelStep1");
 const step2 = document.getElementById("createChannelStep2");
 const inviteLinkOutput = document.getElementById("inviteLinkOutput");
 const copyBtn = document.getElementById("copyLinkBtn");
-
-let createdChannelId = null;
+const openChannelBtn = document.getElementById("openChannelBtn");
 
 // Reset everything when modal is closed
 createModalEl?.addEventListener("hidden.bs.modal", () => {
@@ -150,50 +193,62 @@ createModalEl?.addEventListener("hidden.bs.modal", () => {
   step1.classList.remove("d-none");
   step2.classList.add("d-none");
   submitBtn.removeAttribute("disabled");
+
+  // Reset the open-channel link as well (optional safety)
+  if (openChannelBtn) {
+    openChannelBtn.href = "#";
+  }
 });
 
-// Handle Create
+/**
+ * Handle create channel form submission
+ */
 form?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const name = nameInput.value.trim();
 
-  if (!name) {
-    errEl.textContent = "Channel name is required.";
-    errEl.classList.remove("d-none");
+  // Use built-in browser validation for the form
+  if (!form.checkValidity()) {
+    form.reportValidity();
     return;
   }
+  const name = nameInput.value.trim();
 
+  // Disable button to prevent double-submits
   submitBtn.setAttribute("disabled", "true");
   errEl.classList.add("d-none");
 
   try {
-    // get current user
-    let uid = null;
-    await new Promise((resolve) => {
-      const unsub = onAuthStateChanged(auth, (user) => {
-        uid = user?.uid || null;
-        unsub();
-        resolve();
-      });
-    });
+    // Get current user ID
+    const uid = auth.currentUser?.uid || null;
 
-    // add to Firestore
+    if (!uid) {
+      errEl.textContent = "You must be logged in to create a channel.";
+      errEl.classList.remove("d-none");
+      return;
+    }
+
+    // Add a new channel document to Firestore
     const docRef = await addDoc(collection(db, "channels"), {
       name,
       createdAt: serverTimestamp(),
       createdBy: uid,
     });
 
-    createdChannelId = docRef.id;
-
-    // Generate invite link
+    // Generate invite link using the new document ID
     const link = new URL(
-      `channel-preview.html?id=${createdChannelId}`,
+      `channel-preview.html?id=${docRef.id}`,
       window.location.href
     ).href;
+
+    // Put the link into the readonly input
     inviteLinkOutput.value = link;
 
-    // Show Step 2
+    // Set the "Open Channel" button link
+    if (openChannelBtn) {
+      openChannelBtn.href = link;
+    }
+
+    // Switch from Step 1 → Step 2
     step1.classList.add("d-none");
     step2.classList.remove("d-none");
   } catch (err) {
@@ -205,7 +260,7 @@ form?.addEventListener("submit", async (e) => {
   }
 });
 
-// Copy link to clipboard
+// Handle Copy link button
 copyBtn?.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(inviteLinkOutput.value);
@@ -219,52 +274,90 @@ copyBtn?.addEventListener("click", async () => {
   }
 });
 
-/* ========== Hosted channel banner ========== */
-function showHostedChannel() {
-  const banner = document.getElementById("hostedChannelBanner");
-  const nameEl = document.getElementById("hostedChannelName");
-  const linkEl = document.getElementById("hostedChannelLink");
+/* ========== Recent Session Card ========== */
+async function showRecentSession() {
+  const card = document.getElementById("recentSessionCard");
+  const nameEl = document.getElementById("recentSessionChannelName");
+  const linkEl = document.getElementById("recentSessionLink");
 
-  if (!banner || !nameEl || !linkEl) return;
+  try {
+    const { onAuthReady } = await import("./authentication.js");
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      banner.classList.add("d-none");
-      return;
-    }
-
-    try {
-      // Look for channels where current user is the creator
-      const q = query(
-        collection(db, "channels"),
-        where("createdBy", "==", user.uid),
-        limit(1)
-      );
-
-      const snap = await getDocs(q);
-
-      if (snap.empty) {
-        // If not hosting any channel → hide banner
-        banner.classList.add("d-none");
+    onAuthReady(async (user) => {
+      if (!user) {
+        card.classList.add("d-none");
         return;
       }
 
-      const docSnap = snap.docs[0];
-      const data = docSnap.data();
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
 
-      nameEl.textContent = data.name || "Untitled Channel";
+        // Hide card if no last session
+        if (!userSnap.exists()) {
+          card.classList.add("d-none");
+          return;
+        }
 
-      // Build link to channel-preview.html?id=...
-      const url = new URL("channel-preview.html", window.location.href);
-      url.searchParams.set("id", docSnap.id);
-      linkEl.href = url.href;
+        // Get last session info
+        const data = userSnap.data();
+        const lastSession = data.lastSession;
 
-      banner.classList.remove("d-none");
-    } catch (err) {
-      console.error("[dashboard] Failed to load hosted channel:", err);
-      banner.classList.add("d-none");
-    }
-  });
+        if (!lastSession || !lastSession.channelId || !lastSession.sessionId) {
+          card.classList.add("d-none");
+          return;
+        }
+
+        const { channelId, sessionId } = lastSession;
+
+        // Verify session exists and is active
+        const sessionRef = doc(
+          db,
+          "channels",
+          channelId,
+          "sessions",
+          sessionId
+        );
+        const sessionSnap = await getDoc(sessionRef);
+
+        if (!sessionSnap.exists()) {
+          card.classList.add("d-none");
+          return;
+        }
+
+        const sessionData = sessionSnap.data();
+        if (sessionData.status !== "active") {
+          card.classList.add("d-none");
+          return;
+        }
+
+        // Get channel name
+        const channelRef = doc(db, "channels", channelId);
+        const channelSnap = await getDoc(channelRef);
+
+        let channelName = "Channel";
+        if (channelSnap.exists()) {
+          const ch = channelSnap.data();
+          channelName = ch.name || "Channel";
+        }
+
+        // Populate card
+        nameEl.textContent = channelName;
+        const url = new URL("ice-breaker-session.html", window.location.href);
+        url.searchParams.set("channelId", channelId);
+        url.searchParams.set("sessionId", sessionId);
+        linkEl.href = url.href;
+
+        card.classList.remove("d-none");
+      } catch (err) {
+        console.error("[dashboard] Failed to load recent session:", err);
+        card.classList.add("d-none");
+      }
+    });
+  } catch (err) {
+    console.warn("[auth] authentication.js Failed in showRecentSession:", err);
+    card.classList.add("d-none");
+  }
 }
 
-showHostedChannel();
+showRecentSession();

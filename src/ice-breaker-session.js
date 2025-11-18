@@ -1,7 +1,3 @@
-// src/ice-breaker-session.js
-// Ice-breaker text chat with session status (pending / active / end)
-// and interest-based activity prompts.
-
 import { auth, db } from "/src/firebaseConfig.js";
 import {
   collection,
@@ -15,42 +11,31 @@ import {
   getDoc,
   where,
   getDocs,
+  setDoc,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-/* ============================================================
-   1) IDs from URL
-   ============================================================ */
-
-// Expect ?channelId=...&sessionId=... in the URL
+/* ==== DOM ==== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
 const sessionNameEl = document.getElementById("sessionChannelName");
 const sessionTagsEl = document.getElementById("sessionTags");
-
-if (!channelId || !sessionId) {
-  console.warn("[session] Missing channelId or sessionId in URL.");
-}
-
-/* ============================================================
-   2) DOM references
-   ============================================================ */
-
-const titleEl = document.getElementById("session-title");
 const presence = document.getElementById("presence");
 const listEl = document.getElementById("messages");
 const formEl = document.getElementById("composer");
 const inputEl = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
-
 // Activity prompt area
 const activityTitleEl = document.getElementById("activityTitle");
 const activityPromptEl = document.getElementById("activityPrompt");
 
-/* ============================================================
-   3) Auth state
-   ============================================================ */
+// Warn if missing params
+if (!channelId || !sessionId) {
+  console.warn("[session] Missing channelId or sessionId in URL.");
+}
+
+/* ==== Auth State ==== */
 let uid = auth.currentUser?.uid || null;
 let displayName =
   auth.currentUser?.displayName || auth.currentUser?.email || "Anon";
@@ -58,16 +43,9 @@ let displayName =
 onAuthStateChanged(auth, (u) => {
   uid = u?.uid || null;
   displayName = u?.displayName || u?.email || "Anon";
-  console.log("[auth] uid =", uid);
 });
 
-/* ============================================================
-   4) Firestore references
-   ============================================================ */
-if (titleEl && channelId && sessionId) {
-  titleEl.textContent = `Ice-Breaker: ${channelId} / ${sessionId}`;
-}
-
+/* ==== Firestore refs ==== */
 const sessionRef =
   channelId && sessionId
     ? doc(db, "channels", channelId, "sessions", sessionId)
@@ -93,9 +71,7 @@ async function loadChannelMeta() {
   }
 }
 
-/* ============================================================
-   5) Session status + helpers
-   ============================================================ */
+/* ==== session state ==== */
 // "pending" | "active" | "end"
 let status = "pending"; // will be overwritten from Firestore
 
@@ -122,9 +98,7 @@ function setComposerEnabled(enabled) {
   sendBtn.disabled = !enabled || !inputEl.value.trim();
 }
 
-/* ============================================================
-   6) Message rendering + live query
-   ============================================================ */
+/* ==== Messages live query ==== */
 function renderMsg(docSnap) {
   const data = docSnap.data();
   const mine = data.uid === uid;
@@ -156,7 +130,7 @@ function renderMsg(docSnap) {
 let unsubMsgs = null;
 
 async function startLiveQuery() {
-  if (!msgsRef || unsubMsgs) return; // already running or no ref
+  if (!msgsRef || unsubMsgs) return;
 
   const q = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
 
@@ -191,9 +165,7 @@ function stopLiveQuery() {
   }
 }
 
-/* ============================================================
-   7) Interest-based activity prompt
-   ============================================================ */
+/* ==== Activity prompt loading ==== */
 let activityLoaded = false;
 
 async function loadActivityPromptForUser() {
@@ -203,7 +175,7 @@ async function loadActivityPromptForUser() {
   activityLoaded = true;
 
   try {
-    // 1) Read this member's interests under the current channel
+    // Read this member's interests under the current channel
     const memberRef = doc(db, "channels", channelId, "members", uid);
     const memberSnap = await getDoc(memberRef);
 
@@ -226,7 +198,7 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // 2) Query /activities for this category
+    // Query /activities for this category
     const activitiesRef = collection(db, "activities");
     const q = query(
       activitiesRef,
@@ -244,7 +216,7 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // 3) Pick one random document from the result
+    // Pick one random document from the result
     const docs = snap.docs;
     const chosen = docs[Math.floor(Math.random() * docs.length)];
     const data = chosen.data();
@@ -257,15 +229,15 @@ async function loadActivityPromptForUser() {
         data.prompt || "Share something about your interests!";
     }
 
-    console.log(
-      "[activity] Loaded prompt:",
-      data.title,
-      " / ",
-      data.prompt,
-      "(category:",
-      category,
-      ")"
-    );
+    // console.log(
+    //   "[activity] Loaded prompt:",
+    //   data.title,
+    //   " / ",
+    //   data.prompt,
+    //   "(category:",
+    //   category,
+    //   ")"
+    // );
   } catch (err) {
     console.error("[activity] Failed to load prompt:", err);
     if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
@@ -275,19 +247,44 @@ async function loadActivityPromptForUser() {
   }
 }
 
-/* ============================================================
-   8) Session status → UI
-   ============================================================ */
+let lastSessionSaved = false;
+
+// Save the last joined session on the user profile so we can show it on the dashboard
+async function rememberLastSessionForUser() {
+  if (lastSessionSaved) return;
+  if (!uid || !channelId || !sessionId) return;
+
+  try {
+    const userRef = doc(db, "users", uid);
+    await setDoc(
+      userRef,
+      {
+        lastSession: {
+          channelId,
+          sessionId,
+          updatedAt: serverTimestamp(),
+        },
+      },
+      { merge: true }
+    );
+
+    lastSessionSaved = true;
+    console.log("[session] lastSession saved on user profile");
+  } catch (err) {
+    console.error("[session] Failed to save lastSession:", err);
+  }
+}
+
+/* ==== session status handling ==== */
 function applySessionStatus() {
   console.log("[session] status =", status);
 
   if (status === "pending") {
-    // Waiting for host to start
     stopLiveQuery();
     setComposerEnabled(false);
 
     if (presence) {
-      presence.textContent = "Waiting for owner to start…";
+      presence.textContent = "Waiting for host to start…";
     }
     if (listEl) {
       listEl.innerHTML =
@@ -308,11 +305,11 @@ function applySessionStatus() {
       );
     }
     startLiveQuery().catch(console.error);
-
     // Load activity prompt once when the session becomes active
     loadActivityPromptForUser().catch(console.error);
+    rememberLastSessionForUser().catch(console.error);
   } else if (status === "end") {
-    // Session has ended
+    // Session ended
     stopLiveQuery();
     setComposerEnabled(false);
 
@@ -334,54 +331,33 @@ function applySessionStatus() {
   }
 }
 
-/* ============================================================
-   9) Watch session doc for status changes
-   ============================================================ */
-async function watchSession() {
+/* ==== session watcher ==== */
+function watchSession() {
   if (!sessionRef) {
     if (presence) presence.textContent = "Session not found.";
     return;
   }
 
-  try {
-    const firstSnap = await getDoc(sessionRef);
-    if (!firstSnap.exists()) {
-      console.warn("Session document does not exist:", sessionRef.path);
-      if (presence) {
-        presence.textContent = "Session not found.";
+  onSnapshot(
+    sessionRef,
+    (snap) => {
+      if (!snap.exists()) {
+        console.warn("Session document does not exist:", sessionRef.path);
+        if (presence) presence.textContent = "Session not found.";
+        return;
       }
-      return;
+      const d = snap.data();
+      status = d.status || "active";
+      applySessionStatus();
+    },
+    (err) => {
+      console.error("Session snapshot error:", err);
+      if (presence) presence.textContent = "Failed to load session.";
     }
-
-    const data = firstSnap.data();
-    status = data.status || "active";
-    applySessionStatus();
-
-    // Subscribe to further status changes
-    onSnapshot(
-      sessionRef,
-      (snap) => {
-        if (!snap.exists()) return;
-        const d = snap.data();
-        status = d.status || "active";
-        applySessionStatus();
-      },
-      (err) => {
-        console.error("Session snapshot error:", err);
-      }
-    );
-  } catch (err) {
-    console.error("Failed to watch session:", err);
-    if (presence) {
-      presence.textContent = "Failed to load session.";
-    }
-  }
+  );
 }
 
-/* ============================================================
-   10) Sending messages
-   ============================================================ */
-
+/* ==== listen for new messages ==== */
 async function sendMessage(text) {
   if (!text || !uid || !msgsRef) return;
   if (status !== "active") return; // only allow sending when active
@@ -394,10 +370,7 @@ async function sendMessage(text) {
   });
 }
 
-/* ============================================================
-   11) Composer wiring
-   ============================================================ */
-
+/* ==== composer wiring ==== */
 function wireComposer() {
   if (!formEl || !inputEl || !sendBtn) return;
 
@@ -434,15 +407,12 @@ function wireComposer() {
   });
 }
 
-/* ============================================================
-   12) Boot
-   ============================================================ */
-
+/* ==== boot ==== */
 (function bootChat() {
   try {
     wireComposer();
     loadChannelMeta().catch(console.error);
-    watchSession().catch(console.error);
+    watchSession();
   } catch (err) {
     console.error(err);
     if (listEl) {
@@ -452,10 +422,7 @@ function wireComposer() {
   }
 })();
 
-/* ============================================================
-   13) Emoji picker
-   ============================================================ */
-
+/* ==== emoji picker ==== */
 (() => {
   const picker = document.getElementById("emojiPicker");
   if (!picker) return;
@@ -511,10 +478,7 @@ function wireComposer() {
   });
 })();
 
-/* ============================================================
-   14) Quick reactions 
-   ============================================================ */
-
+/* ==== reaction buttons ==== */
 (() => {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".rxn");
@@ -561,7 +525,7 @@ function pickCategoryFromInterests(interests = []) {
   return choice;
 }
 
-// Render ONLY the chosen interest tag in the session info card
+// Render the session tag pill in the header
 function renderSessionTag(label) {
   if (!sessionTagsEl) return;
 
@@ -580,10 +544,8 @@ function renderSessionTag(label) {
   sessionTagsEl.appendChild(pill);
 }
 
-// Leave session: go back to dashboard (or channel preview)
+// Leave session button wiring
 const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 leaveSessionBtn?.addEventListener("click", () => {
-  // Change this to the page you want:
-  // e.g. "main.html" (dashboard) or `channel-preview.html?id=${channelId}`
   window.location.href = "main.html";
 });
