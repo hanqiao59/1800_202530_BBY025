@@ -47,44 +47,34 @@
 
     <section class="container-fluid">
       <div class="d-flex align-items-center gap-3 my-3">
-        <a class="me-auto" href="#">
-          <img
-            class="opacity-50 hover-opacity-100 cursor-pointer"
-            src="/images/arrow-left.svg"
-            alt=""
-            width="200%"
-            height="200%"
-        /></a>
+        <a
+          class="me-auto icon-link icon-link-hover link-underline-opacity-0 link-dark"
+          href="#"
+          onclick="history.back(); return false"
+        >
+          <span class="bi bi-arrow-left"></span>
+        </a>
 
         <h3 class="p-2 text-center me-auto">Members</h3>
       </div>
-      <div class="input-group mb-3">
+      <div class="input-group mb-4 fs-5">
         <form class="w-100 hstack">
-          <button
-            type="button"
-            class="border border-secondary-subtle bg-white border-0 me-2"
-          >
-            <img src="/images/search.svg" alt="" width="20" height="20" />
-          </button>
+          <i
+            class="bi bi-search me-4 ms-2"
+            id="searchGlass"
+            style="cursor: pointer"
+          ></i>
           <input
             type="search"
             class="form-control"
-            list="members-list"
-            id="memberSearch"
-            name="memberSearch"
+            list="membersList"
+            id="membersSearch"
             placeholder="Search group members"
           />
-          <datalist id="members-list"></datalist>
         </form>
+        <datalist id="membersList"></datalist>
       </div>
-      <div
-        class="container-fluid bg-secondary-subtle p-2 text-break text-wrap"
-        id="members-go-here"
-      >
-        <div>
-          <template id="ListTemplate"></template>
-        </div>
-      </div>
+      <div id="searchedResults"></div>
     </section>
 
     <footer class="w-100 mt-5" style="transform: translate(0px, 400px)">

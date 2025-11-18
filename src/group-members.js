@@ -1,33 +1,57 @@
 import { db } from "/src/firebaseConfig.js";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth } from "/src/firebaseConfig.js";
-import { checkAuthState } from "/src/authentication.js";
 
-const search = document.getElementById("#members-go-here");
+import { collection, onSnapshot } from "firebase/firestore";
 
-const SearchTemplate = document.getElementById("#ListTemplate");
+const searchInput = document.getElementById("membersSearch");
+const memberList = document.getElementById("membersList");
+const searchIcon = document.getElementById("searchGlass");
+const searchResult = document.getElementById("searchedResults");
 
-checkAuthState(auth, (user) => {
-  if (!user) {
-    console.log("You are not signed in.");
-  } else {
-    const userRef = doc(db, "users");
-  }
-});
+let currentMembers = {};
 
-const memberList = [];
-async function populateSearchList(dataListID, members) {
-  const dataList = document.getElementById(dataListID);
+function updatingMembers() {
+  const members = collection(db, `channels/${channelId}/members`);
 
-  if (!Array.isArray(members)) {
-    console.log("The input is not an Array.");
-  }
+  onSnapshot(members, (snapshot) => {
+    currentMembers = {};
+    memberList.innerHTML = "";
 
-  members.forEach((member) => {
-    const options = document.createElement("option");
-    options.value = member;
-    dataList.appendChild(options);
+    snapshot.forEach((doc) => {
+      const member = doc.data();
+      currentMembers[member.name] = true;
+
+      const option = document.createElement("option");
+      option.value = member.name;
+      memberList.appendChild(option);
+    });
+    console.log("Members updated:", Object.keys(currentMembers));
   });
 }
 
-populateSearchList("members-list", memberList);
+function searchMembers() {
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) {
+    searchResult.innerHTML = "Please enter a name to start searching.";
+    return;
+  }
+
+  const found = Object.keys(currentMembers).find(
+    (name) => name.toLowerCase() === query
+  );
+
+  if (found) {
+    searchResult.innerHTML = `<p>${found} is in the session</p>`;
+  } else {
+    searchResult.innerHTML = `<p class="container-fluid bg-dark-subtle mb-3 fs-5">${searchInput.value.trim()} not found.</p>`;
+  }
+}
+
+searchIcon.addEventListener("click", searchMembers);
+searchInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    searchMembers();
+  }
+});
+
+updatingMembers();
