@@ -12,6 +12,7 @@
 
 .bg-brand-light {
   background-color: var(--brand-light) !important;
+  /* background: linear-gradient(360deg, #a3dcff 0%, #e4f6ff 45%, #f7fbff 100%); */
 }
 
 .btn-primary {
@@ -244,7 +245,6 @@ footer a:hover img {
   text-align: center;
   color: #fff;
   background-color: #11a0ff;
-  /* background-color: #0e1c36; */
 }
 
 #home-banner img {
@@ -462,7 +462,6 @@ footer a:hover img {
 }
 
 /* ===== Main.html Styles ===== */
-
 #userAvatar {
   background-color: #e6f2ff;
   width: 70px;
@@ -599,8 +598,6 @@ footer a:hover img {
   font-size: 1.4rem;
   border-radius: 50%;
 }
-
-/* ===== Ice Breaker Page Styles ===== */
 
 /* inline icons in input fields 
 *  icons are placeholders for the functional ones
