@@ -288,7 +288,7 @@ function applySessionStatus() {
     }
     if (listEl) {
       listEl.innerHTML =
-        '<div class="text-center text-muted small py-4">Something went wrong.</div>';
+        '<div class="text-center text-muted small py-4">The session has not started yet.</div>';
     }
   } else if (status === "active") {
     // Normal live chat
