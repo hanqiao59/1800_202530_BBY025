@@ -9,21 +9,33 @@ import {
   doc,
   getDoc,
   setDoc,
+  serverTimestamp,
+  limit,
+  onSnapshot,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
 // DOM
 const content = document.getElementById("content");
 const loading = document.getElementById("loading");
-const continueBtn = document.getElementById("continue-btn");
+const continueButton = document.getElementById("continue-btn");
+const saveStatus = document.getElementById("saveStatus");
+
+// Get channelId from URL
+const params = new URLSearchParams(window.location.search);
+const channelId = params.get("channelId");
+if (!channelId) {
+  console.warn("No channelId provided in URL.");
+}
 
 // State
 const MAX = 3;
-let uid = auth.currentUser?.uid; // previous page already ensured login
+let uid = auth.currentUser?.uid || null; // previous page ensured login
 let selected = new Set();
 let groups = {}; // { category: [{name, emoji, order}], ... }
+let locked = false;
 
-//  Helpers
+// Helper: create element with attributes and children
 const el = (tag, attrs = {}, ...children) => {
   const n = document.createElement(tag);
   Object.entries(attrs).forEach(([k, v]) => {
@@ -37,7 +49,7 @@ const el = (tag, attrs = {}, ...children) => {
   return n;
 };
 
-//  Data: load tags grouped + ordered
+/* ==== Load tags from Firestore ==== */
 async function loadTags() {
   try {
     const q = query(
@@ -74,7 +86,7 @@ async function loadTags() {
   }
 }
 
-// Data: preload user's existing interests
+/* ==== Preload user's previous interests ==== */
 async function preloadUser() {
   if (!uid) return;
   const ref = doc(db, "users", uid);
@@ -86,7 +98,7 @@ async function preloadUser() {
   selected = new Set(arr.slice(0, MAX));
 }
 
-// UI: chip renderer
+/* ==== Chip renderer ==== */
 function renderChip(item) {
   const chip = el(
     "button",
@@ -101,30 +113,44 @@ function renderChip(item) {
     el("span", { class: "small fw-semibold" }, item.name)
   );
 
-  if (selected.has(item.name))
+  if (selected.has(item.name)) {
     chip.classList.add("bg-dark", "text-white", "border-dark");
+  }
 
   chip.addEventListener("click", () => {
+    // Do nothing if interests are locked
+    if (locked) return;
+
     const name = item.name;
 
     if (selected.has(name)) {
       selected.delete(name);
-      chip.classList.remove("bg-dark", "text-white", "border-dark");
-      chip.setAttribute("aria-pressed", "false");
     } else {
       if (selected.size >= MAX) return;
       selected.add(name);
-      chip.classList.add("bg-dark", "text-white", "border-dark");
-      chip.setAttribute("aria-pressed", "true");
     }
-
+    syncChips(name);
     updateContinue();
   });
 
   return chip;
 }
 
-// UI: full render (search + groups)
+/* ==== Sync chips with same name ==== */
+function syncChips(name) {
+  const safe = CSS?.escape ? CSS.escape(name) : name;
+  const sel = `[data-tag="${safe}"]`;
+
+  document.querySelectorAll(sel).forEach((chip) => {
+    const on = selected.has(name);
+    chip.classList.toggle("bg-dark", on);
+    chip.classList.toggle("text-white", on);
+    chip.classList.toggle("border-dark", on);
+    chip.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+
+/* ==== Render search + groups UI ==== */
 function renderUI() {
   content.innerHTML = "";
 
@@ -136,7 +162,7 @@ function renderUI() {
       "div",
       {
         class:
-          "d-flex align-items-center bg-light rounded-pill px-3 py-2 mt-2 mb-4 border",
+          "d-flex align-items-center bg-white rounded-pill px-3 py-2 mb-4 border",
       },
       el("i", { class: "bi bi-search text-secondary me-2" }),
       el("input", {
@@ -147,6 +173,7 @@ function renderUI() {
       })
     )
   );
+
   searchForm.addEventListener("submit", (e) => e.preventDefault());
   content.appendChild(searchForm);
 
@@ -187,26 +214,93 @@ function renderUI() {
   redraw();
 }
 
-// Button + save
+/* ==== Continue button state ==== */
 function updateContinue() {
-  if (continueBtn) continueBtn.disabled = selected.size === 0;
+  if (!continueButton) return;
+
+  if (locked) {
+    // When locked (waiting for host), always keep button enabled for "edit" option
+    continueButton.disabled = false;
+    return;
+  }
+  continueButton.disabled = selected.size === 0;
 }
 
+/* ==== Save selection to Firestore ==== */
 async function saveSelection() {
   if (!uid) return;
-  await setDoc(
-    doc(db, "users", uid),
-    { interests: Array.from(selected), updatedAt: new Date() },
-    { merge: true }
+
+  const interests = Array.from(selected);
+  const payload = {
+    interests,
+    updatedAt: serverTimestamp(),
+  };
+
+  if (saveStatus) {
+    saveStatus.textContent = "Saving your interests…";
+  }
+
+  const writes = [];
+
+  // Save to global user profile
+  writes.push(setDoc(doc(db, "users", uid), payload, { merge: true }));
+
+  // Also save under this channel, if we have a channelId
+  if (channelId) {
+    writes.push(
+      setDoc(doc(db, "channels", channelId, "members", uid), payload, {
+        merge: true,
+      })
+    );
+  }
+
+  await Promise.all(writes);
+}
+
+/* ==== Watch sessions for an active one ==== */
+function watchForActiveSession() {
+  if (!channelId) return;
+
+  const sessionsRef = collection(db, "channels", channelId, "sessions");
+
+  // Only order by createdAt, take a few newest docs, filter status === "active" on client
+  const q = query(sessionsRef, orderBy("createdAt", "desc"), limit(5));
+
+  onSnapshot(
+    q,
+    (snap) => {
+      if (snap.empty) {
+        // Host has not started any session yet
+        return;
+      }
+
+      const activeDoc = snap.docs.find((d) => d.data().status === "active");
+
+      if (!activeDoc) {
+        return;
+      }
+
+      const sessionId = activeDoc.id;
+      console.log("[select-tags] Found active session:", sessionId);
+
+      const url = new URL("ice-breaker-session.html", window.location.href);
+      url.searchParams.set("channelId", channelId);
+      url.searchParams.set("sessionId", sessionId);
+
+      window.location.href = url.href;
+    },
+    (err) => {
+      console.error("[select-tags] Failed to watch sessions:", err);
+    }
   );
 }
 
-// boot
+/* ==== Boot sequence ==== */
 (async () => {
   try {
     loading && (loading.style.display = "block");
 
-    // Only wait for uid to hydrate (no second auth check or redirect)
+    // Ensure we have a UID
     if (!uid) {
       await new Promise((resolve) => {
         const stop = onAuthStateChanged(auth, (u) => {
@@ -229,15 +323,70 @@ async function saveSelection() {
   }
 })();
 
-//  Navigation
-continueBtn?.addEventListener("click", async () => {
-  if (selected.size === 0) return;
-  continueBtn.disabled = true;
-  try {
-    await saveSelection();
-    window.location.href = "/channels.html";
-  } catch (e) {
-    console.error(e);
-    continueBtn.disabled = false;
-  }
-});
+/* ==== Button: toggle ready / edit ==== */
+if (continueButton) {
+  continueButton.addEventListener("click", async () => {
+    // State 1: not locked yet → user says "I'm ready"
+    if (!locked) {
+      if (selected.size === 0) return;
+
+      continueButton.disabled = true;
+
+      try {
+        await saveSelection();
+
+        // Start watching for an active session created by the host
+        watchForActiveSession();
+
+        locked = true;
+
+        // Disable all chips
+        document.querySelectorAll("[data-tag]").forEach((chip) => {
+          chip.disabled = true;
+        });
+
+        // Disable search box
+        const qInput = document.getElementById("q");
+        if (qInput) qInput.disabled = true;
+
+        if (saveStatus) {
+          saveStatus.textContent =
+            "Your interests are saved. Please wait for the owner to start the ice-breaker session.";
+        }
+
+        continueButton.textContent = "Change my interest tags";
+        continueButton.classList.remove("btn-primary");
+        continueButton.classList.add("btn-outline-secondary");
+
+        updateContinue();
+      } catch (e) {
+        console.error(e);
+        if (saveStatus) {
+          saveStatus.textContent =
+            "Failed to save your interests. Please try again.";
+        }
+        continueButton.disabled = false;
+      }
+    } else {
+      // State 2: locked → user wants to edit interests again
+      locked = false;
+
+      document.querySelectorAll("[data-tag]").forEach((chip) => {
+        chip.disabled = false;
+      });
+
+      const qInput = document.getElementById("q");
+      if (qInput) qInput.disabled = false;
+
+      continueButton.textContent = "I'm ready!";
+      continueButton.classList.remove("btn-outline-secondary");
+      continueButton.classList.add("btn-primary");
+
+      updateContinue();
+
+      if (saveStatus) {
+        saveStatus.textContent = "Click the button again when you're ready.";
+      }
+    }
+  });
+}

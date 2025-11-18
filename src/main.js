@@ -1,8 +1,16 @@
 // src/main.js
 import { auth, db } from "/src/firebaseConfig.js";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import {
+  addDoc,
+  collection,
+  serverTimestamp,
+  query,
+  where,
+  limit,
+  getDocs,
+} from "firebase/firestore";
 
+import { onAuthStateChanged } from "firebase/auth";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -43,10 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("[auth] authentication.js Failed:", err);
   }
 })();
-
-window.addEventListener("DOMContentLoaded", () => {
-  document.body.removeAttribute("data-cloak");
-});
 
 /* ========== Join Channel Modal ========== */
 const modalEl = document.getElementById("joinChannelModal");
@@ -109,7 +113,6 @@ joinSubmitBtn?.addEventListener("click", () => {
   }
 
   const id = extractChannelId(inviteInput?.value || "");
-  console.log("[join] extracted id =", id, "from", inviteInput?.value);
 
   if (!id) {
     alert("Invalid invite link. Please paste a link that contains ?id=...");
@@ -121,7 +124,6 @@ joinSubmitBtn?.addEventListener("click", () => {
   const targetHref = `${
     window.location.origin
   }/channel-preview.html?id=${encodeURIComponent(id)}`;
-  console.log("[join] navigating to", targetHref);
 
   // Navigate to the preview page
   window.location.assign(targetHref);
@@ -216,3 +218,53 @@ copyBtn?.addEventListener("click", async () => {
     alert("Failed to copy link.");
   }
 });
+
+/* ========== Hosted channel banner ========== */
+function showHostedChannel() {
+  const banner = document.getElementById("hostedChannelBanner");
+  const nameEl = document.getElementById("hostedChannelName");
+  const linkEl = document.getElementById("hostedChannelLink");
+
+  if (!banner || !nameEl || !linkEl) return;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      banner.classList.add("d-none");
+      return;
+    }
+
+    try {
+      // Look for channels where current user is the creator
+      const q = query(
+        collection(db, "channels"),
+        where("createdBy", "==", user.uid),
+        limit(1)
+      );
+
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        // If not hosting any channel → hide banner
+        banner.classList.add("d-none");
+        return;
+      }
+
+      const docSnap = snap.docs[0];
+      const data = docSnap.data();
+
+      nameEl.textContent = data.name || "Untitled Channel";
+
+      // Build link to channel-preview.html?id=...
+      const url = new URL("channel-preview.html", window.location.href);
+      url.searchParams.set("id", docSnap.id);
+      linkEl.href = url.href;
+
+      banner.classList.remove("d-none");
+    } catch (err) {
+      console.error("[dashboard] Failed to load hosted channel:", err);
+      banner.classList.add("d-none");
+    }
+  });
+}
+
+showHostedChannel();
