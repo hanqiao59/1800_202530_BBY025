@@ -351,6 +351,8 @@ async function showRecentSession() {
         return;
       }
 
+      loadUserStats(user).catch(console.error);
+
       try {
         // read user document
         const userRef = doc(db, "users", user.uid);
@@ -483,3 +485,19 @@ async function showRecentSession() {
 }
 
 showRecentSession();
+
+// load stats for current user
+async function loadUserStats(user) {
+  const joinedEl = document.getElementById("statActivitiesJoined");
+  if (!joinedEl) return;
+
+  try {
+    const joinedRef = collection(db, "users", user.uid, "joinedSessions");
+    const snap = await getDocs(joinedRef);
+
+    joinedEl.textContent = String(snap.size);
+  } catch (err) {
+    console.error("[dashboard] Failed to load user stats:", err);
+    joinedEl.textContent = "–";
+  }
+}

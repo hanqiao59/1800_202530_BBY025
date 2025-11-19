@@ -35,22 +35,21 @@ if (!channelId || !sessionId) {
   console.warn("[session] Missing channelId or sessionId in URL.");
 }
 
+/* ==== Session state ==== */
+// "pending" | "active" | "end"
+let status = "pending"; // will be overwritten from Firestore
+
 /* ==== Auth state ==== */
 let uid = auth.currentUser?.uid || null;
 let displayName =
   auth.currentUser?.displayName || auth.currentUser?.email || "Anon";
-
-// session status + flags
-let status = "pending"; // "pending" | "active" | "end"
-let activityLoaded = false;
-let lastSessionSaved = false;
 
 onAuthStateChanged(auth, (u) => {
   uid = u?.uid || null;
   displayName = u?.displayName || u?.email || "Anon";
 
   // If auth becomes ready after the session is already active,
-  // make sure we still load the activity prompt and remember last session.
+  // make sure we still load the prompt / remember / participation.
   if (uid && status === "active") {
     if (!activityLoaded) {
       loadActivityPromptForUser().catch(console.error);
@@ -58,12 +57,7 @@ onAuthStateChanged(auth, (u) => {
     if (!lastSessionSaved) {
       rememberLastSessionForUser().catch(console.error);
     }
-  }
-
-  // If auth becomes ready while session is already ended,
-  // we still want to show the activity prompt and interest tag in read-only mode.
-  if (uid && status === "end" && !activityLoaded) {
-    loadActivityPromptForUser().catch(console.error);
+    recordSessionParticipation().catch(console.error);
   }
 });
 
@@ -78,7 +72,9 @@ const msgsRef =
     ? collection(db, "channels", channelId, "sessions", sessionId, "messages")
     : null;
 
-/* ==== Load channel metadata ==== */
+/**
+ * Load basic channel metadata (name) for the header.
+ */
 async function loadChannelMeta() {
   if (!channelId || !sessionNameEl) return;
 
@@ -93,7 +89,6 @@ async function loadChannelMeta() {
   }
 }
 
-/* ==== Scroll helpers ==== */
 function atBottom(el, th = 48) {
   return el.scrollHeight - el.scrollTop - el.clientHeight < th;
 }
@@ -185,77 +180,49 @@ function stopLiveQuery() {
 }
 
 /* ==== Activity prompt loading ==== */
+let activityLoaded = false;
+
+/**
+ * Load one activity prompt for this user based on their interests.
+ * Also writes a tag to the session document (once) so the dashboard
+ * can show "recent session" tags.
+ */
 async function loadActivityPromptForUser() {
   if (activityLoaded) return;
-  if (!channelId || !sessionId) return;
+  if (!channelId || !sessionId || !uid) return;
+
+  activityLoaded = true;
 
   try {
-    let category = null;
-    let label = null;
+    // Read this member's interests under the current channel
+    const memberRef = doc(db, "channels", channelId, "members", uid);
+    const memberSnap = await getDoc(memberRef);
 
-    // read tags from session document
-    if (sessionRef) {
-      const sessionSnap = await getDoc(sessionRef);
-      if (sessionSnap.exists()) {
-        const sData = sessionSnap.data();
-        if (Array.isArray(sData.tags) && sData.tags.length) {
-          // Use the first tag as the "label" and map it to a category
-          const fromSession = pickCategoryFromInterests([sData.tags[0]]);
-          category = fromSession.category;
-          label = fromSession.label; // will be sData.tags[0]
-        }
+    let interests = [];
+    if (memberSnap.exists()) {
+      const data = memberSnap.data();
+      if (Array.isArray(data.interests)) {
+        interests = data.interests;
       }
     }
 
-    // if no category from session tags, try to infer from user's interests
+    const { category, label } = pickCategoryFromInterests(interests);
+    renderSessionTag(label);
+
+    // Save the chosen label as session tags if the session doesn't have tags yet
+    if (label) {
+      saveSessionTagsIfEmpty([label]).catch(console.error);
+    }
+
     if (!category) {
-      // If auth is not ready yet, skip for now; we'll try again once uid is set
-      if (!uid) {
-        console.log(
-          "[activity] uid not ready and no session tags; will try again later"
-        );
-        return;
-      }
-
-      // Read this member's interests under the current channel
-      const memberRef = doc(db, "channels", channelId, "members", uid);
-      const memberSnap = await getDoc(memberRef);
-
-      let interests = [];
-      if (memberSnap.exists()) {
-        const data = memberSnap.data();
-        if (Array.isArray(data.interests)) {
-          interests = data.interests;
-        }
-      }
-
-      const picked = pickCategoryFromInterests(interests);
-      category = picked.category;
-      label = picked.label;
-
-      // If still no category, show a fallback and stop
-      if (!category) {
-        if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
-        if (activityPromptEl)
-          activityPromptEl.textContent =
-            "Something went wrong while loading your prompt.";
-        activityLoaded = true;
-        return;
-      }
-
-      // Save label as session.tags (only if the session does not have tags yet)
-      if (label) {
-        renderSessionTag(label);
-        saveSessionTagsIfEmpty([label]).catch(console.error);
-      } else {
-        renderSessionTag(null);
-      }
-    } else {
-      // We already have category + label from session tags
-      renderSessionTag(label);
+      console.warn("[activity] No matching category found, skipping.");
+      if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
+      if (activityPromptEl)
+        activityPromptEl.textContent = "Something went wrong!!";
+      return;
     }
 
-    // Now load activities for the chosen category
+    // Query /activities for this category
     const activitiesRef = collection(db, "activities");
     const q = query(
       activitiesRef,
@@ -270,17 +237,12 @@ async function loadActivityPromptForUser() {
       if (activityPromptEl)
         activityPromptEl.textContent =
           "No prompt found for this category. Feel free to chat about your interests!";
-      activityLoaded = true;
       return;
     }
 
-    // Make ordering stable by sorting docs by id
-    const docs = snap.docs.slice().sort((a, b) => a.id.localeCompare(b.id));
-
-    // Deterministic "random" index based on sessionId + category
-    const key = `${sessionId || "default"}:${category}`;
-    const idx = deterministicIndex(key, docs.length);
-    const chosen = docs[idx];
+    // Pick one random document from the result
+    const docs = snap.docs;
+    const chosen = docs[Math.floor(Math.random() * docs.length)];
     const data = chosen.data();
 
     if (activityTitleEl) {
@@ -290,19 +252,22 @@ async function loadActivityPromptForUser() {
       activityPromptEl.textContent =
         data.prompt || "Share something about your interests!";
     }
-
-    activityLoaded = true;
   } catch (err) {
     console.error("[activity] Failed to load prompt:", err);
     if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
     if (activityPromptEl)
       activityPromptEl.textContent =
         "Failed to load the prompt. Please try refreshing the page.";
-    activityLoaded = true;
   }
 }
 
 /* ==== Remember last session on user profile ==== */
+let lastSessionSaved = false;
+
+/**
+ * Save the last joined session on the user profile so we can
+ * show it on the dashboard (Recent Session card).
+ */
 async function rememberLastSessionForUser() {
   if (lastSessionSaved) return;
   if (!uid || !channelId || !sessionId) return;
@@ -328,7 +293,40 @@ async function rememberLastSessionForUser() {
   }
 }
 
+/**
+ * Record that the current user has joined this session.
+ * We write a doc under users/{uid}/joinedSessions/{sessionId}.
+ * If it already exists, we do nothing (to avoid double counting).
+ */
+async function recordSessionParticipation() {
+  if (!uid || !channelId || !sessionId) return;
+
+  try {
+    const ref = doc(db, "users", uid, "joinedSessions", sessionId);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      // Already recorded this session for this user, do nothing
+      return;
+    }
+
+    await setDoc(ref, {
+      channelId,
+      sessionId,
+      joinedAt: serverTimestamp(),
+    });
+
+    console.log("[session] recorded participation in joinedSessions");
+  } catch (err) {
+    console.error("[session] Failed to record participation:", err);
+  }
+}
+
 /* ==== Save session tags helper ==== */
+/**
+ * Write tags to the session document only if it doesn't already have tags.
+ * This prevents different users from overwriting each other's tags.
+ */
 async function saveSessionTagsIfEmpty(tags) {
   if (!sessionRef) return;
   if (!Array.isArray(tags) || !tags.length) return;
@@ -387,16 +385,11 @@ function applySessionStatus() {
     // Load activity prompt once when the session becomes active
     loadActivityPromptForUser().catch(console.error);
     rememberLastSessionForUser().catch(console.error);
+    recordSessionParticipation().catch(console.error);
   } else if (status === "end") {
     // Session ended
     stopLiveQuery();
     setComposerEnabled(false);
-
-    // Even for ended sessions, we still want to show the activity prompt
-    // and the interest tag in read-only mode.
-    if (!activityLoaded) {
-      loadActivityPromptForUser().catch(console.error);
-    }
 
     if (presence) {
       presence.textContent = "This session has ended.";
@@ -417,6 +410,10 @@ function applySessionStatus() {
 }
 
 /* ==== Session watcher ==== */
+/**
+ * Listen to changes on the session document (status field),
+ * and update the UI accordingly.
+ */
 function watchSession() {
   if (!sessionRef) {
     if (presence) presence.textContent = "Session not found.";
@@ -582,6 +579,12 @@ function wireComposer() {
 })();
 
 /* ==== Interest category helpers ==== */
+/**
+ * Decide which category to use based on user's interests.
+ * If multiple tags match (e.g. "Gaming" and "Traveling"),
+ * randomly pick ONE of them.
+ * Returns { category: "gaming" | "tech" | "traveling" | null, label: string | null }
+ */
 function pickCategoryFromInterests(interests = []) {
   const candidates = [];
 
@@ -607,7 +610,9 @@ function pickCategoryFromInterests(interests = []) {
   return choice;
 }
 
-/* ==== Session tag rendering ==== */
+/**
+ * Render the session tag pill in the header
+ */
 function renderSessionTag(label) {
   if (!sessionTagsEl) return;
 
@@ -624,15 +629,6 @@ function renderSessionTag(label) {
   }
 
   sessionTagsEl.appendChild(pill);
-}
-
-/* ==== Deterministic index helper ==== */
-function deterministicIndex(key, n) {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  }
-  return n > 0 ? hash % n : 0;
 }
 
 /* ==== Leave session button ==== */
