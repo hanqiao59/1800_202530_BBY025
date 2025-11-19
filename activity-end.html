@@ -39,7 +39,7 @@
     <script type="module" src="/src/components/site-navbar.js"></script>
   </head>
 
-  <body>
+  <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
     <!--  Title -->
@@ -58,15 +58,15 @@
     <main
       class="container-fluid d-flex flex-column align-items-center justify-content-center text-center"
     >
-      <section class="activity-finished mt-5 pt-5">
-        <div class="trophy-icon mb-3">
-          <i class="bi bi-trophy-fill fs-1 text-secondary"></i>
+      <section class="activity-finished pt-5">
+        <div
+          class="mb-3 d-inline-flex justify-content-center align-items-center rounded-circle bg-info-subtle"
+          style="width: 80px; height: 80px"
+        >
+          <i class="bi bi-trophy-fill fs-2 text-white"></i>
         </div>
-        <h2 class="fw-semibold">Activity Finished</h2>
-        <p class="text-muted">Nice job!</p>
-        <p class="text-muted small">
-          You've completed the activity <i class="bi bi-controller"></i>
-        </p>
+        <h3 class="text-dark">Nice job!</h3>
+        <p class="text-muted small">You've completed the activity 🎮</p>
       </section>
 
       <section class="add-friends mt-5">
@@ -126,18 +126,23 @@
         </div>
       </section>
 
-      <div class="mt-4">
+      <div class="mt-4 mb-4">
         <a href="main.html"
           ><button class="btn btn-dark w-100 back-home-btn">
             Back to Home
           </button></a
         >
-        <a href="#" class="d-block mt-2 small text-muted text-decoration-none"
-          >view activity history</a
+        <a
+          id="viewHistoryLink"
+          href="#"
+          class="d-block mt-2 small text-muted text-decoration-none"
         >
+          view activity history
+        </a>
       </div>
     </main>
 
     <script type="module" src="/src/app.js"></script>
+    <script type="module" src="/src/activity-end.js"></script>
   </body>
 </html>
