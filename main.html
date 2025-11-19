@@ -210,58 +210,60 @@
           </div>
         </form>
 
-        <!-- Recent Session Card -->
-        <div id="recentSessionCard" class="card border-1 rounded-3 mb-4">
-          <div class="card-body d-flex flex-column gap-2">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h5 id="recentSessionChannelName" class="mb-0 fw-semibold">
-                  Loading...
-                </h5>
+        <!-- Sessions you joined -->
+        <div id="recentSessionsContainer" class="d-flex flex-column gap-3 mb-4">
+          <!-- Template card (hidden) -->
+          <div
+            id="recentSessionTemplate"
+            class="card border-1 rounded-3 d-none"
+          >
+            <div class="card-body d-flex flex-column gap-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h5 class="recent-session-name mb-0 fw-semibold">
+                    Loading...
+                  </h5>
+                </div>
+                <span class="recent-session-badge badge px-3 py-2 rounded-pill">
+                  Live
+                </span>
               </div>
-              <span
-                id="recentSessionBadge"
-                class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"
-              >
-                Live
-              </span>
-            </div>
 
-            <p id="recentSessionText" class="mb-2 small text-muted">
-              You recently joined this session. You can jump back in at any
-              time.
-            </p>
+              <p class="recent-session-text mb-2 small text-muted">
+                You recently joined this session. You can jump back in at any
+                time.
+              </p>
 
-            <!-- tags -->
-            <div
-              id="recentSessionTags"
-              class="mb-2 d-flex flex-wrap gap-2 small"
-            ></div>
+              <!-- tags -->
+              <div
+                class="recent-session-tags mb-2 d-flex flex-wrap gap-2 small"
+              ></div>
 
-            <div class="d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center">
-                <span
-                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
-                  >A</span
-                >
-                <span
-                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
-                  >C</span
-                >
-                <span
-                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-2"
-                  >F</span
-                >
-                <small class="text-secondary">+7 more</small>
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <!-- 这里的 avatar 你先保留，之后要做真的 member 数可以再改 -->
+                  <span
+                    class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
+                    >A</span
+                  >
+                  <span
+                    class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
+                    >C</span
+                  >
+                  <span
+                    class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-2"
+                    >F</span
+                  >
+                  <small class="text-secondary">+7 more</small>
+                </div>
+                <a class="recent-session-link align-self-end" href="#">
+                  <button
+                    class="recent-session-button btn btn-sm rounded-3 border-2 button-view-group fw-semibold"
+                  >
+                    Rejoin Session
+                  </button>
+                </a>
               </div>
-              <a id="recentSessionLink" href="#" class="align-self-end">
-                <button
-                  id="recentSessionButton"
-                  class="btn btn-sm rounded-3 border-2 button-view-group fw-semibold"
-                >
-                  Rejoin Session
-                </button>
-              </a>
             </div>
           </div>
         </div>
