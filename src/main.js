@@ -37,13 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const name = user.displayName || user.email;
       nameEl.textContent = `${name}!`;
-      if (!avatarEl) {
-        return (innerHTML = "${name.charAt(0).toUpperCase()}");
-      } else if (user.photoURL) {
+
+      if (user.photoURL) {
         avatarEl.src = user.photoURL;
       } else {
         avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          name
+          name || "User"
         )}&background=6c757d&color=ffffff&size=128&rounded=true`;
       }
     });

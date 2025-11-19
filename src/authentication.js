@@ -111,8 +111,6 @@ export function checkAuthState() {
   onAuthStateChanged(auth, (user) => {
     if (window.location.pathname.endsWith("main.html")) {
       if (user) {
-        const displayName = user.displayName || user.email;
-        $("#welcomeMessage").text(`Hello, ${displayName}!`);
       } else {
         window.location.href = "index.html";
       }

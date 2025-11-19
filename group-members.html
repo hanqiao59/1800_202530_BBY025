@@ -57,22 +57,33 @@
 
         <h3 class="p-2 text-center me-auto">Members</h3>
       </div>
-      <div class="input-group mb-4 fs-5">
-        <form class="w-100 hstack">
+      <div class="search-container position-relative input-group mb-4 fs-5">
+        <form class="w-100 hstack" onsubmit="return false;">
           <i
             class="bi bi-search me-4 ms-2"
             id="searchGlass"
             style="cursor: pointer"
           ></i>
           <input
-            type="search"
+            type="text"
             class="form-control"
-            list="membersList"
             id="membersSearch"
             placeholder="Search group members"
+            autocomplete="off"
           />
         </form>
-        <datalist id="membersList"></datalist>
+        <!-- Custom dropdown (replaces <datalist>) -->
+        <div
+          id="customDropdown"
+          class="dropdown-menu position-absolute w-100 bg-white rounded shadow-sm"
+          style="
+            top: 48px;
+            max-height: 220px;
+            overflow-y: auto;
+            display: none;
+            z-index: 2000;
+          "
+        ></div>
       </div>
       <div id="searchedResults"></div>
     </section>
@@ -80,6 +91,16 @@
     <footer class="w-100 mt-5" style="transform: translate(0px, 400px)">
       <site-default-footer></site-default-footer>
     </footer>
+
+    <style>
+      .dropdown-item.active {
+        background-color: #393939;
+        color: #000000;
+      }
+      .dropdown-item span.match {
+        font-weight: bold;
+      }
+    </style>
 
     <!---------------------------------------------->
     <!-- Your own JavaScript functions go here -->

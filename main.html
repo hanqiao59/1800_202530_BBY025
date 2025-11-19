@@ -38,6 +38,39 @@
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
     <script type="module" src="/src/components/site-default-footer.js"></script>
+
+    <!-- <style>
+      /* ===== Glassmorphism dashboard card ===== */
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7); 
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12); 
+
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px); 
+
+        padding: 24px;
+      }
+
+      .glass-stat {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 16px;
+      }
+
+      .dashboard-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: #6c757d;
+        color: #fff;
+      }
+    </style> -->
   </head>
 
   <body class="bg-brand-light">
@@ -55,12 +88,7 @@
             <div
               class="d-flex justify-content-center align-items-center fw-bold me-3 flex-shrink-0"
             >
-              <img
-                src="..."
-                alt="User Avatar"
-                class="img-fluid"
-                id="userAvatar"
-              />
+              <img src="..." alt="" class="img-fluid" id="userAvatar" />
             </div>
             <div class="p-2">
               <h2 id="welcome-title" class="h4 mb-1 text-dark">
@@ -91,7 +119,7 @@
             <div class="col-4">
               <div class="card border-0">
                 <div class="card-body py-3 stats">
-                  <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
+                  <p class="fw-semibold mb-1 fs-4 text-dark">1</p>
                   <small class="text-secondary">Activities</small>
                 </div>
               </div>
@@ -99,6 +127,7 @@
           </div>
         </div>
       </div>
+
       <!-- Your Channels Section -->
       <section class="container-lg px-3 mt-4">
         <div class="section-title d-flex align-items-center mb-3 gap-2">
@@ -114,7 +143,7 @@
           ></i>
         </div>
 
-        <!-- Hosted channel banner: only visible when user is hosting at least one channel -->
+        <!-- Hosted channel: only visible when is hosting at least one channel -->
         <div
           id="hostedChannelBanner"
           class="alert alert-info d-flex justify-content-between align-items-center mb-3 d-none"
@@ -171,8 +200,55 @@
           </div>
         </form>
 
-        <!-- Channel Card -->
-        <div class="card border-1 rounded-3 mb-4">
+        <!-- Recent Session Card -->
+        <div id="recentSessionCard" class="card border-1 rounded-3 mb-4">
+          <div class="card-body d-flex flex-column gap-2">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h5 id="recentSessionChannelName" class="mb-0 fw-semibold">
+                  Loading...
+                </h5>
+              </div>
+              <span
+                class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"
+              >
+                Live
+              </span>
+            </div>
+
+            <p class="mb-2 small text-muted">
+              You recently joined this session. You can jump back in at any
+              time.
+            </p>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <span
+                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
+                  >A</span
+                >
+                <span
+                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
+                  >C</span
+                >
+                <span
+                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-2"
+                  >F</span
+                >
+                <small class="text-secondary">+7 more</small>
+              </div>
+              <a id="recentSessionLink" href="#" class="align-self-end">
+                <button
+                  class="btn btn-sm rounded-3 border-2 button-view-group fw-semibold"
+                >
+                  Rejoin Session
+                </button></a
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Past Session Card -->
+        <div class="card rounded-3 mb-4">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h5 class="mb-0 fw-semibold">Tech Meetup</h5>
@@ -272,7 +348,8 @@
               <!-- Join Link Button -->
               <div class="d-grid gap-2 mt-4">
                 <button
-                  type="submit"
+                  id="joinSubmitBtn"
+                  type="button"
                   class="btn btn-primary btn-lg rounded-3 py-3"
                 >
                   Join Link
@@ -292,12 +369,7 @@
     </div>
 
     <!-- Create Channel Modal -->
-    <div
-      class="modal fade"
-      id="createChannelModal"
-      tabindex="-1"
-      aria-hidden="true"
-    >
+    <div class="modal fade" id="createChannelModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow-sm">
           <div class="modal-body p-4">
@@ -315,6 +387,7 @@
                 </p>
               </div>
 
+              <!--Name Input -->
               <form id="createChannelForm" class="text-start">
                 <div class="mb-3">
                   <label for="channelName" class="form-label text-dark mb-1"
@@ -323,8 +396,10 @@
                   <input
                     id="channelName"
                     class="form-control"
+                    type="text"
                     placeholder="e.g. new intakes 2025"
                     required
+                    minlength="3"
                   />
                 </div>
 
