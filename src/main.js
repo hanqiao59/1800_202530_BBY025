@@ -23,7 +23,16 @@ document.addEventListener("DOMContentLoaded", () => {
   [...tooltipTriggerList].forEach((el) => new bootstrap.Tooltip(el));
 });
 
-/* ========== Dashboard Greeting ========== */
+/* ========== Helper: decorate tags with emojis ========== */
+function decorateTagLabel(tag) {
+  const s = String(tag).toLowerCase();
+  if (s.includes("gaming")) return "🎮 " + tag;
+  if (s.includes("tech") || s.includes("code")) return "💻 " + tag;
+  if (s.includes("traveling")) return "✈️ " + tag;
+  return tag;
+}
+
+/* ========== Dashboard Greeting + Stats + Sessions List ========== */
 (async function showDashboard() {
   const nameEl = document.getElementById("userName");
   const avatarEl = document.getElementById("userAvatar");
@@ -36,17 +45,26 @@ document.addEventListener("DOMContentLoaded", () => {
         location.href = "login.html";
         return;
       }
-      const name = user.displayName || user.email;
+
+      const name = user.displayName || user.email || "User";
       nameEl.textContent = `${name}!`;
-      if (!avatarEl) {
-        return (innerHTML = "${name.charAt(0).toUpperCase()}");
-      } else if (user.photoURL) {
-        avatarEl.src = user.photoURL;
-      } else {
-        avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          name
-        )}&background=transparent&color=ffffff&size=128&rounded=true`;
+
+      // Avatar
+      if (avatarEl) {
+        if (user.photoURL) {
+          avatarEl.src = user.photoURL;
+        } else {
+          avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            name
+          )}&background=transparent&color=ffffff&size=128&rounded=true`;
+        }
       }
+
+      // Stats: how many activities this user has joined
+      loadUserStats(user).catch(console.error);
+
+      // Session cards: show ALL joined sessions stacked in one section
+      showAllSessionsForUser(user).catch(console.error);
     });
   } catch (err) {
     console.warn("[auth] authentication.js Failed:", err);
@@ -73,7 +91,7 @@ async function showHostedChannel() {
     }
 
     try {
-      // Find all channels you created (no longer limit(1))
+      // Find all channels you created
       const chQ = query(
         collection(db, "channels"),
         where("createdBy", "==", user.uid)
@@ -151,6 +169,7 @@ showHostedChannel();
 
 /* ========== Join Channel Modal ========== */
 const modalEl = document.getElementById("joinChannelModal");
+
 // Reset input when modal is closed
 modalEl?.addEventListener("hidden.bs.modal", () => {
   const input = document.getElementById("inviteLink");
@@ -171,7 +190,7 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
   }
 });
 
-// Reset input when modal is closed
+// Join form & submit button
 const joinForm = document.querySelector("#joinChannelModal form");
 const inviteInput = document.getElementById("inviteLink");
 const joinSubmitBtn = document.getElementById("joinSubmitBtn");
@@ -322,171 +341,140 @@ copyBtn?.addEventListener("click", async () => {
   }
 });
 
-/* ========== Recent Session Card ========== */
-function decorateTagLabel(tag) {
-  const s = String(tag).toLowerCase();
-  if (s.includes("gaming")) return "🎮 " + tag;
-  if (s.includes("tech") || s.includes("code")) return "💻 " + tag;
-  if (s.includes("traveling")) return "✈️ " + tag;
-  return tag;
-}
+/* ========== Session Cards (ALL joined sessions in one list) ========== */
+async function showAllSessionsForUser(user) {
+  const container = document.getElementById("recentSessionsContainer");
+  const template = document.getElementById("recentSessionTemplate");
+  if (!container || !template) return;
 
-async function showRecentSession() {
-  const card = document.getElementById("recentSessionCard");
-  const nameEl = document.getElementById("recentSessionChannelName");
-  const linkEl = document.getElementById("recentSessionLink");
-  const badgeEl = document.getElementById("recentSessionBadge");
-  const textEl = document.getElementById("recentSessionText");
-  const tagsEl = document.getElementById("recentSessionTags");
-  const btnEl = document.getElementById("recentSessionButton");
+  // Clear previously generated cards (keep the template)
+  container
+    .querySelectorAll(".recent-session-card")
+    .forEach((el) => el.remove());
 
-  if (!card || !nameEl || !linkEl) return;
+  // loading indicator
+  let loadingEl = container.querySelector(".recent-sessions-loading");
+  if (!loadingEl) {
+    loadingEl = document.createElement("div");
+    loadingEl.className = "recent-sessions-loading text-muted small";
+    loadingEl.textContent = "Loading your sessions...";
+    container.appendChild(loadingEl);
+  }
 
   try {
-    const { onAuthReady } = await import("./authentication.js");
+    //Read users/{uid}/joinedSessions, ordered by joinedAt descending
+    const joinedRef = collection(db, "users", user.uid, "joinedSessions");
+    const qJoined = query(joinedRef, orderBy("joinedAt", "desc"));
+    const joinedSnap = await getDocs(qJoined);
 
-    onAuthReady(async (user) => {
-      if (!user) {
-        card.classList.add("d-none");
-        return;
+    loadingEl.remove();
+
+    if (joinedSnap.empty) {
+      const emptyEl = document.createElement("div");
+      emptyEl.className = "text-muted small";
+      emptyEl.textContent = "You have not joined any sessions yet.";
+      container.appendChild(emptyEl);
+      return;
+    }
+
+    // Create a card for each joined session
+    for (const joinedDoc of joinedSnap.docs) {
+      const data = joinedDoc.data();
+      const channelId = data.channelId;
+      const sessionId = data.sessionId;
+      const joinedAt = data.joinedAt;
+
+      if (!channelId || !sessionId) continue;
+
+      const sessionRef = doc(db, "channels", channelId, "sessions", sessionId);
+      const channelRef = doc(db, "channels", channelId);
+
+      const [sessionSnap, channelSnap] = await Promise.all([
+        getDoc(sessionRef),
+        getDoc(channelRef),
+      ]);
+
+      if (!sessionSnap.exists() || !channelSnap.exists()) continue;
+
+      const sessionData = sessionSnap.data();
+      const channelData = channelSnap.data();
+
+      const status = sessionData.status || "active";
+      const channelName = channelData.name || "Channel";
+      const tags = Array.isArray(sessionData.tags) ? sessionData.tags : [];
+
+      // Build the session review URL with query parameters
+      const url = new URL("ice-breaker-session.html", window.location.href);
+      url.searchParams.set("channelId", channelId);
+      url.searchParams.set("sessionId", sessionId);
+
+      // clone template and fill data
+      const card = template.cloneNode(true);
+      card.id = ""; // Avoid duplicate id
+      card.classList.remove("d-none");
+      card.classList.add("recent-session-card");
+
+      const nameEl = card.querySelector(".recent-session-name");
+      const badgeEl = card.querySelector(".recent-session-badge");
+      const textEl = card.querySelector(".recent-session-text");
+      const tagsEl = card.querySelector(".recent-session-tags");
+      const linkEl = card.querySelector(".recent-session-link");
+      const btnEl = card.querySelector(".recent-session-button");
+
+      if (nameEl) nameEl.textContent = channelName;
+
+      if (badgeEl) {
+        if (status === "active") {
+          badgeEl.textContent = "Live";
+          badgeEl.classList.remove("bg-secondary-subtle", "text-secondary");
+          badgeEl.classList.add("bg-success-subtle", "text-success");
+        } else {
+          badgeEl.textContent = "Past";
+          badgeEl.classList.remove("bg-success-subtle", "text-success");
+          badgeEl.classList.add("bg-secondary-subtle", "text-secondary");
+        }
       }
 
-      loadUserStats(user).catch(console.error);
-
-      try {
-        // read user document
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (!userSnap.exists()) {
-          card.classList.add("d-none");
-          return;
-        }
-
-        const data = userSnap.data();
-        const lastSession = data.lastSession;
-
-        if (!lastSession || !lastSession.channelId || !lastSession.sessionId) {
-          card.classList.add("d-none");
-          return;
-        }
-
-        const { channelId, sessionId } = lastSession;
-
-        // read session document
-        const sessionRef = doc(
-          db,
-          "channels",
-          channelId,
-          "sessions",
-          sessionId
-        );
-        const sessionSnap = await getDoc(sessionRef);
-
-        if (!sessionSnap.exists()) {
-          card.classList.add("d-none");
-          return;
-        }
-
-        const sessionData = sessionSnap.data();
-        const status = sessionData.status || "active";
-
-        // read channel document
-        const channelRef = doc(db, "channels", channelId);
-        const channelSnap = await getDoc(channelRef);
-
-        if (!channelSnap.exists()) {
-          card.classList.add("d-none");
-          return;
-        }
-
-        const ch = channelSnap.data();
-        const channelName = ch.name || "Channel";
-
-        // Owner does not see recent session card
-        if (ch.createdBy && ch.createdBy === user.uid) {
-          card.classList.add("d-none");
-          return;
-        }
-
-        nameEl.textContent = channelName;
-
-        // Update badge/text/button based on status
-        if (badgeEl && textEl && btnEl) {
-          if (status === "active") {
-            badgeEl.textContent = "Live";
-            badgeEl.classList.remove("bg-secondary-subtle", "text-secondary");
-            badgeEl.classList.add("bg-success-subtle", "text-success");
-
-            textEl.textContent =
-              "You recently joined this session. You can jump back in at any time.";
-
-            btnEl.textContent = "Rejoin Session";
-          } else if (status === "end") {
-            badgeEl.textContent = "Past";
-            badgeEl.classList.remove("bg-success-subtle", "text-success");
-            badgeEl.classList.add("bg-secondary-subtle", "text-secondary");
-
-            textEl.textContent =
-              "This session has ended. You can still review the session.";
-
-            btnEl.textContent = "View Session";
-          } else {
-            // Unknown status, do not show
-            card.classList.add("d-none");
-            return;
-          }
+      if (textEl) {
+        if (status === "active") {
+          textEl.textContent =
+            "You recently joined this session. You can jump back in at any time.";
         } else {
-          if (status !== "active") {
-            card.classList.add("d-none");
-            return;
-          }
+          textEl.textContent =
+            "This session has ended. You can still review the session.";
         }
+      }
 
-        // 5) Render interest tags
-        if (tagsEl) {
-          tagsEl.innerHTML = "";
-
-          const tags = Array.isArray(sessionData.tags) ? sessionData.tags : [];
-
-          if (tags.length) {
-            tags.slice(0, 3).forEach((t) => {
-              const span = document.createElement("span");
-              span.className =
-                "badge rounded-2 text-dark me-2 fw-normal px-2 py-2";
-              span.textContent = decorateTagLabel(t);
-              tagsEl.appendChild(span);
-            });
-          } else {
+      if (tagsEl) {
+        tagsEl.innerHTML = "";
+        if (tags.length) {
+          tags.slice(0, 3).forEach((t) => {
             const span = document.createElement("span");
             span.className =
-              "badge rounded-2 bg-secondary-subtle text-dark me-2 fw-normal px-2 py-2";
-            span.textContent = decorateTagLabel("Ice-breaker");
+              "badge rounded-2 text-dark me-2 fw-semibold px-2 py-2 bg-light";
+            span.textContent = decorateTagLabel(t);
             tagsEl.appendChild(span);
-          }
+          });
         }
-
-        // 6) Set link URL
-        const url = new URL("ice-breaker-session.html", window.location.href);
-        url.searchParams.set("channelId", channelId);
-        url.searchParams.set("sessionId", sessionId);
-        linkEl.href = url.href;
-
-        card.classList.remove("d-none");
-      } catch (err) {
-        console.error("[dashboard] Failed to load recent session:", err);
-        card.classList.add("d-none");
       }
-    });
+
+      if (linkEl) {
+        linkEl.href = url.href;
+      }
+      if (btnEl) {
+        btnEl.textContent =
+          status === "active" ? "Rejoin Session" : "View Session";
+      }
+
+      container.appendChild(card);
+    }
   } catch (err) {
-    console.warn("[auth] authentication.js Failed in showRecentSession:", err);
-    card?.classList.add("d-none");
+    console.error("[dashboard] Failed to load sessions:", err);
+    loadingEl.textContent = "Failed to load your sessions.";
   }
 }
 
-showRecentSession();
-
-// load stats for current user
+/* ========== Stats: Activities joined ========== */
 async function loadUserStats(user) {
   const joinedEl = document.getElementById("statActivitiesJoined");
   if (!joinedEl) return;

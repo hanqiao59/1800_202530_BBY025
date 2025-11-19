@@ -68,7 +68,6 @@ export async function signupUser(name, email, password) {
     await setDoc(doc(db, "users", user.uid), {
       name: name,
       email: email,
-      password: password,
     });
     console.log("Firestore user document created successfully!");
   } catch (error) {

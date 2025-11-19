@@ -342,7 +342,7 @@ async function saveSessionTagsIfEmpty(tags) {
     }
 
     await updateDoc(sessionRef, {
-      tags: tags, // e.g. ["Gaming"] / ["Tech & Coding"]
+      tags: tags,
     });
 
     console.log("[session] tags saved on session:", tags);
@@ -406,6 +406,10 @@ function applySessionStatus() {
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
     }
+    const url = new URL("activity-end.html", window.location.href);
+    url.searchParams.set("channelId", channelId);
+    url.searchParams.set("sessionId", sessionId);
+    window.location.href = url.href;
   }
 }
 
