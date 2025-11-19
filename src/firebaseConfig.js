@@ -1,3 +1,5 @@
+import { getStorage } from "firebase/storage";
+
 // src/firebaseAPIConfig.js
 // -------------------------------------------------------------
 // Part of the COMP1800 Project 1 Course (BCIT).

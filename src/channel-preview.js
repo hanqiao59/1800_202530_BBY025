@@ -1,7 +1,3 @@
-// src/channel-preview.js
-// Channel preview page: shows channel info and different UI for owner vs member.
-// Owner can start / end one live ice-breaker session per channel.
-
 import { auth, db } from "/src/firebaseConfig.js";
 import {
   doc,
@@ -17,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-// 1) Read channelId from the URL (?id=...)
+// Read channelId from the URL (?id=...)
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("id");
 
@@ -35,15 +31,21 @@ const endIceBreakerBtn = document.getElementById("endIceBreakerBtn");
 const joinQrImg = document.getElementById("joinQr");
 const sessionLiveBadge = document.getElementById("sessionLiveBadge");
 
+// Owner message and QR container
+const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary"); // 那句说明文字
+const ownerQrWrapperEl = ownerHostCard?.querySelector(
+  ".d-flex.justify-content-center.mb-3"
+);
+
 let channelData = null;
 let currentUser = null;
+let sessionEnded = false;
 
 // Track the latest non-ended session for this channel
 let activeSessionId = null;
 let unsubSessionWatch = null;
 
 /* ===== UI helpers ===== */
-
 function showMemberView() {
   memberJoinCard?.classList.remove("d-none");
   ownerHostCard?.classList.add("d-none");
@@ -62,11 +64,22 @@ function hideSessionLiveBadge() {
   sessionLiveBadge?.classList.add("d-none");
 }
 
-// Owner UI when there is NO live session (or the last one ended)
+// Owner UI when there is NO live session (or the last one ended and we are idle)
 function setOwnerIdleUI() {
+  // Can start a new session
   startIceBreakerBtn?.classList.remove("d-none");
   endIceBreakerBtn?.classList.add("d-none");
   hideSessionLiveBadge();
+
+  // Idle status message
+  if (ownerHostMessageEl) {
+    ownerHostMessageEl.textContent =
+      "Use the link or scan this QR code to join the channel.";
+  }
+  if (ownerQrWrapperEl) {
+    ownerQrWrapperEl.classList.remove("d-none");
+  }
+
   activeSessionId = null;
 }
 
@@ -75,15 +88,40 @@ function setOwnerActiveUI() {
   startIceBreakerBtn?.classList.add("d-none");
   endIceBreakerBtn?.classList.remove("d-none");
   showSessionLiveBadge();
+
+  // Live status message
+  if (ownerHostMessageEl) {
+    ownerHostMessageEl.textContent =
+      "Use the link or scan this QR code to join the channel.";
+  }
+  if (ownerQrWrapperEl) {
+    ownerQrWrapperEl.classList.remove("d-none");
+  }
 }
 
-/* ===== Watch last session for owner (to avoid creating duplicates) ===== */
+// Owner UI when the latest session has ENDED
+function setOwnerEndedUI() {
+  startIceBreakerBtn?.classList.add("d-none");
+  endIceBreakerBtn?.classList.add("d-none");
+  hideSessionLiveBadge();
 
+  // Change message to "ended"
+  if (ownerHostMessageEl) {
+    ownerHostMessageEl.textContent =
+      "This ice-breaker session has ended. You can create a new channell if you want to run it again.";
+  }
+
+  // hide QR code
+  if (ownerQrWrapperEl) {
+    ownerQrWrapperEl.classList.add("d-none");
+  }
+}
+
+/* ===== Watch last session for owner  ===== */
 function watchOwnerSession() {
   if (!channelId || !currentUser) return;
 
   const sessionsRef = collection(db, "channels", channelId, "sessions");
-  // Just order by createdAt, newest first. No composite index required.
   const q = query(sessionsRef, orderBy("createdAt", "desc"), limit(1));
 
   if (unsubSessionWatch) unsubSessionWatch();
@@ -93,6 +131,8 @@ function watchOwnerSession() {
     (snap) => {
       if (snap.empty) {
         console.log("[channel-preview] No sessions yet for this channel.");
+        activeSessionId = null;
+        sessionEnded = false;
         setOwnerIdleUI();
         return;
       }
@@ -105,13 +145,16 @@ function watchOwnerSession() {
 
       if (status === "active") {
         activeSessionId = last.id;
+        sessionEnded = false;
         setOwnerActiveUI();
       } else if (status === "end") {
-        // Last session is ended → owner can start a new one
-        setOwnerIdleUI();
-      } else {
-        // Any other status (e.g., "pending") treat as live for UI purposes
         activeSessionId = last.id;
+        sessionEnded = true;
+        setOwnerEndedUI();
+      } else {
+        // Unknown status, treat as active
+        activeSessionId = last.id;
+        sessionEnded = false;
         setOwnerActiveUI();
       }
     },
@@ -122,7 +165,6 @@ function watchOwnerSession() {
 }
 
 /* ===== Main auth + channel load ===== */
-
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
@@ -146,7 +188,7 @@ onAuthStateChanged(auth, async (user) => {
       titleEl.textContent = channelData.name || "Untitled Channel";
     }
 
-    // Build invite link (what is inside the QR code)
+    // Build invite link for this channel
     const inviteUrl = new URL("channel-preview.html", window.location.href);
     inviteUrl.searchParams.set("id", channelId);
 
@@ -162,10 +204,9 @@ onAuthStateChanged(auth, async (user) => {
       user && channelData.createdBy && channelData.createdBy === user.uid;
 
     if (isOwner) {
-      // ===== OWNER VIEW =====
       showOwnerView();
 
-      // Generate QR code from invite link (simple external service)
+      // Generate QR code from invite link
       if (joinQrImg) {
         const qrApi = "https://api.qrserver.com/v1/create-qr-code/";
         const qrSrc =
@@ -173,15 +214,15 @@ onAuthStateChanged(auth, async (user) => {
         joinQrImg.src = qrSrc;
       }
 
-      // Watch for latest session to determine UI state (idle / active)
+      // Watch for latest session to determine UI state
       watchOwnerSession();
 
-      // Wire "Start" button → create a new session (only if none is active)
+      // create new session
       startIceBreakerBtn?.addEventListener("click", async () => {
         if (!currentUser || !channelId) return;
 
-        // Extra guard: do not create if we already know an active session
-        if (activeSessionId) {
+        // If there is already an active session, do not create a new one
+        if (activeSessionId && !sessionEnded) {
           alert("A session is already live for this channel.");
           return;
         }
@@ -190,23 +231,29 @@ onAuthStateChanged(auth, async (user) => {
 
         try {
           const sessionsRef = collection(db, "channels", channelId, "sessions");
-          await addDoc(sessionsRef, {
+          const newSessionRef = await addDoc(sessionsRef, {
             ownerId: currentUser.uid,
-            status: "active", // start directly as active
+            status: "active",
             createdAt: serverTimestamp(),
             endedAt: null,
           });
 
-          // No need to manually update UI: watchOwnerSession() will pick it up.
+          activeSessionId = newSessionRef.id;
+          sessionEnded = false;
+
+          // If the owner clicks Start, go directly into this session
+          const url = new URL("ice-breaker-session.html", window.location.href);
+          url.searchParams.set("channelId", channelId);
+          url.searchParams.set("sessionId", newSessionRef.id);
+          window.location.href = url.href;
         } catch (err) {
           console.error("Failed to create session:", err);
           alert("Failed to start the ice breaker. Please try again.");
-        } finally {
           startIceBreakerBtn.disabled = false;
         }
       });
 
-      // Wire "End" button → mark the current session as ended
+      // "End" button → mark the current session as ended
       endIceBreakerBtn?.addEventListener("click", async () => {
         if (!currentUser || !channelId || !activeSessionId) return;
 
@@ -228,16 +275,15 @@ onAuthStateChanged(auth, async (user) => {
             },
             { merge: true }
           );
-          // watchOwnerSession() will update the UI back to idle state
+          // watchOwnerSession() will update the UI to ended state
         } catch (err) {
           console.error("Failed to end session:", err);
           alert("Failed to end the session. Please try again.");
-        } finally {
           endIceBreakerBtn.disabled = false;
         }
       });
     } else {
-      // ===== MEMBER VIEW =====
+      // Non-owner: just show "Ready to Join" member card
       showMemberView();
     }
   } catch (err) {

@@ -50,11 +50,12 @@
         style="max-width: 420px"
       >
         <h1 class="h4 mb-3">We’re getting you ready…</h1>
-        <p class="text-secondary mb-3">
-          The host has started the ice-breaker. We’re auto-sorting you into a
-          small session based on your interests.
+        <p id="msg" class="text-secondary mb-3">
+          The host has started the ice-breaker. We’re matching you into a
+          session based on your interest tags.
         </p>
-        <div class="spinner-border mb-3" role="status" aria-hidden="true"></div>
+        <p id="groupLabel" class="fw-semibold mb-2 d-none"></p>
+        <div class="spinner-border mb-3 d-block mx-auto" role="status"></div>
         <p id="tip" class="small text-muted mb-0">
           You will be taken to your session automatically in a moment.
         </p>
@@ -65,7 +66,7 @@
     <!-- Your own JavaScript functions go here -->
     <!---------------------------------------------->
     <!-- Link to scripts of your own -->
-    <script type="module" src="./src/app.js"></script>
-    <script type="module" src="./src/auto-grouping.js"></script>
+    <script type="module" src="/src/app.js"></script>
+    <script type="module" src="/src/auto-grouping.js"></script>
   </body>
 </html>

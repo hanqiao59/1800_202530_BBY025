@@ -12,10 +12,11 @@ import {
   where,
   getDocs,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-/* ==== DOM ==== */
+/* ==== DOM references ==== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
@@ -26,16 +27,19 @@ const listEl = document.getElementById("messages");
 const formEl = document.getElementById("composer");
 const inputEl = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
-// Activity prompt area
 const activityTitleEl = document.getElementById("activityTitle");
 const activityPromptEl = document.getElementById("activityPrompt");
 
-// Warn if missing params
+// Validate required params
 if (!channelId || !sessionId) {
   console.warn("[session] Missing channelId or sessionId in URL.");
 }
 
-/* ==== Auth State ==== */
+/* ==== Session state ==== */
+// "pending" | "active" | "end"
+let status = "pending"; // will be overwritten from Firestore
+
+/* ==== Auth state ==== */
 let uid = auth.currentUser?.uid || null;
 let displayName =
   auth.currentUser?.displayName || auth.currentUser?.email || "Anon";
@@ -43,9 +47,21 @@ let displayName =
 onAuthStateChanged(auth, (u) => {
   uid = u?.uid || null;
   displayName = u?.displayName || u?.email || "Anon";
+
+  // If auth becomes ready after the session is already active,
+  // make sure we still load the prompt / remember / participation.
+  if (uid && status === "active") {
+    if (!activityLoaded) {
+      loadActivityPromptForUser().catch(console.error);
+    }
+    if (!lastSessionSaved) {
+      rememberLastSessionForUser().catch(console.error);
+    }
+    recordSessionParticipation().catch(console.error);
+  }
 });
 
-/* ==== Firestore refs ==== */
+/* ==== Firestore references ==== */
 const sessionRef =
   channelId && sessionId
     ? doc(db, "channels", channelId, "sessions", sessionId)
@@ -56,7 +72,9 @@ const msgsRef =
     ? collection(db, "channels", channelId, "sessions", sessionId, "messages")
     : null;
 
-// Load channel name once for the session info header
+/**
+ * Load basic channel metadata (name) for the header.
+ */
 async function loadChannelMeta() {
   if (!channelId || !sessionNameEl) return;
 
@@ -70,10 +88,6 @@ async function loadChannelMeta() {
     console.error("[session] Failed to load channel name:", err);
   }
 }
-
-/* ==== session state ==== */
-// "pending" | "active" | "end"
-let status = "pending"; // will be overwritten from Firestore
 
 function atBottom(el, th = 48) {
   return el.scrollHeight - el.scrollTop - el.clientHeight < th;
@@ -168,6 +182,11 @@ function stopLiveQuery() {
 /* ==== Activity prompt loading ==== */
 let activityLoaded = false;
 
+/**
+ * Load one activity prompt for this user based on their interests.
+ * Also writes a tag to the session document (once) so the dashboard
+ * can show "recent session" tags.
+ */
 async function loadActivityPromptForUser() {
   if (activityLoaded) return;
   if (!channelId || !sessionId || !uid) return;
@@ -189,6 +208,11 @@ async function loadActivityPromptForUser() {
 
     const { category, label } = pickCategoryFromInterests(interests);
     renderSessionTag(label);
+
+    // Save the chosen label as session tags if the session doesn't have tags yet
+    if (label) {
+      saveSessionTagsIfEmpty([label]).catch(console.error);
+    }
 
     if (!category) {
       console.warn("[activity] No matching category found, skipping.");
@@ -228,16 +252,6 @@ async function loadActivityPromptForUser() {
       activityPromptEl.textContent =
         data.prompt || "Share something about your interests!";
     }
-
-    // console.log(
-    //   "[activity] Loaded prompt:",
-    //   data.title,
-    //   " / ",
-    //   data.prompt,
-    //   "(category:",
-    //   category,
-    //   ")"
-    // );
   } catch (err) {
     console.error("[activity] Failed to load prompt:", err);
     if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
@@ -247,9 +261,13 @@ async function loadActivityPromptForUser() {
   }
 }
 
+/* ==== Remember last session on user profile ==== */
 let lastSessionSaved = false;
 
-// Save the last joined session on the user profile so we can show it on the dashboard
+/**
+ * Save the last joined session on the user profile so we can
+ * show it on the dashboard (Recent Session card).
+ */
 async function rememberLastSessionForUser() {
   if (lastSessionSaved) return;
   if (!uid || !channelId || !sessionId) return;
@@ -275,11 +293,70 @@ async function rememberLastSessionForUser() {
   }
 }
 
-/* ==== session status handling ==== */
+/**
+ * Record that the current user has joined this session.
+ * We write a doc under users/{uid}/joinedSessions/{sessionId}.
+ * If it already exists, we do nothing (to avoid double counting).
+ */
+async function recordSessionParticipation() {
+  if (!uid || !channelId || !sessionId) return;
+
+  try {
+    const ref = doc(db, "users", uid, "joinedSessions", sessionId);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      // Already recorded this session for this user, do nothing
+      return;
+    }
+
+    await setDoc(ref, {
+      channelId,
+      sessionId,
+      joinedAt: serverTimestamp(),
+    });
+
+    console.log("[session] recorded participation in joinedSessions");
+  } catch (err) {
+    console.error("[session] Failed to record participation:", err);
+  }
+}
+
+/* ==== Save session tags helper ==== */
+/**
+ * Write tags to the session document only if it doesn't already have tags.
+ * This prevents different users from overwriting each other's tags.
+ */
+async function saveSessionTagsIfEmpty(tags) {
+  if (!sessionRef) return;
+  if (!Array.isArray(tags) || !tags.length) return;
+
+  try {
+    const snap = await getDoc(sessionRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    if (Array.isArray(data.tags) && data.tags.length) {
+      // Session already has tags, do not overwrite
+      return;
+    }
+
+    await updateDoc(sessionRef, {
+      tags: tags,
+    });
+
+    console.log("[session] tags saved on session:", tags);
+  } catch (err) {
+    console.error("[session] Failed to save session tags:", err);
+  }
+}
+
+/* ==== Session status handling ==== */
 function applySessionStatus() {
   console.log("[session] status =", status);
 
   if (status === "pending") {
+    // Session not started yet
     stopLiveQuery();
     setComposerEnabled(false);
 
@@ -291,7 +368,7 @@ function applySessionStatus() {
         '<div class="text-center text-muted small py-4">The session has not started yet.</div>';
     }
   } else if (status === "active") {
-    // Normal live chat
+    // Live chat
     setComposerEnabled(true);
     if (presence) {
       presence.textContent = "Session is live";
@@ -308,6 +385,7 @@ function applySessionStatus() {
     // Load activity prompt once when the session becomes active
     loadActivityPromptForUser().catch(console.error);
     rememberLastSessionForUser().catch(console.error);
+    recordSessionParticipation().catch(console.error);
   } else if (status === "end") {
     // Session ended
     stopLiveQuery();
@@ -328,10 +406,18 @@ function applySessionStatus() {
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
     }
+    const url = new URL("activity-end.html", window.location.href);
+    url.searchParams.set("channelId", channelId);
+    url.searchParams.set("sessionId", sessionId);
+    window.location.href = url.href;
   }
 }
 
-/* ==== session watcher ==== */
+/* ==== Session watcher ==== */
+/**
+ * Listen to changes on the session document (status field),
+ * and update the UI accordingly.
+ */
 function watchSession() {
   if (!sessionRef) {
     if (presence) presence.textContent = "Session not found.";
@@ -357,7 +443,7 @@ function watchSession() {
   );
 }
 
-/* ==== listen for new messages ==== */
+/* ==== Send new messages ==== */
 async function sendMessage(text) {
   if (!text || !uid || !msgsRef) return;
   if (status !== "active") return; // only allow sending when active
@@ -370,7 +456,7 @@ async function sendMessage(text) {
   });
 }
 
-/* ==== composer wiring ==== */
+/* ==== Composer wiring ==== */
 function wireComposer() {
   if (!formEl || !inputEl || !sendBtn) return;
 
@@ -407,7 +493,7 @@ function wireComposer() {
   });
 }
 
-/* ==== boot ==== */
+/* ==== Bootstrapping ==== */
 (function bootChat() {
   try {
     wireComposer();
@@ -422,7 +508,7 @@ function wireComposer() {
   }
 })();
 
-/* ==== emoji picker ==== */
+/* ==== Emoji picker ==== */
 (() => {
   const picker = document.getElementById("emojiPicker");
   if (!picker) return;
@@ -478,7 +564,7 @@ function wireComposer() {
   });
 })();
 
-/* ==== reaction buttons ==== */
+/* ==== Reaction buttons (local-only) ==== */
 (() => {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".rxn");
@@ -496,10 +582,13 @@ function wireComposer() {
   });
 })();
 
-// Decide which category to use based on user's interests.
-// If multiple tags match (e.g. "Gaming" and "Traveling"),
-// randomly pick ONE of them.
-// Returns { category: "gaming" | "tech" | "traveling" | null, label: string | null }
+/* ==== Interest category helpers ==== */
+/**
+ * Decide which category to use based on user's interests.
+ * If multiple tags match (e.g. "Gaming" and "Traveling"),
+ * randomly pick ONE of them.
+ * Returns { category: "gaming" | "tech" | "traveling" | null, label: string | null }
+ */
 function pickCategoryFromInterests(interests = []) {
   const candidates = [];
 
@@ -512,7 +601,7 @@ function pickCategoryFromInterests(interests = []) {
     if (s.includes("tech") || s.includes("code")) {
       candidates.push({ category: "tech", label: raw });
     }
-    if (s.includes("travel")) {
+    if (s.includes("traveling")) {
       candidates.push({ category: "traveling", label: raw });
     }
   });
@@ -525,7 +614,9 @@ function pickCategoryFromInterests(interests = []) {
   return choice;
 }
 
-// Render the session tag pill in the header
+/**
+ * Render the session tag pill in the header
+ */
 function renderSessionTag(label) {
   if (!sessionTagsEl) return;
 
@@ -544,7 +635,7 @@ function renderSessionTag(label) {
   sessionTagsEl.appendChild(pill);
 }
 
-// Leave session button wiring
+/* ==== Leave session button ==== */
 const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 leaveSessionBtn?.addEventListener("click", () => {
   window.location.href = "main.html";
