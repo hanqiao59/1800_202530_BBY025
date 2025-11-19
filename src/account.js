@@ -1,30 +1,58 @@
-/* ========== User Avatar and Name Display ========== */
-(async function showAvatar() {
-  const nameEl = document.getElementById("User-Name");
-  const roleEl = document.getElementById("User-Role");
-  const avatarEl = document.getElementById("userAvatar");
-  if (!nameEl) return;
+/* ========== IMPORTS ========== */
+import { auth, db } from "./firebaseConfig.js";
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+} from "firebase/firestore";
+import {
+  onAuthStateChanged,
+} from "firebase/auth";
 
-  try {
-    const { onAuthReady } = await import("./authentication.js");
-    onAuthReady((user) => {
-      if (!user) {
-        location.href = "login.html";
-        return;
+/* ========== MAIN PROFILE LOADING ========== */
+(async function showUserProfile() {
+  const nameEl = document.getElementById("User-Name");
+  const avatarEl = document.getElementById("userAvatar");
+  const bannerEl = document.getElementById("userBanner");
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const uid = user.uid;
+    const userRef = doc(db, "users", uid);
+
+    // Real-time updates
+    onSnapshot(userRef, (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data();
+
+      /* ===== Display Name ===== */
+      if (data.displayName) {
+        nameEl.textContent = data.displayName;
+      } else if (user.displayName) {
+        nameEl.textContent = user.displayName;
+      } else {
+        nameEl.textContent = "User";
       }
-      const name = user.displayName;
-      nameEl.textContent = `${name}`;
-      if (!avatarEl) {
-        return (innerHTML = "${name.charAt(0).toUpperCase()}");
+
+      /* ===== Avatar ===== */
+      if (data.photoURL) {
+        avatarEl.src = data.photoURL;
       } else if (user.photoURL) {
         avatarEl.src = user.photoURL;
       } else {
         avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          name
+          nameEl.textContent
         )}&background=6c757d&color=ffffff&size=128&rounded=true`;
       }
+
+      /* ===== Banner ===== */
+      if (data.bannerURL) {
+        bannerEl.src = data.bannerURL;
+      }
     });
-  } catch (err) {
-    console.warn("[auth] authentication.js Failed:", err);
-  }
+  });
 })();
