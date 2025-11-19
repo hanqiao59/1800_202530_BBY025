@@ -123,7 +123,12 @@
             <div class="col-4">
               <div class="card border-0">
                 <div class="card-body py-3 stats">
-                  <p class="fw-semibold mb-1 fs-4 text-dark">1</p>
+                  <p
+                    id="statActivitiesJoined"
+                    class="fw-semibold mb-1 fs-4 text-dark"
+                  >
+                    0
+                  </p>
                   <small class="text-secondary">Activities</small>
                 </div>
               </div>
@@ -135,7 +140,7 @@
       <!-- Your Channels Section -->
       <section class="container-lg px-3 mt-4">
         <div class="section-title d-flex align-items-center mb-3 gap-2">
-          <h2 class="mb-0">Your Channels</h2>
+          <h2 class="mb-0">Channels</h2>
 
           <!-- Tooltip -->
           <i
@@ -147,22 +152,23 @@
           ></i>
         </div>
 
-        <!-- Hosted channel: only visible when is hosting at least one channel -->
-        <div
-          id="hostedChannelBanner"
-          class="alert alert-info d-flex justify-content-between align-items-center mb-3 d-none"
-        >
-          <div>
-            <strong class="me-1">You are hosting a channel:</strong>
-            <span id="hostedChannelName"></span>
-          </div>
-          <a
-            id="hostedChannelLink"
-            href="#"
-            class="btn btn-sm btn-outline-primary fw-semibold"
+        <!-- Hosted channel: owner view -->
+        <div id="hostedChannelContainer" class="mb-3">
+          <div
+            id="hostedChannelBanner"
+            class="alert alert-info d-flex justify-content-between align-items-center mb-3 d-none"
           >
-            Open
-          </a>
+            <div>
+              <strong class="me-1">You are hosting a channel:</strong>
+              <span class="hostedChannelName"></span>
+            </div>
+            <a
+              class="hostedChannelLink btn btn-sm btn-outline-primary fw-semibold"
+              href="#"
+            >
+              Open
+            </a>
+          </div>
         </div>
 
         <!-- Buttons -->
@@ -214,16 +220,24 @@
                 </h5>
               </div>
               <span
+                id="recentSessionBadge"
                 class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"
               >
                 Live
               </span>
             </div>
 
-            <p class="mb-2 small text-muted">
+            <p id="recentSessionText" class="mb-2 small text-muted">
               You recently joined this session. You can jump back in at any
               time.
             </p>
+
+            <!-- tags -->
+            <div
+              id="recentSessionTags"
+              class="mb-2 d-flex flex-wrap gap-2 small"
+            ></div>
+
             <div class="d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center">
                 <span
@@ -242,17 +256,18 @@
               </div>
               <a id="recentSessionLink" href="#" class="align-self-end">
                 <button
+                  id="recentSessionButton"
                   class="btn btn-sm rounded-3 border-2 button-view-group fw-semibold"
                 >
                   Rejoin Session
-                </button></a
-              >
+                </button>
+              </a>
             </div>
           </div>
         </div>
 
         <!-- Past Session Card -->
-        <div class="card rounded-3 mb-4">
+        <!-- <div class="card rounded-3 mb-4">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h5 class="mb-0 fw-semibold">Tech Meetup</h5>
@@ -299,7 +314,7 @@
               </button>
             </div>
           </div>
-        </div>
+        </div> -->
       </section>
     </div>
 
@@ -481,7 +496,7 @@
     <site-footer></site-footer>
 
     <!-- Link to scripts of your own -->
-    <script type="module" src="./src/app.js"></script>
-    <script type="module" src="./src/main.js"></script>
+    <script type="module" src="/src/app.js"></script>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
