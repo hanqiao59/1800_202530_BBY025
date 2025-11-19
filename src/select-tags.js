@@ -1,5 +1,4 @@
 /* ========== Select Tags Page Logic ========== */
-// Logic for "Select Your Interests" page where users pick tags.
 import { auth, db } from "/src/firebaseConfig.js";
 import {
   collection,
@@ -28,8 +27,7 @@ if (!channelId) {
   console.warn("No channelId provided in URL.");
 }
 
-// State
-const MAX = 3;
+const MAX = 4; // Max number of selectable tags
 let uid = auth.currentUser?.uid || null; // previous page ensured login
 let selected = new Set();
 let groups = {}; // { category: [{name, emoji, order}], ... }
@@ -255,6 +253,12 @@ async function saveSelection() {
   }
 
   await Promise.all(writes);
+
+  try {
+    localStorage.setItem("selectedInterests", JSON.stringify(interests));
+  } catch (e) {
+    console.warn("[select-tags] Failed to store local selectedInterests:", e);
+  }
 }
 
 /* ==== Watch sessions for an active one ==== */
@@ -283,7 +287,7 @@ function watchForActiveSession() {
       const sessionId = activeDoc.id;
       console.log("[select-tags] Found active session:", sessionId);
 
-      const url = new URL("ice-breaker-session.html", window.location.href);
+      const url = new URL("auto-grouping.html", window.location.href);
       url.searchParams.set("channelId", channelId);
       url.searchParams.set("sessionId", sessionId);
 
@@ -295,7 +299,7 @@ function watchForActiveSession() {
   );
 }
 
-/* ==== Boot sequence ==== */
+/* ==== Main flow ==== */
 (async () => {
   try {
     loading && (loading.style.display = "block");
@@ -326,7 +330,6 @@ function watchForActiveSession() {
 /* ==== Button: toggle ready / edit ==== */
 if (continueButton) {
   continueButton.addEventListener("click", async () => {
-    // State 1: not locked yet → user says "I'm ready"
     if (!locked) {
       if (selected.size === 0) return;
 
@@ -368,7 +371,6 @@ if (continueButton) {
         continueButton.disabled = false;
       }
     } else {
-      // State 2: locked → user wants to edit interests again
       locked = false;
 
       document.querySelectorAll("[data-tag]").forEach((chip) => {
