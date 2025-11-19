@@ -37,8 +37,7 @@
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
-
-    <!--<script type="module" src="/src/components/site-footer.js"></script>-->
+    <script type="module" src="/src/components/site-default-footer.js"></script>
   </head>
 
   <body>
@@ -48,43 +47,60 @@
 
     <section class="container-fluid">
       <div class="d-flex align-items-center gap-3 my-3">
-        <a class="me-auto" href="#">
-          <img
-            class="opacity-50 hover-opacity-100 cursor-pointer"
-            src="/images/arrow-left.svg"
-            alt=""
-            width="200%"
-            height="200%"
-        /></a>
+        <a
+          class="me-auto icon-link icon-link-hover link-underline-opacity-0 link-dark"
+          href="#"
+          onclick="history.back(); return false"
+        >
+          <span class="bi bi-arrow-left"></span>
+        </a>
 
         <h3 class="p-2 text-center me-auto">Members</h3>
       </div>
-      <div class="input-group mb-3">
-        <button
-          type="button"
-          class="border border-secondary-subtle bg-white border-end-0"
-        >
-          <img src="/images/search.svg" alt="" width="20" height="20" />
-        </button>
-        <input
-          type="search"
-          class="border-start-0 form-control"
-          list="members-list"
-          id="memberSearch"
-          placeholder="Search group members"
-        />
-        <datalist id="members-list"></datalist>
+      <div class="search-container position-relative input-group mb-4 fs-5">
+        <form class="w-100 hstack" onsubmit="return false;">
+          <i
+            class="bi bi-search me-4 ms-2"
+            id="searchGlass"
+            style="cursor: pointer"
+          ></i>
+          <input
+            type="text"
+            class="form-control"
+            id="membersSearch"
+            placeholder="Search group members"
+            autocomplete="off"
+          />
+        </form>
+        <!-- Custom dropdown (replaces <datalist>) -->
+        <div
+          id="customDropdown"
+          class="dropdown-menu position-absolute w-100 bg-white rounded shadow-sm"
+          style="
+            top: 48px;
+            max-height: 220px;
+            overflow-y: auto;
+            display: none;
+            z-index: 2000;
+          "
+        ></div>
       </div>
-      <div class="container-fluid bg-secondary-subtle" id="members-go-here">
-        <div>
-          <span>No members found.</span>
-          <template>
-            <img />
-            <span>Member's name</span>
-          </template>
-        </div>
-      </div>
+      <div id="searchedResults"></div>
     </section>
+
+    <footer class="w-100 mt-5" style="transform: translate(0px, 400px)">
+      <site-default-footer></site-default-footer>
+    </footer>
+
+    <style>
+      .dropdown-item.active {
+        background-color: #393939;
+        color: #000000;
+      }
+      .dropdown-item span.match {
+        font-weight: bold;
+      }
+    </style>
 
     <!---------------------------------------------->
     <!-- Your own JavaScript functions go here -->

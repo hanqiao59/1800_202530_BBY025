@@ -17,7 +17,10 @@ import { onAuthStateChanged } from "firebase/auth";
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("id");
 
-// DOM elements
+//Store the Channel's ID inside StorageSession for the page.
+sessionStorage.setItem("channelId", channelId);
+
+// 2) DOM elements
 const titleEl = document.getElementById("channelTitle");
 const memberJoinCard = document.getElementById("memberJoinCard");
 const ownerHostCard = document.getElementById("ownerHostCard");

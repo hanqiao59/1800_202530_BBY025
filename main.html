@@ -37,6 +37,7 @@
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
+    <script type="module" src="/src/components/site-default-footer.js"></script>
 
     <!-- <style>
       /* ===== Glassmorphism dashboard card ===== */
@@ -87,12 +88,7 @@
             <div
               class="d-flex justify-content-center align-items-center fw-bold me-3 flex-shrink-0"
             >
-              <img
-                src="..."
-                alt="User Avatar"
-                class="img-fluid"
-                id="userAvatar"
-              />
+              <img src="..." alt="" class="img-fluid" id="userAvatar" />
             </div>
             <div class="p-2">
               <h2 id="welcome-title" class="h4 mb-1 text-dark">
@@ -495,7 +491,7 @@
     </div>
 
     <!--Footer-->
-    <site-footer></site-footer>
+    <site-default-footer></site-default-footer>
 
     <!-- Link to scripts of your own -->
     <script type="module" src="/src/app.js"></script>
