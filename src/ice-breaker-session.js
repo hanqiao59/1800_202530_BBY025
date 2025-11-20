@@ -20,6 +20,8 @@ import { onAuthStateChanged } from "firebase/auth";
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
+const viewMode = params.get("mode");
+const isHistoryView = viewMode === "history";
 const sessionNameEl = document.getElementById("sessionChannelName");
 const sessionTagsEl = document.getElementById("sessionTags");
 const presence = document.getElementById("presence");
@@ -391,6 +393,26 @@ function applySessionStatus() {
     stopLiveQuery();
     setComposerEnabled(false);
 
+    if (isHistoryView) {
+      if (presence) {
+        presence.textContent = "This session has ended.";
+        presence.classList.remove(
+          "badge",
+          "bg-success-subtle",
+          "text-success",
+          "px-3",
+          "py-2",
+          "rounded-pill"
+        );
+      }
+
+      if (listEl && !unsubMsgs) {
+        startLiveQuery().catch(console.error);
+      }
+
+      return;
+    }
+
     if (presence) {
       presence.textContent = "This session has ended.";
       presence.classList.remove(
@@ -406,6 +428,7 @@ function applySessionStatus() {
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
     }
+
     const url = new URL("activity-end.html", window.location.href);
     url.searchParams.set("channelId", channelId);
     url.searchParams.set("sessionId", sessionId);
