@@ -253,6 +253,7 @@ const form = document.getElementById("createChannelForm");
 const nameInput = document.getElementById("channelName");
 const submitBtn = document.getElementById("createChannelSubmit");
 const errEl = document.getElementById("createChannelError");
+const openChannelBtn = document.getElementById("openChannelBtn");
 
 const step1 = document.getElementById("createChannelStep1");
 const step2 = document.getElementById("createChannelStep2");
