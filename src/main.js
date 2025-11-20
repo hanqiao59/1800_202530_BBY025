@@ -258,7 +258,6 @@ const step1 = document.getElementById("createChannelStep1");
 const step2 = document.getElementById("createChannelStep2");
 const inviteLinkOutput = document.getElementById("inviteLinkOutput");
 const copyBtn = document.getElementById("copyLinkBtn");
-const openChannelBtn = document.getElementById("openChannelBtn");
 
 let createdChannelId = null;
 
