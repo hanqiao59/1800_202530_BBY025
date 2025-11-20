@@ -16,12 +16,14 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-/* ==== DOM references ==== */
+/* ==== URL params ==== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
 const viewMode = params.get("mode");
 const isHistoryView = viewMode === "history";
+
+/* ==== DOM references ==== */
 const sessionNameEl = document.getElementById("sessionChannelName");
 const sessionTagsEl = document.getElementById("sessionTags");
 const presence = document.getElementById("presence");
@@ -31,6 +33,7 @@ const inputEl = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
 const activityTitleEl = document.getElementById("activityTitle");
 const activityPromptEl = document.getElementById("activityPrompt");
+const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 
 // Validate required params
 if (!channelId || !sessionId) {
@@ -74,9 +77,7 @@ const msgsRef =
     ? collection(db, "channels", channelId, "sessions", sessionId, "messages")
     : null;
 
-/**
- * Load basic channel metadata (name) for the header.
- */
+/* ==== Channel meta (name) ==== */
 async function loadChannelMeta() {
   if (!channelId || !sessionNameEl) return;
 
@@ -91,6 +92,7 @@ async function loadChannelMeta() {
   }
 }
 
+/* ==== Scroll helpers ==== */
 function atBottom(el, th = 48) {
   return el.scrollHeight - el.scrollTop - el.clientHeight < th;
 }
@@ -99,6 +101,7 @@ function scrollToBottom(el) {
   el.scrollTop = el.scrollHeight;
 }
 
+/* ==== Formatting ==== */
 function fmtTime(ts) {
   try {
     const d = ts?.toDate ? ts.toDate() : new Date();
@@ -108,6 +111,7 @@ function fmtTime(ts) {
   }
 }
 
+/* ==== Composer enable/disable ==== */
 function setComposerEnabled(enabled) {
   if (!formEl || !inputEl || !sendBtn) return;
   inputEl.disabled = !enabled;
@@ -220,7 +224,8 @@ async function loadActivityPromptForUser() {
       console.warn("[activity] No matching category found, skipping.");
       if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
       if (activityPromptEl)
-        activityPromptEl.textContent = "Something went wrong!!";
+        activityPromptEl.textContent =
+          "Something went wrong. Feel free to chat about your interests!";
       return;
     }
 
@@ -268,7 +273,7 @@ let lastSessionSaved = false;
 
 /**
  * Save the last joined session on the user profile so we can
- * show it on the dashboard (Recent Session card).
+ * show it on the dashboard.
  */
 async function rememberLastSessionForUser() {
   if (lastSessionSaved) return;
@@ -301,30 +306,9 @@ async function rememberLastSessionForUser() {
  * If it already exists, we do nothing (to avoid double counting).
  */
 async function recordSessionParticipation() {
-  // 1) 没有 uid 或参数不完整就直接退出
   if (!uid || !channelId || !sessionId) return;
 
-  // 2) history 模式只是看历史，不应该再+1
-  if (isHistoryView) {
-    return;
-  }
-
   try {
-    // 3) 先检查这个 user 是不是 channel 的 owner
-    const channelRef = doc(db, "channels", channelId);
-    const channelSnap = await getDoc(channelRef);
-
-    if (channelSnap.exists()) {
-      const chData = channelSnap.data();
-      if (chData.createdBy && chData.createdBy === uid) {
-        console.log(
-          "[session] user is channel owner, skip recording participation"
-        );
-        return; // ✅ 不给 owner 记 joinedSessions
-      }
-    }
-
-    // 4) 再检查 joinedSessions 里是否已经有记录，避免重复计数
     const ref = doc(db, "users", uid, "joinedSessions", sessionId);
     const snap = await getDoc(ref);
 
@@ -346,6 +330,10 @@ async function recordSessionParticipation() {
 }
 
 /* ==== Save session tags helper ==== */
+/**
+ * Write tags to the session document only if it doesn't already have tags.
+ * This prevents different users from overwriting each other's tags.
+ */
 async function saveSessionTagsIfEmpty(tags) {
   if (!sessionRef) return;
   if (!Array.isArray(tags) || !tags.length) return;
@@ -381,6 +369,14 @@ function applySessionStatus() {
 
     if (presence) {
       presence.textContent = "Waiting for host to start…";
+      presence.classList.remove(
+        "badge",
+        "bg-success-subtle",
+        "text-success",
+        "px-3",
+        "py-2",
+        "rounded-pill"
+      );
     }
     if (listEl) {
       listEl.innerHTML =
@@ -411,6 +407,7 @@ function applySessionStatus() {
     setComposerEnabled(false);
 
     if (isHistoryView) {
+      // history 模式：不跳转，只读查看消息
       if (presence) {
         presence.textContent = "This session has ended.";
         presence.classList.remove(
@@ -424,12 +421,13 @@ function applySessionStatus() {
       }
 
       if (listEl && !unsubMsgs) {
+        // 再跑一次查询，把消息显示出来（之后也不会再变了）
         startLiveQuery().catch(console.error);
       }
-
       return;
     }
 
+    // 普通模式：自动跳转到 activity-end 页面
     if (presence) {
       presence.textContent = "This session has ended.";
       presence.classList.remove(
@@ -454,6 +452,10 @@ function applySessionStatus() {
 }
 
 /* ==== Session watcher ==== */
+/**
+ * Listen to changes on the session document (status field),
+ * and update the UI accordingly.
+ */
 function watchSession() {
   if (!sessionRef) {
     if (presence) presence.textContent = "Session not found.";
@@ -666,7 +668,6 @@ function renderSessionTag(label) {
 }
 
 /* ==== Leave session button ==== */
-const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 leaveSessionBtn?.addEventListener("click", () => {
   window.location.href = "main.html";
 });
