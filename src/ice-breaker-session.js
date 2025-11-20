@@ -26,7 +26,6 @@ const isHistoryView = viewMode === "history";
 /* ==== DOM references ==== */
 const sessionNameEl = document.getElementById("sessionChannelName");
 const sessionTagsEl = document.getElementById("sessionTags");
-const presence = document.getElementById("presence");
 const listEl = document.getElementById("messages");
 const formEl = document.getElementById("composer");
 const inputEl = document.getElementById("msgInput");
@@ -164,16 +163,10 @@ async function startLiveQuery() {
       listEl.innerHTML = "";
       snap.forEach((docSnap) => listEl.appendChild(renderMsg(docSnap)));
 
-      if (presence) {
-        presence.textContent = `${snap.size} message${
-          snap.size === 1 ? "" : "s"
-        }`;
-      }
       if (wasAtBtm) scrollToBottom(listEl);
     },
     (err) => {
       console.error(err);
-      if (presence) presence.textContent = "Live updates unavailable";
     }
   );
 }
@@ -185,22 +178,46 @@ function stopLiveQuery() {
   }
 }
 
-/* ==== Activity prompt loading ==== */
 let activityLoaded = false;
 
-/**
- * Load one activity prompt for this user based on their interests.
- * Also writes a tag to the session document (once) so the dashboard
- * can show "recent session" tags.
- */
+/*==== Load activity prompt for user ====*/
 async function loadActivityPromptForUser() {
   if (activityLoaded) return;
-  if (!channelId || !sessionId || !uid) return;
+  if (!channelId || !sessionId || !uid || !sessionRef) return;
 
   activityLoaded = true;
 
   try {
-    // Read this member's interests under the current channel
+    // 1. First check if the session document already has a prompt
+    const sessionSnap = await getDoc(sessionRef);
+    if (!sessionSnap.exists()) {
+      console.warn("[activity] Session doc does not exist:", sessionRef.path);
+      return;
+    }
+
+    const sData = sessionSnap.data();
+
+    // If the session already has activityTitle / activityPrompt, use them directly without randomizing
+    if (sData.activityTitle || sData.activityPrompt) {
+      if (activityTitleEl) {
+        activityTitleEl.textContent =
+          sData.activityTitle || "Ice-breaker prompt";
+      }
+      if (activityPromptEl) {
+        activityPromptEl.textContent =
+          sData.activityPrompt ||
+          "Share something about yourself or your interests!";
+      }
+
+      // If the session already has tags, render the first tag in the header
+      if (Array.isArray(sData.tags) && sData.tags.length) {
+        renderSessionTag(sData.tags[0]);
+      }
+
+      return;
+    }
+
+    // If not, use the current user's interests to select a category
     const memberRef = doc(db, "channels", channelId, "members", uid);
     const memberSnap = await getDoc(memberRef);
 
@@ -215,7 +232,7 @@ async function loadActivityPromptForUser() {
     const { category, label } = pickCategoryFromInterests(interests);
     renderSessionTag(label);
 
-    // Save the chosen label as session tags if the session doesn't have tags yet
+    // If the session does not have tags yet, save the current label
     if (label) {
       saveSessionTagsIfEmpty([label]).catch(console.error);
     }
@@ -229,7 +246,7 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // Query /activities for this category
+    // Go to /activities and find activities for this category
     const activitiesRef = collection(db, "activities");
     const q = query(
       activitiesRef,
@@ -247,17 +264,28 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // Pick one random document from the result
+    // Randomly pick one from the results
     const docs = snap.docs;
     const chosen = docs[Math.floor(Math.random() * docs.length)];
     const data = chosen.data();
 
+    const finalTitle = data.title || "Ice-breaker prompt";
+    const finalPrompt = data.prompt || "Share something about your interests!";
+
+    // Write the selected prompt back to the session document so everyone sees the same one
+    await updateDoc(sessionRef, {
+      activityId: chosen.id || null,
+      activityCategory: category,
+      activityTitle: finalTitle,
+      activityPrompt: finalPrompt,
+    });
+
+    // show in UI
     if (activityTitleEl) {
-      activityTitleEl.textContent = data.title || "Ice-breaker prompt";
+      activityTitleEl.textContent = finalTitle;
     }
     if (activityPromptEl) {
-      activityPromptEl.textContent =
-        data.prompt || "Share something about your interests!";
+      activityPromptEl.textContent = finalPrompt;
     }
   } catch (err) {
     console.error("[activity] Failed to load prompt:", err);
@@ -367,17 +395,6 @@ function applySessionStatus() {
     stopLiveQuery();
     setComposerEnabled(false);
 
-    if (presence) {
-      presence.textContent = "Waiting for host to start…";
-      presence.classList.remove(
-        "badge",
-        "bg-success-subtle",
-        "text-success",
-        "px-3",
-        "py-2",
-        "rounded-pill"
-      );
-    }
     if (listEl) {
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">The session has not started yet.</div>';
@@ -385,18 +402,8 @@ function applySessionStatus() {
   } else if (status === "active") {
     // Live chat
     setComposerEnabled(true);
-    if (presence) {
-      presence.textContent = "Session is live";
-      presence.classList.add(
-        "badge",
-        "bg-success-subtle",
-        "text-success",
-        "px-3",
-        "py-2",
-        "rounded-pill"
-      );
-    }
     startLiveQuery().catch(console.error);
+
     // Load activity prompt once when the session becomes active
     loadActivityPromptForUser().catch(console.error);
     rememberLastSessionForUser().catch(console.error);
@@ -406,39 +413,18 @@ function applySessionStatus() {
     stopLiveQuery();
     setComposerEnabled(false);
 
-    if (isHistoryView) {
-      // history 模式：不跳转，只读查看消息
-      if (presence) {
-        presence.textContent = "This session has ended.";
-        presence.classList.remove(
-          "badge",
-          "bg-success-subtle",
-          "text-success",
-          "px-3",
-          "py-2",
-          "rounded-pill"
-        );
-      }
+    // Load activity prompt in case it wasn't loaded yet
+    loadActivityPromptForUser().catch(console.error);
 
+    if (isHistoryView) {
+      // history mode: read-only view of messages
       if (listEl && !unsubMsgs) {
-        // 再跑一次查询，把消息显示出来（之后也不会再变了）
         startLiveQuery().catch(console.error);
       }
       return;
     }
 
-    // 普通模式：自动跳转到 activity-end 页面
-    if (presence) {
-      presence.textContent = "This session has ended.";
-      presence.classList.remove(
-        "badge",
-        "bg-success-subtle",
-        "text-success",
-        "px-3",
-        "py-2",
-        "rounded-pill"
-      );
-    }
+    // normal mode: redirect to activity-end page
     if (listEl) {
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
@@ -452,13 +438,9 @@ function applySessionStatus() {
 }
 
 /* ==== Session watcher ==== */
-/**
- * Listen to changes on the session document (status field),
- * and update the UI accordingly.
- */
+// Listen for changes to session status
 function watchSession() {
   if (!sessionRef) {
-    if (presence) presence.textContent = "Session not found.";
     return;
   }
 
@@ -467,7 +449,6 @@ function watchSession() {
     (snap) => {
       if (!snap.exists()) {
         console.warn("Session document does not exist:", sessionRef.path);
-        if (presence) presence.textContent = "Session not found.";
         return;
       }
       const d = snap.data();
@@ -476,7 +457,6 @@ function watchSession() {
     },
     (err) => {
       console.error("Session snapshot error:", err);
-      if (presence) presence.textContent = "Failed to load session.";
     }
   );
 }
