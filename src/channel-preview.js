@@ -32,7 +32,7 @@ const joinQrImg = document.getElementById("joinQr");
 const sessionLiveBadge = document.getElementById("sessionLiveBadge");
 
 // Owner message and QR container
-const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary"); // 那句说明文字
+const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary");
 const ownerQrWrapperEl = ownerHostCard?.querySelector(
   ".d-flex.justify-content-center.mb-3"
 );
