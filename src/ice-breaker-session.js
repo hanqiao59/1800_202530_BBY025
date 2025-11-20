@@ -301,9 +301,30 @@ async function rememberLastSessionForUser() {
  * If it already exists, we do nothing (to avoid double counting).
  */
 async function recordSessionParticipation() {
+  // 1) 没有 uid 或参数不完整就直接退出
   if (!uid || !channelId || !sessionId) return;
 
+  // 2) history 模式只是看历史，不应该再+1
+  if (isHistoryView) {
+    return;
+  }
+
   try {
+    // 3) 先检查这个 user 是不是 channel 的 owner
+    const channelRef = doc(db, "channels", channelId);
+    const channelSnap = await getDoc(channelRef);
+
+    if (channelSnap.exists()) {
+      const chData = channelSnap.data();
+      if (chData.createdBy && chData.createdBy === uid) {
+        console.log(
+          "[session] user is channel owner, skip recording participation"
+        );
+        return; // ✅ 不给 owner 记 joinedSessions
+      }
+    }
+
+    // 4) 再检查 joinedSessions 里是否已经有记录，避免重复计数
     const ref = doc(db, "users", uid, "joinedSessions", sessionId);
     const snap = await getDoc(ref);
 
@@ -325,10 +346,6 @@ async function recordSessionParticipation() {
 }
 
 /* ==== Save session tags helper ==== */
-/**
- * Write tags to the session document only if it doesn't already have tags.
- * This prevents different users from overwriting each other's tags.
- */
 async function saveSessionTagsIfEmpty(tags) {
   if (!sessionRef) return;
   if (!Array.isArray(tags) || !tags.length) return;
@@ -437,10 +454,6 @@ function applySessionStatus() {
 }
 
 /* ==== Session watcher ==== */
-/**
- * Listen to changes on the session document (status field),
- * and update the UI accordingly.
- */
 function watchSession() {
   if (!sessionRef) {
     if (presence) presence.textContent = "Session not found.";
@@ -606,12 +619,6 @@ function wireComposer() {
 })();
 
 /* ==== Interest category helpers ==== */
-/**
- * Decide which category to use based on user's interests.
- * If multiple tags match (e.g. "Gaming" and "Traveling"),
- * randomly pick ONE of them.
- * Returns { category: "gaming" | "tech" | "traveling" | null, label: string | null }
- */
 function pickCategoryFromInterests(interests = []) {
   const candidates = [];
 

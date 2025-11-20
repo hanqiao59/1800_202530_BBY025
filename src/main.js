@@ -1,4 +1,3 @@
-// src/main.js
 import { auth, db } from "/src/firebaseConfig.js";
 import {
   addDoc,
@@ -403,6 +402,10 @@ async function showAllSessionsForUser(user) {
 
       const sessionData = sessionSnap.data();
       const channelData = channelSnap.data();
+
+      if (channelData.createdBy && channelData.createdBy === user.uid) {
+        continue;
+      }
 
       const status = sessionData.status || "active";
       const channelName = channelData.name || "Channel";
