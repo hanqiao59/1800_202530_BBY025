@@ -16,21 +16,23 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-/* ==== DOM references ==== */
+/* ==== URL params ==== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
 const viewMode = params.get("mode");
 const isHistoryView = viewMode === "history";
+
+/* ==== DOM references ==== */
 const sessionNameEl = document.getElementById("sessionChannelName");
 const sessionTagsEl = document.getElementById("sessionTags");
-const presence = document.getElementById("presence");
 const listEl = document.getElementById("messages");
 const formEl = document.getElementById("composer");
 const inputEl = document.getElementById("msgInput");
 const sendBtn = document.getElementById("sendBtn");
 const activityTitleEl = document.getElementById("activityTitle");
 const activityPromptEl = document.getElementById("activityPrompt");
+const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 
 // Validate required params
 if (!channelId || !sessionId) {
@@ -74,9 +76,7 @@ const msgsRef =
     ? collection(db, "channels", channelId, "sessions", sessionId, "messages")
     : null;
 
-/**
- * Load basic channel metadata (name) for the header.
- */
+/* ==== Channel meta (name) ==== */
 async function loadChannelMeta() {
   if (!channelId || !sessionNameEl) return;
 
@@ -91,6 +91,7 @@ async function loadChannelMeta() {
   }
 }
 
+/* ==== Scroll helpers ==== */
 function atBottom(el, th = 48) {
   return el.scrollHeight - el.scrollTop - el.clientHeight < th;
 }
@@ -99,6 +100,7 @@ function scrollToBottom(el) {
   el.scrollTop = el.scrollHeight;
 }
 
+/* ==== Formatting ==== */
 function fmtTime(ts) {
   try {
     const d = ts?.toDate ? ts.toDate() : new Date();
@@ -108,6 +110,7 @@ function fmtTime(ts) {
   }
 }
 
+/* ==== Composer enable/disable ==== */
 function setComposerEnabled(enabled) {
   if (!formEl || !inputEl || !sendBtn) return;
   inputEl.disabled = !enabled;
@@ -160,16 +163,10 @@ async function startLiveQuery() {
       listEl.innerHTML = "";
       snap.forEach((docSnap) => listEl.appendChild(renderMsg(docSnap)));
 
-      if (presence) {
-        presence.textContent = `${snap.size} message${
-          snap.size === 1 ? "" : "s"
-        }`;
-      }
       if (wasAtBtm) scrollToBottom(listEl);
     },
     (err) => {
       console.error(err);
-      if (presence) presence.textContent = "Live updates unavailable";
     }
   );
 }
@@ -181,22 +178,46 @@ function stopLiveQuery() {
   }
 }
 
-/* ==== Activity prompt loading ==== */
 let activityLoaded = false;
 
-/**
- * Load one activity prompt for this user based on their interests.
- * Also writes a tag to the session document (once) so the dashboard
- * can show "recent session" tags.
- */
+/*==== Load activity prompt for user ====*/
 async function loadActivityPromptForUser() {
   if (activityLoaded) return;
-  if (!channelId || !sessionId || !uid) return;
+  if (!channelId || !sessionId || !uid || !sessionRef) return;
 
   activityLoaded = true;
 
   try {
-    // Read this member's interests under the current channel
+    // 1. First check if the session document already has a prompt
+    const sessionSnap = await getDoc(sessionRef);
+    if (!sessionSnap.exists()) {
+      console.warn("[activity] Session doc does not exist:", sessionRef.path);
+      return;
+    }
+
+    const sData = sessionSnap.data();
+
+    // If the session already has activityTitle / activityPrompt, use them directly without randomizing
+    if (sData.activityTitle || sData.activityPrompt) {
+      if (activityTitleEl) {
+        activityTitleEl.textContent =
+          sData.activityTitle || "Ice-breaker prompt";
+      }
+      if (activityPromptEl) {
+        activityPromptEl.textContent =
+          sData.activityPrompt ||
+          "Share something about yourself or your interests!";
+      }
+
+      // If the session already has tags, render the first tag in the header
+      if (Array.isArray(sData.tags) && sData.tags.length) {
+        renderSessionTag(sData.tags[0]);
+      }
+
+      return;
+    }
+
+    // If not, use the current user's interests to select a category
     const memberRef = doc(db, "channels", channelId, "members", uid);
     const memberSnap = await getDoc(memberRef);
 
@@ -211,7 +232,7 @@ async function loadActivityPromptForUser() {
     const { category, label } = pickCategoryFromInterests(interests);
     renderSessionTag(label);
 
-    // Save the chosen label as session tags if the session doesn't have tags yet
+    // If the session does not have tags yet, save the current label
     if (label) {
       saveSessionTagsIfEmpty([label]).catch(console.error);
     }
@@ -220,11 +241,12 @@ async function loadActivityPromptForUser() {
       console.warn("[activity] No matching category found, skipping.");
       if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
       if (activityPromptEl)
-        activityPromptEl.textContent = "Something went wrong!!";
+        activityPromptEl.textContent =
+          "Something went wrong. Feel free to chat about your interests!";
       return;
     }
 
-    // Query /activities for this category
+    // Go to /activities and find activities for this category
     const activitiesRef = collection(db, "activities");
     const q = query(
       activitiesRef,
@@ -242,17 +264,28 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // Pick one random document from the result
+    // Randomly pick one from the results
     const docs = snap.docs;
     const chosen = docs[Math.floor(Math.random() * docs.length)];
     const data = chosen.data();
 
+    const finalTitle = data.title || "Ice-breaker prompt";
+    const finalPrompt = data.prompt || "Share something about your interests!";
+
+    // Write the selected prompt back to the session document so everyone sees the same one
+    await updateDoc(sessionRef, {
+      activityId: chosen.id || null,
+      activityCategory: category,
+      activityTitle: finalTitle,
+      activityPrompt: finalPrompt,
+    });
+
+    // show in UI
     if (activityTitleEl) {
-      activityTitleEl.textContent = data.title || "Ice-breaker prompt";
+      activityTitleEl.textContent = finalTitle;
     }
     if (activityPromptEl) {
-      activityPromptEl.textContent =
-        data.prompt || "Share something about your interests!";
+      activityPromptEl.textContent = finalPrompt;
     }
   } catch (err) {
     console.error("[activity] Failed to load prompt:", err);
@@ -268,7 +301,7 @@ let lastSessionSaved = false;
 
 /**
  * Save the last joined session on the user profile so we can
- * show it on the dashboard (Recent Session card).
+ * show it on the dashboard.
  */
 async function rememberLastSessionForUser() {
   if (lastSessionSaved) return;
@@ -301,30 +334,9 @@ async function rememberLastSessionForUser() {
  * If it already exists, we do nothing (to avoid double counting).
  */
 async function recordSessionParticipation() {
-  // 1) 没有 uid 或参数不完整就直接退出
   if (!uid || !channelId || !sessionId) return;
 
-  // 2) history 模式只是看历史，不应该再+1
-  if (isHistoryView) {
-    return;
-  }
-
   try {
-    // 3) 先检查这个 user 是不是 channel 的 owner
-    const channelRef = doc(db, "channels", channelId);
-    const channelSnap = await getDoc(channelRef);
-
-    if (channelSnap.exists()) {
-      const chData = channelSnap.data();
-      if (chData.createdBy && chData.createdBy === uid) {
-        console.log(
-          "[session] user is channel owner, skip recording participation"
-        );
-        return; // ✅ 不给 owner 记 joinedSessions
-      }
-    }
-
-    // 4) 再检查 joinedSessions 里是否已经有记录，避免重复计数
     const ref = doc(db, "users", uid, "joinedSessions", sessionId);
     const snap = await getDoc(ref);
 
@@ -346,6 +358,10 @@ async function recordSessionParticipation() {
 }
 
 /* ==== Save session tags helper ==== */
+/**
+ * Write tags to the session document only if it doesn't already have tags.
+ * This prevents different users from overwriting each other's tags.
+ */
 async function saveSessionTagsIfEmpty(tags) {
   if (!sessionRef) return;
   if (!Array.isArray(tags) || !tags.length) return;
@@ -379,9 +395,6 @@ function applySessionStatus() {
     stopLiveQuery();
     setComposerEnabled(false);
 
-    if (presence) {
-      presence.textContent = "Waiting for host to start…";
-    }
     if (listEl) {
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">The session has not started yet.</div>';
@@ -389,18 +402,8 @@ function applySessionStatus() {
   } else if (status === "active") {
     // Live chat
     setComposerEnabled(true);
-    if (presence) {
-      presence.textContent = "Session is live";
-      presence.classList.add(
-        "badge",
-        "bg-success-subtle",
-        "text-success",
-        "px-3",
-        "py-2",
-        "rounded-pill"
-      );
-    }
     startLiveQuery().catch(console.error);
+
     // Load activity prompt once when the session becomes active
     loadActivityPromptForUser().catch(console.error);
     rememberLastSessionForUser().catch(console.error);
@@ -410,37 +413,18 @@ function applySessionStatus() {
     stopLiveQuery();
     setComposerEnabled(false);
 
-    if (isHistoryView) {
-      if (presence) {
-        presence.textContent = "This session has ended.";
-        presence.classList.remove(
-          "badge",
-          "bg-success-subtle",
-          "text-success",
-          "px-3",
-          "py-2",
-          "rounded-pill"
-        );
-      }
+    // Load activity prompt in case it wasn't loaded yet
+    loadActivityPromptForUser().catch(console.error);
 
+    if (isHistoryView) {
+      // history mode: read-only view of messages
       if (listEl && !unsubMsgs) {
         startLiveQuery().catch(console.error);
       }
-
       return;
     }
 
-    if (presence) {
-      presence.textContent = "This session has ended.";
-      presence.classList.remove(
-        "badge",
-        "bg-success-subtle",
-        "text-success",
-        "px-3",
-        "py-2",
-        "rounded-pill"
-      );
-    }
+    // normal mode: redirect to activity-end page
     if (listEl) {
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">This ice-breaker session has ended. Thanks for joining!</div>';
@@ -454,9 +438,9 @@ function applySessionStatus() {
 }
 
 /* ==== Session watcher ==== */
+// Listen for changes to session status
 function watchSession() {
   if (!sessionRef) {
-    if (presence) presence.textContent = "Session not found.";
     return;
   }
 
@@ -465,7 +449,6 @@ function watchSession() {
     (snap) => {
       if (!snap.exists()) {
         console.warn("Session document does not exist:", sessionRef.path);
-        if (presence) presence.textContent = "Session not found.";
         return;
       }
       const d = snap.data();
@@ -474,7 +457,6 @@ function watchSession() {
     },
     (err) => {
       console.error("Session snapshot error:", err);
-      if (presence) presence.textContent = "Failed to load session.";
     }
   );
 }
@@ -666,7 +648,6 @@ function renderSessionTag(label) {
 }
 
 /* ==== Leave session button ==== */
-const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 leaveSessionBtn?.addEventListener("click", () => {
   window.location.href = "main.html";
 });

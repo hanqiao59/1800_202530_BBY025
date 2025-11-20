@@ -258,6 +258,7 @@ const step1 = document.getElementById("createChannelStep1");
 const step2 = document.getElementById("createChannelStep2");
 const inviteLinkOutput = document.getElementById("inviteLinkOutput");
 const copyBtn = document.getElementById("copyLinkBtn");
+const openChannelBtn = document.getElementById("openChannelBtn");
 
 let createdChannelId = null;
 
@@ -367,7 +368,7 @@ async function showAllSessionsForUser(user) {
   }
 
   try {
-    //Read users/{uid}/joinedSessions, ordered by joinedAt descending
+    // Read users/{uid}/joinedSessions, ordered by joinedAt descending
     const joinedRef = collection(db, "users", user.uid, "joinedSessions");
     const qJoined = query(joinedRef, orderBy("joinedAt", "desc"));
     const joinedSnap = await getDocs(qJoined);
@@ -404,6 +405,7 @@ async function showAllSessionsForUser(user) {
       const sessionData = sessionSnap.data();
       const channelData = channelSnap.data();
 
+      // 不在 dashboard 显示自己作为 owner 的 session
       if (channelData.createdBy && channelData.createdBy === user.uid) {
         continue;
       }
@@ -412,8 +414,15 @@ async function showAllSessionsForUser(user) {
       const channelName = channelData.name || "Channel";
       const tags = Array.isArray(sessionData.tags) ? sessionData.tags : [];
 
-      // Build the session review URL with query parameters
-      const url = new URL("ice-breaker-session.html", window.location.href);
+      // 根据 status 决定起始页面：
+      // - active: 直接进入 ice-breaker-session（rejoin）
+      // - end: 先进入 activity-end（再由那一页去 history）
+      let url;
+      if (status === "end") {
+        url = new URL("activity-end.html", window.location.href);
+      } else {
+        url = new URL("ice-breaker-session.html", window.location.href);
+      }
       url.searchParams.set("channelId", channelId);
       url.searchParams.set("sessionId", sessionId);
 
@@ -450,7 +459,7 @@ async function showAllSessionsForUser(user) {
             "You recently joined this session. You can jump back in at any time.";
         } else {
           textEl.textContent =
-            "This session has ended. You can still review the session.";
+            "This session has ended. You can view the summary and activity history.";
         }
       }
 
@@ -460,7 +469,7 @@ async function showAllSessionsForUser(user) {
           tags.slice(0, 3).forEach((t) => {
             const span = document.createElement("span");
             span.className =
-              "badge rounded-2 text-dark me-2 fw-semibold px-2 py-2 bg-light";
+              "badge rounded-2 text-dark me-2 fw-semibold px-2 py-2";
             span.textContent = decorateTagLabel(t);
             tagsEl.appendChild(span);
           });
@@ -483,18 +492,93 @@ async function showAllSessionsForUser(user) {
   }
 }
 
-/* ========== Stats: Activities joined ========== */
+/* ========== Stats: Activities joined + Channels hosted ========== */
 async function loadUserStats(user) {
-  const joinedEl = document.getElementById("statActivitiesJoined");
-  if (!joinedEl) return;
+  const activitiesEl = document.getElementById("statActivitiesJoined");
+  const channelsEl = document.getElementById("statChannels");
+
+  // If neither stat element is present, skip loading
+  if (!activitiesEl && !channelsEl) return;
 
   try {
+    // Read sessions the user has joined (written by recordSessionParticipation in ice-breaker-session)
     const joinedRef = collection(db, "users", user.uid, "joinedSessions");
-    const snap = await getDocs(joinedRef);
+    const joinedSnapPromise = getDocs(joinedRef);
 
-    joinedEl.textContent = String(snap.size);
+    // Read channels created by the user
+    const channelsQ = query(
+      collection(db, "channels"),
+      where("createdBy", "==", user.uid)
+    );
+    const channelsSnapPromise = getDocs(channelsQ);
+
+    const [joinedSnap, channelsSnap] = await Promise.all([
+      joinedSnapPromise,
+      channelsSnapPromise,
+    ]);
+
+    /* ---- Channels stat: Number of channels created by the user ---- */
+    if (channelsEl) {
+      channelsEl.textContent = String(channelsSnap.size);
+    }
+
+    /* ---- Activities stat: Number of sessions joined ---- */
+    let activitiesCount = 0;
+
+    if (!joinedSnap.empty) {
+      // Collect all involved channelIds
+      const channelIds = new Set();
+      joinedSnap.forEach((docSnap) => {
+        const d = docSnap.data();
+        if (d.channelId) channelIds.add(d.channelId);
+      });
+
+      // To reduce the number of requests, we batch fetch the createdBy field of these channels to create a mapping
+      const ownerMap = {}; // channelId -> createdBy
+      const ownerFetches = [];
+
+      channelIds.forEach((cid) => {
+        const cRef = doc(db, "channels", cid);
+        ownerFetches.push(
+          getDoc(cRef)
+            .then((snap) => {
+              if (snap.exists()) {
+                const cData = snap.data();
+                ownerMap[cid] = cData.createdBy || null;
+              }
+            })
+            .catch((err) => {
+              console.warn(
+                "[dashboard] Failed to load channel for stats:",
+                err
+              );
+            })
+        );
+      });
+
+      await Promise.all(ownerFetches);
+
+      // Then iterate over joinedSessions and decide whether to count them in Activities based on ownerMap
+      joinedSnap.forEach((docSnap) => {
+        const d = docSnap.data();
+        const cid = d.channelId;
+        const ownerId = ownerMap[cid];
+
+        // If this channel was created by the user, consider them the host and do not count it in Activities
+        if (ownerId && ownerId === user.uid) {
+          return;
+        }
+
+        activitiesCount += 1;
+      });
+    }
+
+    if (activitiesEl) {
+      activitiesEl.textContent = String(activitiesCount);
+    }
   } catch (err) {
     console.error("[dashboard] Failed to load user stats:", err);
-    joinedEl.textContent = "–";
+    if (activitiesEl) activitiesEl.textContent = "–";
+    if (channelsEl) channelsEl.textContent = "–";
   }
 }
