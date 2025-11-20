@@ -32,7 +32,7 @@ const joinQrImg = document.getElementById("joinQr");
 const sessionLiveBadge = document.getElementById("sessionLiveBadge");
 
 // Owner message and QR container
-const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary"); // 那句说明文字
+const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary");
 const ownerQrWrapperEl = ownerHostCard?.querySelector(
   ".d-flex.justify-content-center.mb-3"
 );
@@ -108,7 +108,7 @@ function setOwnerEndedUI() {
   // Change message to "ended"
   if (ownerHostMessageEl) {
     ownerHostMessageEl.textContent =
-      "This ice-breaker session has ended. You can create a new channell if you want to run it again.";
+      "This ice-breaker session has ended. You can create a new channel if you want to run it again.";
   }
 
   // hide QR code
@@ -217,11 +217,11 @@ onAuthStateChanged(auth, async (user) => {
       // Watch for latest session to determine UI state
       watchOwnerSession();
 
-      // create new session
+      // Owner: create a new live session (stay on this page)
       startIceBreakerBtn?.addEventListener("click", async () => {
         if (!currentUser || !channelId) return;
 
-        // If there is already an active session, do not create a new one
+        // Prevent starting a new session if one is already active
         if (activeSessionId && !sessionEnded) {
           alert("A session is already live for this channel.");
           return;
@@ -241,14 +241,14 @@ onAuthStateChanged(auth, async (user) => {
           activeSessionId = newSessionRef.id;
           sessionEnded = false;
 
-          // If the owner clicks Start, go directly into this session
-          const url = new URL("ice-breaker-session.html", window.location.href);
-          url.searchParams.set("channelId", channelId);
-          url.searchParams.set("sessionId", newSessionRef.id);
-          window.location.href = url.href;
+          // Do not navigate away, let watchOwnerSession()'s onSnapshot switch to Live UI
+          console.log(
+            "[channel-preview] Session started by owner, id =",
+            newSessionRef.id
+          );
         } catch (err) {
           console.error("Failed to create session:", err);
-          alert("Failed to start the ice breaker. Please try again.");
+          alert("Failed to start the session. Please try again.");
           startIceBreakerBtn.disabled = false;
         }
       });
