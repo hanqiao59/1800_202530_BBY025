@@ -1,3 +1,4 @@
+// src/main.js
 import { auth, db } from "/src/firebaseConfig.js";
 import {
   addDoc,
@@ -12,6 +13,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 
+import { onAuthStateChanged } from "firebase/auth";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -176,7 +178,7 @@ modalEl?.addEventListener("hidden.bs.modal", () => {
   if (input) input.value = "";
 });
 
-// Handle Paste button
+// Handle the Paste button (reads from clipboard)
 document.getElementById("pasteBtn")?.addEventListener("click", async () => {
   try {
     const text = await navigator.clipboard.readText();
@@ -193,15 +195,16 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
 // Join form & submit button
 const joinForm = document.querySelector("#joinChannelModal form");
 const inviteInput = document.getElementById("inviteLink");
-const joinSubmitBtn = document.getElementById("joinSubmitBtn");
+const joinSubmitBtn = joinForm?.querySelector('button[type="submit"]');
 
 // Disable the default form submission behavior
 joinForm?.addEventListener("submit", (e) => e.preventDefault());
+// Change the submit button to a regular button so it won't trigger the form
+joinSubmitBtn?.setAttribute("type", "button");
 
 // Extract the channel ID from a full link or raw ID string
 function extractChannelId(value) {
   if (!value) return null;
-
   const raw = value.trim();
 
   // Try parsing as a full URL first
@@ -250,11 +253,13 @@ const form = document.getElementById("createChannelForm");
 const nameInput = document.getElementById("channelName");
 const submitBtn = document.getElementById("createChannelSubmit");
 const errEl = document.getElementById("createChannelError");
+
 const step1 = document.getElementById("createChannelStep1");
 const step2 = document.getElementById("createChannelStep2");
 const inviteLinkOutput = document.getElementById("inviteLinkOutput");
 const copyBtn = document.getElementById("copyLinkBtn");
-const openChannelBtn = document.getElementById("openChannelBtn");
+
+let createdChannelId = null;
 
 // Reset everything when modal is closed
 createModalEl?.addEventListener("hidden.bs.modal", () => {
@@ -273,42 +278,42 @@ createModalEl?.addEventListener("hidden.bs.modal", () => {
 // Handle Create Channel form submission
 form?.addEventListener("submit", async (e) => {
   e.preventDefault();
-
-  // Use built-in browser validation for the form
-  if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
-  }
   const name = nameInput.value.trim();
 
-  // Disable button to prevent double-submits
+  if (!name) {
+    errEl.textContent = "Channel name is required.";
+    errEl.classList.remove("d-none");
+    return;
+  }
+
   submitBtn.setAttribute("disabled", "true");
   errEl.classList.add("d-none");
 
   try {
-    // Get current user ID
-    const uid = auth.currentUser?.uid || null;
+    // get current user
+    let uid = null;
+    await new Promise((resolve) => {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        uid = user?.uid || null;
+        unsub();
+        resolve();
+      });
+    });
 
-    if (!uid) {
-      errEl.textContent = "You must be logged in to create a channel.";
-      errEl.classList.remove("d-none");
-      return;
-    }
-
-    // Add a new channel document to Firestore
+    // add to Firestore
     const docRef = await addDoc(collection(db, "channels"), {
       name,
       createdAt: serverTimestamp(),
       createdBy: uid,
     });
 
-    // Generate invite link using the new document ID
+    createdChannelId = docRef.id;
+
+    // Generate invite link
     const link = new URL(
-      `channel-preview.html?id=${docRef.id}`,
+      `channel-preview.html?id=${createdChannelId}`,
       window.location.href
     ).href;
-
-    // Put the link into the readonly input
     inviteLinkOutput.value = link;
 
     // Set the "Open Channel" button link
@@ -327,7 +332,7 @@ form?.addEventListener("submit", async (e) => {
   }
 });
 
-// Handle Copy link button
+// Copy link to clipboard
 copyBtn?.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(inviteLinkOutput.value);

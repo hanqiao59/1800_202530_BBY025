@@ -16,7 +16,7 @@ class SiteFooter extends HTMLElement {
       <div class="container">
         <!-- links -->
         <nav class="mb-3">
-          <ul class="nav flex-column align-items-center gap-2">
+          <ul class="nav flex-column align-items-center gap-2 fs-5">
             <li class="nav-item">
               <a class="nav-link text-body" href="index.html">Home</a>
             </li>
@@ -32,7 +32,8 @@ class SiteFooter extends HTMLElement {
             <li class="nav-item">
               <a class="nav-link text-body" href="#support">Support</a>
             </li>
-            <li class="nav-item" id="authControls"></li>
+            <li class="nav-item" id="authControls">
+            </li>
           </ul>
         </nav>
 
@@ -107,7 +108,7 @@ class SiteFooter extends HTMLElement {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         authControls.innerHTML = `
-            <a class="link-dark link-underline link-underline-opacity-0" id="signOutBtn" href="index.html">
+            <a class="nav-link link-dark" id="signOutBtn" href="index.html">
               Log Out
             </a>`;
         authControls
@@ -115,7 +116,7 @@ class SiteFooter extends HTMLElement {
           ?.addEventListener("click", logoutUser);
       } else {
         authControls.innerHTML = `
-            <a class="link-dark link-underline link-underline-opacity-0" id="loginBtn" href="login.html">Log In</a>`;
+            <a class="nav-link link-dark" id="loginBtn" href="login.html">Log In</a>`;
       }
     });
   }

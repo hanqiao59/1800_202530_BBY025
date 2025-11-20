@@ -26,7 +26,7 @@ function initAuthControls(root = document) {
     if (user) {
       // When logged in → show "LOG OUT" button
       host.innerHTML = `
-        <button class="nav-link btn btn-link text-body-tertiary p-0"
+        <button class="nav-link btn btn-link text-body-tertiary p-0 mt-1"
                 id="signOutBtn" type="button">
           LOG OUT
         </button>`;
