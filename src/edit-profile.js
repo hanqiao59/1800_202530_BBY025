@@ -57,29 +57,33 @@ async function handleSubmit(e) {
 
   const updateData = {
     fullName: nameInput.value.trim(),
-    bio: bioInput.value.trim()
+    bio: bioInput.value.trim(),
   };
 
   try {
     // Banner upload
     if (bannerInput.files.length > 0) {
       const file = bannerInput.files[0];
-      const url = await uploadFileSafe(file, `users/${currentUserUID}/banner.jpg`);
-      if (url) updateData.banner = url;  // correct field name
+      const url = await uploadFileSafe(
+        file,
+        `users/${currentUserUID}/banner.jpg`
+      );
+      if (url) updateData.banner = url; // correct field name
     }
 
     // Profile photo upload
     if (profileInput.files.length > 0) {
       const file = profileInput.files[0];
-      const url = await uploadFileSafe(file, `users/${currentUserUID}/profile.jpg`);
-      if (url) updateData.profilePicture = url;  // correct field name
+      const url = await uploadFileSafe(
+        file,
+        `users/${currentUserUID}/profile.jpg`
+      );
+      if (url) updateData.profilePicture = url; // correct field name
     }
 
     await setDoc(userRef, updateData, { merge: true });
 
     alert("Profile updated!");
-    window.location.href = "account.html";
-
   } catch (err) {
     console.error("Save error:", err);
     alert("Error saving profile.");
@@ -90,7 +94,7 @@ async function handleSubmit(e) {
 
 /** Auth listener */
 onAuthStateChanged(auth, async (user) => {
-  if (!user) return window.location.href = "login.html";
+  if (!user) return (window.location.href = "login.html");
 
   currentUserUID = user.uid;
 

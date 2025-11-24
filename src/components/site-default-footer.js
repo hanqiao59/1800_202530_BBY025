@@ -42,7 +42,7 @@ class DefaultFooter extends HTMLElement {
       <div class="col">
         <a
           class="text-dark link-underline-opacity-0"
-          href="account.html"
+          href="profile.html"
         >
           Account
         </a>
