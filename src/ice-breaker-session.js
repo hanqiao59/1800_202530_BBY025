@@ -34,7 +34,7 @@ const activityTitleEl = document.getElementById("activityTitle");
 const activityPromptEl = document.getElementById("activityPrompt");
 const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 
-// Validate required params
+// validate required params
 if (!channelId || !sessionId) {
   console.warn("[session] Missing channelId or sessionId in URL.");
 }
@@ -52,8 +52,6 @@ onAuthStateChanged(auth, (u) => {
   uid = u?.uid || null;
   displayName = u?.displayName || u?.email || "Anon";
 
-  // If auth becomes ready after the session is already active,
-  // make sure we still load the prompt / remember / participation.
   if (uid && status === "active") {
     if (!activityLoaded) {
       loadActivityPromptForUser().catch(console.error);
@@ -62,6 +60,11 @@ onAuthStateChanged(auth, (u) => {
       rememberLastSessionForUser().catch(console.error);
     }
     recordSessionParticipation().catch(console.error);
+
+    // restart live query if not started yet
+    if (!unsubMsgs) {
+      startLiveQuery().catch(console.error);
+    }
   }
 });
 
@@ -128,7 +131,9 @@ function renderMsg(docSnap) {
   }`;
 
   const col = document.createElement("div");
-  col.className = "d-flex flex-column align-items-start";
+  col.className = `d-flex flex-column ${
+    mine ? "align-items-end text-end" : "align-items-start"
+  }`;
 
   const bubble = document.createElement("div");
   bubble.className = `bubble ${mine ? "bubble-me" : "bubble-them"} shadow-sm`;
@@ -150,6 +155,12 @@ let unsubMsgs = null;
 
 async function startLiveQuery() {
   if (!msgsRef || unsubMsgs) return;
+
+  // ensure we have uid
+  if (!uid) {
+    console.warn("[session] No uid yet, delaying live query");
+    return;
+  }
 
   const q = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
 

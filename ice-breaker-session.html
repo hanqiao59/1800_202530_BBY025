@@ -52,8 +52,8 @@
         padding: 0.15rem 0.6rem;
         border-radius: 999px;
         font-size: 0.75rem;
-        background: #000;
-        color: #fff;
+        background: #d7eefb;
+        color: #000;
         font-weight: 500;
       }
 
@@ -102,6 +102,7 @@
       .chat-wrap {
         height: calc(100vh - 120px);
       }
+
       .chat-scroll {
         overflow-y: auto;
         overscroll-behavior: contain;
@@ -118,12 +119,16 @@
         place-items: center;
         flex: 0 0 36px;
       }
+
       .bubble {
         max-width: 80%;
         border-radius: 16px;
         padding: 0.5rem 0.75rem;
         text-align: left;
         display: inline-block;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        white-space: normal;
       }
       .bubble-me {
         background: #11a0ff;
@@ -194,6 +199,7 @@
               id="leaveSessionBtn"
               type="button"
               class="btn btn-sm btn-outline-secondary"
+              title="You can always rejoin this session from the channel page."
             >
               Leave session
             </button>
@@ -205,6 +211,7 @@
           </div>
 
           <!-- Members row -->
+          <p style="margin-bottom: 0; font-size: 0.875rem">Members:</p>
           <div class="d-flex align-items-center gap-2 pt-1">
             <a href="others-profile.html"
               ><span class="member-avatar-sm avatar-color-1">A</span></a
