@@ -21,7 +21,7 @@ class SiteFooter extends HTMLElement {
               <a class="nav-link text-body" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-body" href="main.html">Channel</a>
+              <a class="nav-link text-body" href="main.html">Dashboard</a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-body" href="profile.html">Account</a>

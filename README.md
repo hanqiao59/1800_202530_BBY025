@@ -22,7 +22,7 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 ## Technologies Used
 
 - **Wireframe**: Figma
-- **Prootype**: Figma
+- **Prototype**: Figma
 - **Frontend**: HTML5, CSS, Bootstrap, JavaScript
 - **Build Tool**: [Vite](https://vitejs.dev/)
 - **Backend**: Firebase for hosting
