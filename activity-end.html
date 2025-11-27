@@ -43,7 +43,7 @@
   <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
-    <!--  Title -->
+    <!-- Title -->
     <div
       class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
     >
@@ -56,9 +56,12 @@
       <h3 class="mb-0">Activity Finished</h3>
     </div>
 
+    <!-- Main Content -->
     <main
-      class="container-fluid d-flex flex-column align-items-center justify-content-center text-center"
+      class="container-md d-flex flex-column align-items-center justify-content-center text-center"
+      style="max-width: 720px"
     >
+      <!-- top section -->
       <section class="activity-finished pt-5">
         <div
           class="mb-3 d-inline-flex justify-content-center align-items-center rounded-circle bg-info-subtle"
@@ -70,11 +73,13 @@
         <p class="text-muted small">You've completed the activity 🎮</p>
       </section>
 
+      <!-- add friends -->
       <section class="add-friends mt-5">
         <h4 class="fw-semibold mb-3">Add friends</h4>
         <div class="friends-list"></div>
       </section>
 
+      <!-- button -->
       <div class="mt-4 mb-4">
         <a href="main.html"
           ><button class="btn btn-dark w-100 back-home-btn">

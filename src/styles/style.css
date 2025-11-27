@@ -538,13 +538,13 @@ footer a:hover img {
 }
 
 .member-avatar:nth-child(1) {
-  background-color: #c5e2f9 !important;
+  background-color: #ffe2e5 !important;
 }
 .member-avatar:nth-child(2) {
-  background-color: #fce7cc !important;
+  background-color: #e1f0ff !important;
 }
 .member-avatar:nth-child(3) {
-  background-color: #fad2d2 !important;
+  background-color: #e5f8e8 !important;
 }
 
 /* ===== Join Channel Modal Styles ===== */

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PeerLink - Session Member</title>
+    <meta name="comp1800 template" content="My 1800 App" />
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+
+    <!-- Google Fonts and Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Poppins Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap  and Custom CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/styles/style.css" />
+
+    <style>
+      .profile-banner {
+        height: 180px;
+        background: linear-gradient(135deg, #fecdd3, #c4b5fd);
+      }
+
+      .profile-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        font-size: 2rem;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+      }
+
+      .avatar-color {
+        background: #ffe2e5;
+      }
+    </style>
+
+    <!-- Web Components for shared navbar and footer layout -->
+    <script type="module" src="/src/components/site-navbar.js"></script>
+    <script type="module" src="/src/components/site-default-footer.js"></script>
+  </head>
+
+  <body class="bg-white">
+    <site-navbar></site-navbar>
+    <main>
+      <div
+        class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
+      >
+        <a
+          href="#"
+          onclick="history.back(); return false;"
+          class="position-absolute start-0 top-50 translate-middle-y ms-3 text-decoration-none d-flex align-items-center"
+        >
+          <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+        <h3 class="mb-0">Channel Member</h3>
+      </div>
+
+      <!-- profile header -->
+      <div class="profile-header position-relative mb-5">
+        <div class="profile-banner"></div>
+
+        <div
+          class="profile-avatar avatar-color d-flex justify-content-center align-items-center position-absolute top-100 start-50 translate-middle"
+        >
+          B
+        </div>
+      </div>
+
+      <!-- profile content -->
+      <div class="container-md my-4" style="max-width: 720px">
+        <div class="d-flex flex-column align-items-center">
+          <h4 class="mb-1">Barry Berrison</h4>
+          <p class="text-muted mb-3">Computer Science Student</p>
+
+          <div class="d-flex gap-3 mb-4">
+            <button class="btn btn-outline-primary btn-sm">Add Friend</button>
+          </div>
+
+          <div class="px-3 pb-4">
+            <h5>Bio</h5>
+            <p class="mb-4">
+              Hi! I'm Barry, a term 1 computer system technology student at
+              BCIT. Looking to connect with like-minded peers!
+            </p>
+
+            <h5>Interests</h5>
+            <div class="d-flex flex-wrap gap-2 pt-1">
+              <span class="badge rounded-2 text-dark me-2 fw-semibold px-2 py-2"
+                >💻 Coding</span
+              >
+              <span class="badge rounded-2 text-dark me-2 fw-semibold px-2 py-2"
+                >🎮 Gaming</span
+              >
+              <span class="badge rounded-2 text-dark me-2 fw-semibold px-2 py-2"
+                >⛰️ Hiking</span
+              >
+              <span class="badge rounded-2 text-dark me-2 fw-semibold px-2 py-2"
+                >☕ Coffee</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <site-default-footer></site-default-footer>
+
+    <!---------------------------------------------->
+    <!-- Your own JavaScript functions go here -->
+    <!---------------------------------------------->
+    <!-- Link to scripts of your own -->
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>

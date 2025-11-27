@@ -43,14 +43,14 @@
   <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
-    <div class="container-lg" style="max-width: 720px">
+    <div class="container-md" style="max-width: 720px">
       <!-- Welcome Section -->
       <div class="px-3">
         <div
           id="welcome-section"
-          class="container-lg bg-white rounded-4 shadow-sm mt-4 p-4 px-3"
+          class="container-md bg-white rounded-4 shadow-sm mt-4 p-4 px-3"
         >
-          <!-- Avatar + welcome text -->
+          <!-- Avatar and welcome text -->
           <div class="avatar-section d-flex align-items-center mb-4 pt-2">
             <div
               class="d-flex justify-content-center align-items-center fw-bold me-3 flex-shrink-0"
@@ -71,7 +71,7 @@
               <div class="card border-0">
                 <div class="card-body py-3 stats">
                   <p class="fw-semibold mb-1 fs-4 text-dark">0</p>
-                  <small class="text-secondary">Connections</small>
+                  <small class="text-secondary">Friends</small>
                 </div>
               </div>
             </div>
@@ -148,7 +148,6 @@
             <span>Join Channel</span>
             <i class="bi bi-plus-lg"></i>
           </button>
-
           <!-- Create Channel -->
           <button
             type="button"
@@ -175,9 +174,8 @@
           </div>
         </form>
 
-        <!-- Sessions you joined -->
+        <!-- Sessions card -->
         <div id="recentSessionsContainer" class="d-flex flex-column gap-3 mb-4">
-          <!-- Template card (hidden) -->
           <div
             id="recentSessionTemplate"
             class="card border-1 rounded-3 d-none"
@@ -206,10 +204,9 @@
 
               <div class="d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center">
-                  <!-- 这里的 avatar 你先保留，之后要做真的 member 数可以再改 -->
                   <span
                     class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
-                    >A</span
+                    >B</span
                   >
                   <span
                     class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
@@ -232,56 +229,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Past Session Card -->
-        <!-- <div class="card rounded-3 mb-4">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="mb-0 fw-semibold">Tech Meetup</h5>
-              <span class="badge bg-secondary-subtle text-secondary small"
-                >Past</span
-              >
-            </div>
-
-            <div class="mb-3">
-              <small class="text-secondary d-block mb-2">
-                <i class="bi bi-people-fill me-1"></i>8 members
-              </small>
-
-              <div class="d-flex flex-wrap">
-                <span class="badge rounded-2 text-dark me-2 fw-normal px-2 py-2"
-                  >📱 Tech</span
-                >
-                <span class="badge rounded-2 text-dark me-2 fw-normal px-2 py-2"
-                  >💻 Coding</span
-                >
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center">
-                <span
-                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
-                  >B</span
-                >
-                <span
-                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-1"
-                  >R</span
-                >
-                <span
-                  class="member-avatar rounded-circle d-inline-flex justify-content-center align-items-center me-2"
-                  >T</span
-                >
-                <small class="text-secondary">+5 more</small>
-              </div>
-              <button
-                class="btn btn-sm rounded-3 border-2 button-view-group fw-semibold"
-              >
-                View Group
-              </button>
-            </div>
-          </div>
-        </div> -->
       </section>
     </div>
 
@@ -459,9 +406,7 @@
       </div>
     </div>
 
-    <!--Footer-->
     <site-default-footer></site-default-footer>
-
     <!-- Link to scripts of your own -->
     <script type="module" src="/src/app.js"></script>
     <script type="module" src="/src/main.js"></script>
