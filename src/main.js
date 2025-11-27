@@ -172,6 +172,35 @@ async function showHostedChannel() {
 
 showHostedChannel();
 
+/* ========== Simple search filter for recent sessions ========== */
+const searchInput = document.getElementById("dashboardSearch");
+
+if (searchInput) {
+  // Prevent the whole page from refreshing when pressing Enter
+  const searchForm = searchInput.closest("form");
+  searchForm?.addEventListener("submit", (e) => e.preventDefault());
+
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.trim().toLowerCase();
+
+    const cards = document.querySelectorAll(".recent-session-card");
+    cards.forEach((card) => {
+      const nameText =
+        card.querySelector(".recent-session-name")?.textContent.toLowerCase() ||
+        "";
+
+      const tagsText =
+        card.querySelector(".recent-session-tags")?.textContent.toLowerCase() ||
+        "";
+
+      // Match if term is in name or tags
+      const match = !term || nameText.includes(term) || tagsText.includes(term);
+
+      card.classList.toggle("d-none", !match);
+    });
+  });
+}
+
 /* ========== Join Channel Modal ========== */
 const modalEl = document.getElementById("joinChannelModal");
 
