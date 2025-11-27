@@ -1,4 +1,8 @@
+/* ===== Firebase imports ===== */
 import { auth, db } from "/src/firebaseConfig.js";
+import { onAuthStateChanged } from "firebase/auth";
+import * as bootstrap from "bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
 import {
   addDoc,
   collection,
@@ -11,10 +15,6 @@ import {
   getDoc,
   orderBy,
 } from "firebase/firestore";
-
-import { onAuthStateChanged } from "firebase/auth";
-import * as bootstrap from "bootstrap";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 /* ========== Bootstrap Tooltips ========== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -86,6 +86,7 @@ async function showHostedChannel() {
       el.remove()
     );
 
+    // No user: hide the whole section
     if (!user) {
       container.classList.add("d-none");
       return;
@@ -99,6 +100,7 @@ async function showHostedChannel() {
       );
       const chSnap = await getDocs(chQ);
 
+      // No hosted channels at all
       if (chSnap.empty) {
         container.classList.add("d-none");
         return;
@@ -125,6 +127,7 @@ async function showHostedChannel() {
         const last = sSnap.docs[0];
         const status = (last.data().status || "active").toLowerCase();
 
+        // Latest session is ended → skip
         if (status === "end") {
           continue;
         }
@@ -132,6 +135,7 @@ async function showHostedChannel() {
         items.push({ id: chId, name: chData.name || "Untitled Channel" });
       }
 
+      // No available hosted channels to show
       if (!items.length) {
         container.classList.add("d-none");
         return;
@@ -168,12 +172,42 @@ async function showHostedChannel() {
 
 showHostedChannel();
 
+/* ========== Simple search filter for recent sessions ========== */
+const searchInput = document.getElementById("dashboardSearch");
+
+if (searchInput) {
+  // Prevent the whole page from refreshing when pressing Enter
+  const searchForm = searchInput.closest("form");
+  searchForm?.addEventListener("submit", (e) => e.preventDefault());
+
+  searchInput.addEventListener("input", () => {
+    const term = searchInput.value.trim().toLowerCase();
+
+    const cards = document.querySelectorAll(".recent-session-card");
+    cards.forEach((card) => {
+      const nameText =
+        card.querySelector(".recent-session-name")?.textContent.toLowerCase() ||
+        "";
+
+      const tagsText =
+        card.querySelector(".recent-session-tags")?.textContent.toLowerCase() ||
+        "";
+
+      // Match if term is in name or tags
+      const match = !term || nameText.includes(term) || tagsText.includes(term);
+
+      card.classList.toggle("d-none", !match);
+    });
+  });
+}
+
 /* ========== Join Channel Modal ========== */
 const modalEl = document.getElementById("joinChannelModal");
 
 // Reset input when modal is closed
 modalEl?.addEventListener("hidden.bs.modal", () => {
   const input = document.getElementById("inviteLink");
+  // Clear the input field
   if (input) input.value = "";
 });
 
@@ -182,6 +216,7 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
   try {
     const text = await navigator.clipboard.readText();
     const input = document.getElementById("inviteLink");
+    // Paste into the input field
     if (text && input) {
       input.value = text.trim();
       input.focus();
@@ -198,14 +233,15 @@ const joinSubmitBtn = joinForm?.querySelector('button[type="submit"]');
 
 // Disable the default form submission behavior
 joinForm?.addEventListener("submit", (e) => e.preventDefault());
+
 // Change the submit button to a regular button so it won't trigger the form
 joinSubmitBtn?.setAttribute("type", "button");
 
 // Extract the channel ID from a full link or raw ID string
 function extractChannelId(value) {
+  // Empty input
   if (!value) return null;
   const raw = value.trim();
-
   // Try parsing as a full URL first
   try {
     const u = new URL(raw, window.location.href);
@@ -217,7 +253,6 @@ function extractChannelId(value) {
 
   // Accept a plain Firestore document ID as fallback
   if (/^[A-Za-z0-9_-]{10,40}$/.test(raw)) return raw;
-
   return null;
 }
 
@@ -230,13 +265,12 @@ joinSubmitBtn?.addEventListener("click", () => {
   }
 
   const id = extractChannelId(inviteInput?.value || "");
-
+  // Invalid or missing ID
   if (!id) {
     alert("Invalid invite link. Please paste a link that contains ?id=...");
     inviteInput?.focus();
     return;
   }
-
   // Build an absolute URL so it always includes the ?id parameter
   const targetHref = `${
     window.location.origin
@@ -247,18 +281,17 @@ joinSubmitBtn?.addEventListener("click", () => {
 });
 
 /* ========== Create Channel Modal ========== */
+// Elements
 const createModalEl = document.getElementById("createChannelModal");
 const form = document.getElementById("createChannelForm");
 const nameInput = document.getElementById("channelName");
 const submitBtn = document.getElementById("createChannelSubmit");
 const errEl = document.getElementById("createChannelError");
 const openChannelBtn = document.getElementById("openChannelBtn");
-
 const step1 = document.getElementById("createChannelStep1");
 const step2 = document.getElementById("createChannelStep2");
 const inviteLinkOutput = document.getElementById("inviteLinkOutput");
 const copyBtn = document.getElementById("copyLinkBtn");
-
 let createdChannelId = null;
 
 // Reset everything when modal is closed
@@ -280,6 +313,7 @@ form?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = nameInput.value.trim();
 
+  // Validate name
   if (!name) {
     errEl.textContent = "Channel name is required.";
     errEl.classList.remove("d-none");
@@ -320,7 +354,7 @@ form?.addEventListener("submit", async (e) => {
     if (openChannelBtn) {
       openChannelBtn.href = link;
     }
-
+    // Show step 2 (invite link)
     step1.classList.add("d-none");
     step2.classList.remove("d-none");
   } catch (err) {
@@ -346,13 +380,13 @@ copyBtn?.addEventListener("click", async () => {
   }
 });
 
-/* ========== Session Cards (ALL joined sessions in one list) ========== */
+/* ========== Session Cards  ========== */
 async function showAllSessionsForUser(user) {
   const container = document.getElementById("recentSessionsContainer");
   const template = document.getElementById("recentSessionTemplate");
   if (!container || !template) return;
 
-  // Clear previously generated cards (keep the template)
+  // clear previous items
   container
     .querySelectorAll(".recent-session-card")
     .forEach((el) => el.remove());
@@ -367,13 +401,14 @@ async function showAllSessionsForUser(user) {
   }
 
   try {
-    // Read users/{uid}/joinedSessions, ordered by joinedAt descending
+    // Read sessions the user has joined
     const joinedRef = collection(db, "users", user.uid, "joinedSessions");
     const qJoined = query(joinedRef, orderBy("joinedAt", "desc"));
     const joinedSnap = await getDocs(qJoined);
 
     loadingEl.remove();
 
+    // No joined sessions
     if (joinedSnap.empty) {
       const emptyEl = document.createElement("div");
       emptyEl.className = "text-muted small";
@@ -389,6 +424,7 @@ async function showAllSessionsForUser(user) {
       const sessionId = data.sessionId;
       const joinedAt = data.joinedAt;
 
+      // Invalid data
       if (!channelId || !sessionId) continue;
 
       const sessionRef = doc(db, "channels", channelId, "sessions", sessionId);
@@ -399,12 +435,13 @@ async function showAllSessionsForUser(user) {
         getDoc(channelRef),
       ]);
 
+      // Missing session or channel
       if (!sessionSnap.exists() || !channelSnap.exists()) continue;
 
       const sessionData = sessionSnap.data();
       const channelData = channelSnap.data();
 
-      // 不在 dashboard 显示自己作为 owner 的 session
+      // If the user is the creator of the channel, skip showing it here
       if (channelData.createdBy && channelData.createdBy === user.uid) {
         continue;
       }
@@ -413,9 +450,7 @@ async function showAllSessionsForUser(user) {
       const channelName = channelData.name || "Channel";
       const tags = Array.isArray(sessionData.tags) ? sessionData.tags : [];
 
-      // 根据 status 决定起始页面：
-      // - active: 直接进入 ice-breaker-session（rejoin）
-      // - end: 先进入 activity-end（再由那一页去 history）
+      // Build session URL
       let url;
       if (status === "end") {
         url = new URL("activity-end.html", window.location.href);
@@ -438,8 +473,10 @@ async function showAllSessionsForUser(user) {
       const linkEl = card.querySelector(".recent-session-link");
       const btnEl = card.querySelector(".recent-session-button");
 
+      // Channel name
       if (nameEl) nameEl.textContent = channelName;
 
+      // Status badge and text
       if (badgeEl) {
         if (status === "active") {
           badgeEl.textContent = "Live";
@@ -452,6 +489,7 @@ async function showAllSessionsForUser(user) {
         }
       }
 
+      // Description text
       if (textEl) {
         if (status === "active") {
           textEl.textContent =
@@ -462,6 +500,7 @@ async function showAllSessionsForUser(user) {
         }
       }
 
+      // Tags (up to 3)
       if (tagsEl) {
         tagsEl.innerHTML = "";
         if (tags.length) {
@@ -475,9 +514,11 @@ async function showAllSessionsForUser(user) {
         }
       }
 
+      // Set link and button text
       if (linkEl) {
         linkEl.href = url.href;
       }
+      // Button text
       if (btnEl) {
         btnEl.textContent =
           status === "active" ? "Rejoin Session" : "View Session";
@@ -496,14 +537,12 @@ async function loadUserStats(user) {
   const activitiesEl = document.getElementById("statActivitiesJoined");
   const channelsEl = document.getElementById("statChannels");
 
-  // If neither stat element is present, skip loading
+  // No stats elements found
   if (!activitiesEl && !channelsEl) return;
 
   try {
-    // Read sessions the user has joined (written by recordSessionParticipation in ice-breaker-session)
     const joinedRef = collection(db, "users", user.uid, "joinedSessions");
     const joinedSnapPromise = getDocs(joinedRef);
-
     // Read channels created by the user
     const channelsQ = query(
       collection(db, "channels"),
@@ -511,29 +550,30 @@ async function loadUserStats(user) {
     );
     const channelsSnapPromise = getDocs(channelsQ);
 
+    // Await both queries in parallel
     const [joinedSnap, channelsSnap] = await Promise.all([
       joinedSnapPromise,
       channelsSnapPromise,
     ]);
 
-    /* ---- Channels stat: Number of channels created by the user ---- */
+    // Channels stat: Number of channels created
     if (channelsEl) {
       channelsEl.textContent = String(channelsSnap.size);
     }
 
-    /* ---- Activities stat: Number of sessions joined ---- */
+    // Activities stat: Number of sessions joined
     let activitiesCount = 0;
 
+    // No joined sessions
     if (!joinedSnap.empty) {
-      // Collect all involved channelIds
       const channelIds = new Set();
       joinedSnap.forEach((docSnap) => {
         const d = docSnap.data();
         if (d.channelId) channelIds.add(d.channelId);
       });
 
-      // To reduce the number of requests, we batch fetch the createdBy field of these channels to create a mapping
-      const ownerMap = {}; // channelId -> createdBy
+      // Fetch all channel owners in parallel
+      const ownerMap = {};
       const ownerFetches = [];
 
       channelIds.forEach((cid) => {
@@ -557,13 +597,13 @@ async function loadUserStats(user) {
 
       await Promise.all(ownerFetches);
 
-      // Then iterate over joinedSessions and decide whether to count them in Activities based on ownerMap
+      // Count only those not created by the user
       joinedSnap.forEach((docSnap) => {
         const d = docSnap.data();
         const cid = d.channelId;
         const ownerId = ownerMap[cid];
 
-        // If this channel was created by the user, consider them the host and do not count it in Activities
+        // Skip if the user is the owner
         if (ownerId && ownerId === user.uid) {
           return;
         }
@@ -572,6 +612,7 @@ async function loadUserStats(user) {
       });
     }
 
+    // Update the activities stat element
     if (activitiesEl) {
       activitiesEl.textContent = String(activitiesCount);
     }

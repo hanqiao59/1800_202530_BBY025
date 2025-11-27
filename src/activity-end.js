@@ -1,23 +1,22 @@
+/* ===== Firebase Imports ===== */
 import { auth, db } from "./firebaseConfig.js";
-
+import { onAuthStateChanged } from "firebase/auth";
 import {
   doc,
-  setDoc,
-  getDoc,
   collection,
   getDocs,
   updateDoc,
   arrayUnion,
 } from "firebase/firestore";
 
-import { onAuthStateChanged } from "firebase/auth";
-
+/* ===== URL Params ===== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
-
 const link = document.getElementById("viewHistoryLink");
 
+/* ===== Update History Link ===== */
+// If we have channelId and sessionId, set the link to the history page
 if (link && channelId && sessionId) {
   const url = new URL("ice-breaker-session.html", window.location.href);
   url.searchParams.set("channelId", channelId);
@@ -32,23 +31,18 @@ if (link && channelId && sessionId) {
   });
 }
 
-// ----------------------
-// Main Entry — Wait for Firebase Auth
-// ----------------------
+/* ===== Firebase Auth State Listener ===== */
 onAuthStateChanged(auth, async (user) => {
+  // User not logged in
   if (!user) {
     console.error("⛔ No Firebase user logged in.");
     return;
   }
-
-  console.log("✅ Logged in:", user.uid);
-
+  // User is logged in
   initializeFriendSystem(user);
 });
 
-// -------------------------------------------------------
-// MAIN FRIEND SYSTEM FUNCTION
-// -------------------------------------------------------
+/* ===== Initialize Friend System ===== */
 async function initializeFriendSystem(currentUser) {
   const friendsContainer = document.querySelector(".friends-list");
 
@@ -68,14 +62,10 @@ async function initializeFriendSystem(currentUser) {
     }
   });
 
-  // -----------------------------
-  // Clear Lorem Ipsum
-  // -----------------------------
+  // Clear existing content
   friendsContainer.innerHTML = "";
 
-  // -----------------------------
-  // Render members into the list
-  // -----------------------------
+  // Populate members
   members.forEach((member) => {
     const div = document.createElement("div");
     div.className =
@@ -98,17 +88,13 @@ async function initializeFriendSystem(currentUser) {
     friendsContainer.appendChild(div);
   });
 
-  // -----------------------------
-  // Click Handler (Event Delegation)
-  // -----------------------------
+  // Add click listener for friend requests
   friendsContainer.addEventListener("click", async (e) => {
     const btn = e.target.closest(".add-friend-btn");
     if (!btn) return;
 
     const targetUserId = btn.dataset.id;
     const currentUserId = currentUser.uid;
-
-    console.log(`➕ Friend request clicked → ${targetUserId}`);
 
     // UI: Prevent double sending
     btn.classList.remove("bi-person-plus");
@@ -145,11 +131,7 @@ async function initializeFriendSystem(currentUser) {
       btn.classList.add("bi-check-lg");
       btn.style.color = "green";
       btn.style.cursor = "default";
-
-      console.log("✅ Friend request sent successfully.");
     } catch (err) {
-      console.error("❌ Error sending friend request:", err);
-
       // Error UI
       btn.classList.remove("bi-hourglass-split");
       btn.classList.add("bi-exclamation-circle");

@@ -58,24 +58,24 @@
     </div>
 
     <!-- Main content  -->
-    <div
+    <main
       id="select-tags-page"
-      class="container-sm px-3 py-4 d-flex flex-column align-items-center gap-4"
+      class="container-md px-3 py-4 d-flex flex-column align-items-center gap-4"
       style="max-width: 720px"
     >
       <p class="text-black mb-2 px-3">
         Choose tags that match your interests to group with like-minded people.
       </p>
 
-      <main class="flex-grow-1 overflow-auto">
+      <!-- Tag list -->
+      <div class="flex-grow-1 overflow-auto">
         <div class="container" id="content">
-          <!-- Optional loading placeholder -->
           <div class="text-center py-5" id="loading">
-            <div class="spinner-border" role="status" aria-hidden="true"></div>
+            <div class="spinner-border" role="status"></div>
             <div class="mt-2 small text-secondary">Loading…</div>
           </div>
         </div>
-      </main>
+      </div>
 
       <!--  Button -->
       <div class="p-4 text-center w-100">
@@ -88,9 +88,9 @@
           I'm ready!
         </button>
       </div>
-    </div>
+    </main>
 
-    <div class="mt-5"><site-default-footer></site-default-footer></div>
+    <site-default-footer></site-default-footer>
 
     <!---------------------------------------------->
     <!-- Your own JavaScript functions go here -->

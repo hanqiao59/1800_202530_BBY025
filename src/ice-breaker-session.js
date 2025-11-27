@@ -1,4 +1,6 @@
+/* ==== Firebase ==== */
 import { auth, db } from "/src/firebaseConfig.js";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
   addDoc,
@@ -14,7 +16,6 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
 
 /* ==== URL params ==== */
 const params = new URLSearchParams(window.location.search);
@@ -23,7 +24,7 @@ const sessionId = params.get("sessionId");
 const viewMode = params.get("mode");
 const isHistoryView = viewMode === "history";
 
-/* ==== DOM references ==== */
+/* ==== DOM  ==== */
 const sessionNameEl = document.getElementById("sessionChannelName");
 const sessionTagsEl = document.getElementById("sessionTags");
 const listEl = document.getElementById("messages");
@@ -34,14 +35,15 @@ const activityTitleEl = document.getElementById("activityTitle");
 const activityPromptEl = document.getElementById("activityPrompt");
 const leaveSessionBtn = document.getElementById("leaveSessionBtn");
 
-// Validate required params
+// validate required params
 if (!channelId || !sessionId) {
   console.warn("[session] Missing channelId or sessionId in URL.");
 }
 
 /* ==== Session state ==== */
 // "pending" | "active" | "end"
-let status = "pending"; // will be overwritten from Firestore
+// will be overwritten from Firestore
+let status = "pending";
 
 /* ==== Auth state ==== */
 let uid = auth.currentUser?.uid || null;
@@ -52,34 +54,39 @@ onAuthStateChanged(auth, (u) => {
   uid = u?.uid || null;
   displayName = u?.displayName || u?.email || "Anon";
 
-  // If auth becomes ready after the session is already active,
-  // make sure we still load the prompt / remember / participation.
   if (uid && status === "active") {
+    // load activity prompt if not loaded yet
     if (!activityLoaded) {
       loadActivityPromptForUser().catch(console.error);
     }
+    // ensure last session is remembered
     if (!lastSessionSaved) {
       rememberLastSessionForUser().catch(console.error);
     }
     recordSessionParticipation().catch(console.error);
+    // restart live query if not started yet
+    if (!unsubMsgs) {
+      startLiveQuery().catch(console.error);
+    }
   }
 });
 
 /* ==== Firestore references ==== */
+// session document reference
 const sessionRef =
   channelId && sessionId
     ? doc(db, "channels", channelId, "sessions", sessionId)
     : null;
-
+// messages collection reference
 const msgsRef =
   channelId && sessionId
     ? collection(db, "channels", channelId, "sessions", sessionId, "messages")
     : null;
 
-/* ==== Channel meta (name) ==== */
+/* ==== Load channel metadata ==== */
 async function loadChannelMeta() {
+  // load channel name
   if (!channelId || !sessionNameEl) return;
-
   try {
     const snap = await getDoc(doc(db, "channels", channelId));
     if (snap.exists()) {
@@ -96,6 +103,7 @@ function atBottom(el, th = 48) {
   return el.scrollHeight - el.scrollTop - el.clientHeight < th;
 }
 
+// scroll to bottom
 function scrollToBottom(el) {
   el.scrollTop = el.scrollHeight;
 }
@@ -112,6 +120,7 @@ function fmtTime(ts) {
 
 /* ==== Composer enable/disable ==== */
 function setComposerEnabled(enabled) {
+  // enable or disable the message composer
   if (!formEl || !inputEl || !sendBtn) return;
   inputEl.disabled = !enabled;
   sendBtn.disabled = !enabled || !inputEl.value.trim();
@@ -128,7 +137,9 @@ function renderMsg(docSnap) {
   }`;
 
   const col = document.createElement("div");
-  col.className = "d-flex flex-column align-items-start";
+  col.className = `d-flex flex-column ${
+    mine ? "align-items-end text-end" : "align-items-start"
+  }`;
 
   const bubble = document.createElement("div");
   bubble.className = `bubble ${mine ? "bubble-me" : "bubble-them"} shadow-sm`;
@@ -151,11 +162,18 @@ let unsubMsgs = null;
 async function startLiveQuery() {
   if (!msgsRef || unsubMsgs) return;
 
+  // ensure we have uid
+  if (!uid) {
+    console.warn("[session] No uid yet, delaying live query");
+    return;
+  }
+
   const q = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
 
   listEl.innerHTML = "";
   let wasAtBtm = true;
 
+  // start listening to messages
   unsubMsgs = onSnapshot(
     q,
     (snap) => {
@@ -171,6 +189,7 @@ async function startLiveQuery() {
   );
 }
 
+// stop listening to messages
 function stopLiveQuery() {
   if (unsubMsgs) {
     unsubMsgs();
@@ -178,38 +197,39 @@ function stopLiveQuery() {
   }
 }
 
-let activityLoaded = false;
-
 /*==== Load activity prompt for user ====*/
+let activityLoaded = false;
 async function loadActivityPromptForUser() {
+  // load activity prompt for the current user
   if (activityLoaded) return;
+  // validate
   if (!channelId || !sessionId || !uid || !sessionRef) return;
 
   activityLoaded = true;
-
   try {
-    // 1. First check if the session document already has a prompt
     const sessionSnap = await getDoc(sessionRef);
+    // session doc must exist
     if (!sessionSnap.exists()) {
       console.warn("[activity] Session doc does not exist:", sessionRef.path);
       return;
     }
 
     const sData = sessionSnap.data();
-
-    // If the session already has activityTitle / activityPrompt, use them directly without randomizing
+    // if the session already has an activityTitle and activityPrompt, use it
     if (sData.activityTitle || sData.activityPrompt) {
+      // show title
       if (activityTitleEl) {
         activityTitleEl.textContent =
           sData.activityTitle || "Ice-breaker prompt";
       }
+      // show prompt
       if (activityPromptEl) {
         activityPromptEl.textContent =
           sData.activityPrompt ||
           "Share something about yourself or your interests!";
       }
 
-      // If the session already has tags, render the first tag in the header
+      // if the session already has tags, render the first tag in the header
       if (Array.isArray(sData.tags) && sData.tags.length) {
         renderSessionTag(sData.tags[0]);
       }
@@ -217,11 +237,12 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // If not, use the current user's interests to select a category
+    // if not, use the current user's interests to select a category
     const memberRef = doc(db, "channels", channelId, "members", uid);
     const memberSnap = await getDoc(memberRef);
 
     let interests = [];
+    // load interests from member profile
     if (memberSnap.exists()) {
       const data = memberSnap.data();
       if (Array.isArray(data.interests)) {
@@ -232,11 +253,12 @@ async function loadActivityPromptForUser() {
     const { category, label } = pickCategoryFromInterests(interests);
     renderSessionTag(label);
 
-    // If the session does not have tags yet, save the current label
+    // if the session does not have tags yet, save the current label
     if (label) {
       saveSessionTagsIfEmpty([label]).catch(console.error);
     }
 
+    // if no category could be picked, skip
     if (!category) {
       console.warn("[activity] No matching category found, skipping.");
       if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
@@ -246,15 +268,16 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // Go to /activities and find activities for this category
+    // query activities for the chosen category
     const activitiesRef = collection(db, "activities");
     const q = query(
       activitiesRef,
       where("category", "==", category),
       limit(10)
     );
-    const snap = await getDocs(q);
 
+    const snap = await getDocs(q);
+    // if no activities found, skip
     if (snap.empty) {
       console.warn("[activity] No activities for category:", category);
       if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
@@ -264,15 +287,13 @@ async function loadActivityPromptForUser() {
       return;
     }
 
-    // Randomly pick one from the results
     const docs = snap.docs;
     const chosen = docs[Math.floor(Math.random() * docs.length)];
     const data = chosen.data();
-
     const finalTitle = data.title || "Ice-breaker prompt";
     const finalPrompt = data.prompt || "Share something about your interests!";
 
-    // Write the selected prompt back to the session document so everyone sees the same one
+    // save to session doc
     await updateDoc(sessionRef, {
       activityId: chosen.id || null,
       activityCategory: category,
@@ -280,10 +301,11 @@ async function loadActivityPromptForUser() {
       activityPrompt: finalPrompt,
     });
 
-    // show in UI
+    // render to DOM
     if (activityTitleEl) {
       activityTitleEl.textContent = finalTitle;
     }
+    // render prompt
     if (activityPromptEl) {
       activityPromptEl.textContent = finalPrompt;
     }
@@ -298,17 +320,16 @@ async function loadActivityPromptForUser() {
 
 /* ==== Remember last session on user profile ==== */
 let lastSessionSaved = false;
-
-/**
- * Save the last joined session on the user profile so we can
- * show it on the dashboard.
- */
+// Save last session info to users/{uid}.lastSession
 async function rememberLastSessionForUser() {
+  // avoid duplicate writes
   if (lastSessionSaved) return;
+  // validate
   if (!uid || !channelId || !sessionId) return;
 
   try {
     const userRef = doc(db, "users", uid);
+    // update lastSession field
     await setDoc(
       userRef,
       {
@@ -328,12 +349,9 @@ async function rememberLastSessionForUser() {
   }
 }
 
-/**
- * Record that the current user has joined this session.
- * We write a doc under users/{uid}/joinedSessions/{sessionId}.
- * If it already exists, we do nothing (to avoid double counting).
- */
+/* ==== Record session participation ==== */
 async function recordSessionParticipation() {
+  // validate
   if (!uid || !channelId || !sessionId) return;
 
   try {
@@ -341,10 +359,11 @@ async function recordSessionParticipation() {
     const snap = await getDoc(ref);
 
     if (snap.exists()) {
-      // Already recorded this session for this user, do nothing
+      // already recorded this session for this user, do nothing
       return;
     }
 
+    // create the joinedSessions/{sessionId} doc
     await setDoc(ref, {
       channelId,
       sessionId,
@@ -358,16 +377,14 @@ async function recordSessionParticipation() {
 }
 
 /* ==== Save session tags helper ==== */
-/**
- * Write tags to the session document only if it doesn't already have tags.
- * This prevents different users from overwriting each other's tags.
- */
+// Save session tags only if the session does not have tags yet
 async function saveSessionTagsIfEmpty(tags) {
   if (!sessionRef) return;
   if (!Array.isArray(tags) || !tags.length) return;
 
   try {
     const snap = await getDoc(sessionRef);
+    // session doc must exist
     if (!snap.exists()) return;
 
     const data = snap.data();
@@ -376,6 +393,7 @@ async function saveSessionTagsIfEmpty(tags) {
       return;
     }
 
+    // save tags to session doc
     await updateDoc(sessionRef, {
       tags: tags,
     });
@@ -396,6 +414,7 @@ function applySessionStatus() {
     setComposerEnabled(false);
 
     if (listEl) {
+      // show pending message
       listEl.innerHTML =
         '<div class="text-center text-muted small py-4">The session has not started yet.</div>';
     }
@@ -440,10 +459,12 @@ function applySessionStatus() {
 /* ==== Session watcher ==== */
 // Listen for changes to session status
 function watchSession() {
+  // validate
   if (!sessionRef) {
     return;
   }
 
+  // listen to session document changes
   onSnapshot(
     sessionRef,
     (snap) => {
@@ -463,9 +484,11 @@ function watchSession() {
 
 /* ==== Send new messages ==== */
 async function sendMessage(text) {
+  // validate
   if (!text || !uid || !msgsRef) return;
-  if (status !== "active") return; // only allow sending when active
-
+  // only allow sending when active
+  if (status !== "active") return;
+  // add new message document
   await addDoc(msgsRef, {
     text: text.trim(),
     uid,
@@ -476,8 +499,9 @@ async function sendMessage(text) {
 
 /* ==== Composer wiring ==== */
 function wireComposer() {
+  // validate
   if (!formEl || !inputEl || !sendBtn) return;
-
+  // update send button state
   const updateBtn = () => {
     if (inputEl.disabled) {
       sendBtn.disabled = true;
@@ -485,10 +509,10 @@ function wireComposer() {
       sendBtn.disabled = !inputEl.value.trim();
     }
   };
-
+  // listen for input changes to update send button state
   inputEl.addEventListener("input", updateBtn);
   updateBtn();
-
+  // listen for form submission
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
     const text = inputEl.value.trim();
@@ -511,7 +535,7 @@ function wireComposer() {
   });
 }
 
-/* ==== Bootstrapping ==== */
+/* ==== Boot chat ==== */
 (function bootChat() {
   try {
     wireComposer();
@@ -535,6 +559,7 @@ function wireComposer() {
   const inputEl = document.getElementById("msgInput");
   const sendBtn = document.getElementById("sendBtn");
 
+  // insert emoji into input field
   picker.addEventListener("click", (e) => {
     const btn = e.target.closest(".e");
     if (!btn || !inputEl) return;
@@ -550,6 +575,7 @@ function wireComposer() {
     inputEl.focus();
   });
 
+  // position the emoji panel
   picker.addEventListener("toggle", () => {
     if (!picker.open || !summary || !panel) return;
 
@@ -575,6 +601,7 @@ function wireComposer() {
     panel.style.visibility = "visible";
   });
 
+  // reposition on scroll/resize
   ["resize", "scroll"].forEach((evt) => {
     window.addEventListener(evt, () => {
       if (picker.open) picker.dispatchEvent(new Event("toggle"));
@@ -582,14 +609,16 @@ function wireComposer() {
   });
 })();
 
-/* ==== Reaction buttons (local-only) ==== */
+/* ==== Reaction buttons ==== */
 (() => {
+  // handle reaction button clicks
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".rxn");
     if (!btn) return;
     const countEl = btn.querySelector(".count");
     const n = parseInt(countEl?.textContent || "0", 10) || 0;
 
+    // toggle active state
     if (btn.classList.contains("active")) {
       btn.classList.remove("active");
       if (countEl) countEl.textContent = String(Math.max(0, n - 1));
@@ -603,7 +632,7 @@ function wireComposer() {
 /* ==== Interest category helpers ==== */
 function pickCategoryFromInterests(interests = []) {
   const candidates = [];
-
+  // simple keyword matching
   interests.forEach((raw) => {
     const s = String(raw).toLowerCase();
 
@@ -618,17 +647,16 @@ function pickCategoryFromInterests(interests = []) {
     }
   });
 
+  // pick a random candidate
   if (!candidates.length) {
     return { category: null, label: null };
   }
-
+  // random choice
   const choice = candidates[Math.floor(Math.random() * candidates.length)];
   return choice;
 }
 
-/**
- * Render the session tag pill in the header
- */
+/* ==== Render session tag ==== */
 function renderSessionTag(label) {
   if (!sessionTagsEl) return;
 
@@ -636,7 +664,7 @@ function renderSessionTag(label) {
 
   const pill = document.createElement("span");
   pill.className = "tag-pill me-1";
-
+  // set label
   if (label) {
     pill.textContent = label;
   } else {

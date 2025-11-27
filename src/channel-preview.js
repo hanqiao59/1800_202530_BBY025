@@ -1,4 +1,6 @@
+/* ===== Firebase ===== */
 import { auth, db } from "/src/firebaseConfig.js";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   doc,
   getDoc,
@@ -11,16 +13,19 @@ import {
   onSnapshot,
   setDoc,
 } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
 
-// Read channelId from the URL (?id=...)
+/* ===== URL params & session storage ===== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("id");
 
-//Store the Channel's ID inside StorageSession for the page.
-sessionStorage.setItem("channelId", channelId);
+if (!channelId) {
+  console.warn("[channel-preview] Missing channel id in URL.");
+} else {
+  // Store the channelId so other pages can reuse it
+  sessionStorage.setItem("channelId", channelId);
+}
 
-// 2) DOM elements
+/* ===== DOM elements ===== */
 const titleEl = document.getElementById("channelTitle");
 const memberJoinCard = document.getElementById("memberJoinCard");
 const ownerHostCard = document.getElementById("ownerHostCard");
@@ -31,101 +36,103 @@ const endIceBreakerBtn = document.getElementById("endIceBreakerBtn");
 const joinQrImg = document.getElementById("joinQr");
 const sessionLiveBadge = document.getElementById("sessionLiveBadge");
 
-// Owner message and QR container
+// Owner message and QR container (inside owner card)
 const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary");
 const ownerQrWrapperEl = ownerHostCard?.querySelector(
   ".d-flex.justify-content-center.mb-3"
 );
 
+/* ===== Local state ===== */
 let channelData = null;
 let currentUser = null;
 let sessionEnded = false;
 
-// Track the latest non-ended session for this channel
+// Track the latest session for this channel
 let activeSessionId = null;
 let unsubSessionWatch = null;
 
 /* ===== UI helpers ===== */
+// Show either member view or owner view
 function showMemberView() {
   memberJoinCard?.classList.remove("d-none");
   ownerHostCard?.classList.add("d-none");
 }
-
+// Show owner view
 function showOwnerView() {
   memberJoinCard?.classList.add("d-none");
   ownerHostCard?.classList.remove("d-none");
 }
-
+// Show / hide "Session Live" badge
 function showSessionLiveBadge() {
   sessionLiveBadge?.classList.remove("d-none");
 }
-
+// Hide "Session Live" badge
 function hideSessionLiveBadge() {
   sessionLiveBadge?.classList.add("d-none");
 }
-
-// Owner UI when there is NO live session (or the last one ended and we are idle)
+// Owner UI when there is NO live session (idle state)
 function setOwnerIdleUI() {
-  // Can start a new session
   startIceBreakerBtn?.classList.remove("d-none");
   endIceBreakerBtn?.classList.add("d-none");
   hideSessionLiveBadge();
 
-  // Idle status message
+  // Show invite message and QR code
   if (ownerHostMessageEl) {
     ownerHostMessageEl.textContent =
       "Use the link or scan this QR code to join the channel.";
   }
+  // Show QR code
   if (ownerQrWrapperEl) {
     ownerQrWrapperEl.classList.remove("d-none");
   }
-
   activeSessionId = null;
 }
 
-// Owner UI when there is an ACTIVE session
+/* ===== Owner UI states ===== */
+// Owner UI when there is an active live session
 function setOwnerActiveUI() {
   startIceBreakerBtn?.classList.add("d-none");
   endIceBreakerBtn?.classList.remove("d-none");
   showSessionLiveBadge();
 
-  // Live status message
+  // Show live session message and QR code
   if (ownerHostMessageEl) {
     ownerHostMessageEl.textContent =
       "Use the link or scan this QR code to join the channel.";
   }
+  // Show QR code
   if (ownerQrWrapperEl) {
     ownerQrWrapperEl.classList.remove("d-none");
   }
 }
 
-// Owner UI when the latest session has ENDED
+/* ===== Owner UI when session has ended ===== */
 function setOwnerEndedUI() {
   startIceBreakerBtn?.classList.add("d-none");
   endIceBreakerBtn?.classList.add("d-none");
   hideSessionLiveBadge();
-
-  // Change message to "ended"
+  // Show session ended message, hide QR code
   if (ownerHostMessageEl) {
     ownerHostMessageEl.textContent =
       "This ice-breaker session has ended. You can create a new channel if you want to run it again.";
   }
-
-  // hide QR code
+  // Hide QR code
   if (ownerQrWrapperEl) {
     ownerQrWrapperEl.classList.add("d-none");
   }
 }
 
-/* ===== Watch last session for owner  ===== */
+/* ===== Watch last session for owner ===== */
 function watchOwnerSession() {
   if (!channelId || !currentUser) return;
 
   const sessionsRef = collection(db, "channels", channelId, "sessions");
   const q = query(sessionsRef, orderBy("createdAt", "desc"), limit(1));
 
+  // Unsubscribe previous watcher if any
   if (unsubSessionWatch) unsubSessionWatch();
 
+  // Listen for latest session changes
   unsubSessionWatch = onSnapshot(
     q,
     (snap) => {
@@ -143,6 +150,7 @@ function watchOwnerSession() {
 
       console.log("[channel-preview] Latest session:", last.id, status);
 
+      // Update UI based on session status
       if (status === "active") {
         activeSessionId = last.id;
         sessionEnded = false;
@@ -168,6 +176,7 @@ function watchOwnerSession() {
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
 
+  // Validate channelId
   if (!channelId) {
     if (titleEl) titleEl.textContent = "No channel ID provided";
     return;
@@ -182,27 +191,24 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     channelData = snap.data();
-
     // Show channel name
     if (titleEl) {
       titleEl.textContent = channelData.name || "Untitled Channel";
     }
-
     // Build invite link for this channel
     const inviteUrl = new URL("channel-preview.html", window.location.href);
     inviteUrl.searchParams.set("id", channelId);
-
     // Configure "Continue" button for regular members
     if (continueBtn) {
       const tagsUrl = new URL("select-tags.html", window.location.href);
       tagsUrl.searchParams.set("channelId", channelId);
       continueBtn.setAttribute("href", tagsUrl.href);
     }
-
     // Determine if current user is the channel owner
     const isOwner =
       user && channelData.createdBy && channelData.createdBy === user.uid;
 
+    // Show owner view if user is the owner
     if (isOwner) {
       showOwnerView();
 
@@ -241,24 +247,25 @@ onAuthStateChanged(auth, async (user) => {
           activeSessionId = newSessionRef.id;
           sessionEnded = false;
 
-          // Do not navigate away, let watchOwnerSession()'s onSnapshot switch to Live UI
+          // UI will be updated by watchOwnerSession()
           console.log(
             "[channel-preview] Session started by owner, id =",
             newSessionRef.id
           );
         } catch (err) {
-          console.error("Failed to create session:", err);
+          console.error("[channel-preview] Failed to create session:", err);
           alert("Failed to start the session. Please try again.");
           startIceBreakerBtn.disabled = false;
         }
       });
 
-      // "End" button → mark the current session as ended
+      // Owner: end the active live session
       endIceBreakerBtn?.addEventListener("click", async () => {
         if (!currentUser || !channelId || !activeSessionId) return;
 
         endIceBreakerBtn.disabled = true;
 
+        // Update session status to "end"
         try {
           const ref = doc(
             db,
@@ -275,9 +282,9 @@ onAuthStateChanged(auth, async (user) => {
             },
             { merge: true }
           );
-          // watchOwnerSession() will update the UI to ended state
+          // UI will be updated by watchOwnerSession()
         } catch (err) {
-          console.error("Failed to end session:", err);
+          console.error("[channel-preview] Failed to end session:", err);
           alert("Failed to end the session. Please try again.");
           endIceBreakerBtn.disabled = false;
         }
@@ -287,7 +294,7 @@ onAuthStateChanged(auth, async (user) => {
       showMemberView();
     }
   } catch (err) {
-    console.error("Failed to load channel:", err);
+    console.error("[channel-preview] Failed to load channel:", err);
     if (titleEl) titleEl.textContent = "Failed to load channel";
   }
 });
