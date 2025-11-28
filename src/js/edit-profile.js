@@ -1,5 +1,5 @@
 // edit-profile.js
-import { auth, db } from "./firebaseConfig.js";
+import { auth, db } from "/src/js/firebaseConfig.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";

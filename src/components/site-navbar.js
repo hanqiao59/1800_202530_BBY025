@@ -1,7 +1,7 @@
 // site-navbar.js
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "/src/firebaseConfig.js";
-import { logoutUser } from "/src/authentication.js";
+import { auth } from "/src/js/firebaseConfig.js";
+import { logoutUser } from "/src/js/authentication.js";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";

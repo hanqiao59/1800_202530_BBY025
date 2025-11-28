@@ -1,6 +1,4 @@
-/* ===== Auto-grouping Page ===== */
-
-/* DOM + URL params */
+/* ===== DOM and URL Params ===== */
 const groupLabelEl = document.getElementById("groupLabel");
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");

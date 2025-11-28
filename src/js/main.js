@@ -1,5 +1,5 @@
 /* ===== Firebase imports ===== */
-import { auth, db } from "/src/firebaseConfig.js";
+import { auth, db } from "/src/js/firebaseConfig.js";
 import { onAuthStateChanged } from "firebase/auth";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
