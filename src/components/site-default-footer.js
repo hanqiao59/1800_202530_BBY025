@@ -101,7 +101,7 @@ class DefaultFooter extends HTMLElement {
   <div class="small fw-light" style="color: #A49E9E;">
     <p><i class="bi bi-c-circle"></i> 2025 COMP1800 PeerLink</p>
     <p>made with
-    <i class="bi bi-heart-fill" style="color: red;"></i>
+    <i class="bi bi-heart-fill" style="color: #ff6b6b;"></i>
     by Team_BBY025
     </p>
   </div>

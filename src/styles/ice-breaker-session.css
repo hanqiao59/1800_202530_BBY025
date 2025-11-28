@@ -1,0 +1,148 @@
+main {
+  max-width: 720px;
+}
+
+#session-info .session-info-card {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.03);
+}
+
+#session-info .tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: #d7eefb;
+  color: #000;
+  font-weight: 500;
+}
+
+#session-info .member-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #202327;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#member {
+  margin-bottom: 0;
+  font-size: 0.875rem;
+}
+
+.member-avatar-sm {
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  transform-origin: center;
+}
+
+.member-avatar-sm:hover {
+  transform: translateY(-1px) scale(1.1);
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.12);
+}
+
+.avatar-color-1 {
+  background: #ffe2e5; /* soft pink */
+}
+
+.avatar-color-2 {
+  background: #e1f0ff; /* soft blue */
+}
+
+.avatar-color-3 {
+  background: #e5f8e8; /* soft green */
+}
+
+.avatar-color-4 {
+  background: #fff2e1; /* soft orange */
+}
+
+.avatar-color-5 {
+  background: #f7e5f8; /* soft purple */
+}
+
+.chat-wrap {
+  height: calc(100vh - 120px);
+}
+
+.chat-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f3f5;
+  color: #333;
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+}
+
+.bubble {
+  max-width: 80%;
+  border-radius: 16px;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  display: inline-block;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.bubble-me {
+  background: #11a0ff;
+  color: #fff;
+}
+.bubble-them {
+  background: #f1f3f5;
+}
+
+/* Quick reactions */
+.reactions {
+  display: flex;
+  gap: 0.5rem;
+  color: #6c757d;
+}
+.rxn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.rxn:hover {
+  background: #f1f3f5;
+}
+.rxn .count {
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+.rxn.active {
+  background: #ff6b6b4d;
+}
+
+/* Emoji picker */
+#emojiPicker .panel {
+  position: fixed;
+  z-index: 1050;
+  width: 220px;
+  max-height: 240px;
+  overflow: auto;
+}
+
+#emojis {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}

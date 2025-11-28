@@ -43,7 +43,6 @@
       body {
         background-color: #f9f9f9;
         font-family: "Poppins", sans-serif;
-        padding: 30px;
       }
 
       .profile-container {
@@ -119,7 +118,8 @@
       }
     </style>
   </head>
-  <body>
+  <body class="bg-white">
+    <site-navbar></site-navbar>
     <div class="profile-container">
       <div class="profile-picture">A</div>
       <h2>Alex Johnson</h2>
@@ -132,10 +132,9 @@
       <button id="editBtn" class="btn btn-primary btn-edit">Edit</button>
     </div>
 
-    <div id="footer" class="my-5">
-      <site-default-footer></site-default-footer>
-    </div>
+    <site-default-footer></site-default-footer>
 
+    <script type="module" src="/src/app.js"></script>
     <script type="module" src="/src/interestsTags.js"></script>
     <script type="module" src="/src/select-tags.js"></script>
   </body>
