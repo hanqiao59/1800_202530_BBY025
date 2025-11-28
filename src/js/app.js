@@ -1,4 +1,3 @@
-// src/app.js
 import "bootstrap";
 
 /* ========== Menu Drawer ========== */

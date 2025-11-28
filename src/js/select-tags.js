@@ -1,5 +1,5 @@
 /* ===== Firebase imports ===== */
-import { auth, db } from "/src/firebaseConfig.js";
+import { auth, db } from "/src/js/firebaseConfig.js";
 import {
   collection,
   query,

@@ -1,4 +1,4 @@
-import { db } from "./firebaseConfig.js";
+import { db } from "/src/js/firebaseConfig.js";
 import { doc, getDoc } from "firebase/firestore";
 
 async function showMember() {

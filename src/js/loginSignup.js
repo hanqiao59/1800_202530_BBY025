@@ -4,7 +4,7 @@
 // 1) Drawer: dynamic Log In / Log Out button (based on Firebase Auth state)
 // 2) Login / Signup page: form toggling, validation, submission
 // -------------------------------------------------------------
-import { auth } from "/src/firebaseConfig.js";
+import { auth } from "/src/js/firebaseConfig.js";
 import { onAuthStateChanged } from "firebase/auth";
 
 import {
