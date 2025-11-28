@@ -1,0 +1,112 @@
+#userAvatar {
+  background-color: #e6f2ff;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.stats {
+  background-color: #f0f7ff;
+  border-radius: 12px;
+}
+
+#main-page-button {
+  grid-template-columns: repeat(2, 200px);
+  justify-content: start;
+}
+
+#main-page-button .btn {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
+.btn-animate {
+  transition: all 0.25s ease;
+}
+
+.btn-animate span {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.btn-animate i {
+  opacity: 0;
+  margin-left: 6px;
+  transition: opacity 0.25s ease;
+}
+
+.btn-animate:hover span {
+  transform: translateX(-4px);
+}
+
+.btn-animate:hover i {
+  opacity: 1;
+}
+
+.button-view-group {
+  border-color: #c1cefe !important;
+  color: #c1cefe !important;
+}
+
+.button-view-group:hover {
+  background-color: #c1cefe !important;
+  color: #fff !important;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  font-size: 1rem;
+  border-radius: 50%;
+  font-weight: 500;
+  color: #202327;
+}
+
+.member-avatar:nth-child(1) {
+  background-color: #ffe2e5 !important;
+}
+.member-avatar:nth-child(2) {
+  background-color: #e1f0ff !important;
+}
+.member-avatar:nth-child(3) {
+  background-color: #e5f8e8 !important;
+}
+
+/* ===== Join Channel Modal Styles ===== */
+.modal-circle {
+  width: 72px;
+  height: 72px;
+  font-size: 1.5rem;
+}
+
+.modal-backdrop.show {
+  opacity: 0.25 !important;
+}
+
+.modal.fade .modal-dialog {
+  transform: translateY(16px);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  opacity: 0;
+}
+.modal.show .modal-dialog {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+::placeholder {
+  color: #bfbfbf !important;
+  opacity: 1;
+}
+
+.input-group .form-control,
+.input-group .btn {
+  border-color: #ced4da !important;
+  transition: border-color 0.2s ease, border-width 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input-group .btn:hover {
+  border-color: #000 !important;
+}

@@ -34,12 +34,11 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/styles/style.css" />
+    <link rel="stylesheet" href="/src/styles/channel-preview.css" />
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
     <script type="module" src="/src/components/site-default-footer.js"></script>
-
-    <!--<script type="module" src="/src/components/site-footer.js"></script>-->
   </head>
 
   <body class="bg-brand-light">
@@ -61,8 +60,8 @@
 
     <!-- Main Content -->
     <div
+      id="channel-preview-content"
       class="container-md px-3 py-4 d-flex flex-column align-items-center gap-4"
-      style="max-width: 720px"
     >
       <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
         <!-- Channel Title -->
@@ -88,11 +87,11 @@
             >
             <span
               class="member-avatar rounded-circle bg-secondary-subtle fw-bold d-inline-flex justify-content-center align-items-center me-1"
-              >C</span
+              >B</span
             >
             <span
               class="member-avatar rounded-circle bg-secondary-subtle fw-bold d-inline-flex justify-content-center align-items-center me-2"
-              >F</span
+              >C</span
             >
             <a href="group-members.html" class="small">+130 more</a>
           </div>

@@ -52,10 +52,10 @@ class SiteNavbar extends HTMLElement {
                 <a href="main.html" class="nav-link text-body-tertiary">DASHBOARD</a>
               </li>
               <li class="nav-item">
-                <a href="friends.html" class="nav-link text-body-tertiary">FRIENDS</a>
+                <a href="connections.html" class="nav-link text-body-tertiary">CONNECTIONS</a>
               </li>
               <li class="nav-item">
-                <a href="profile.html" class="nav-link text-body-tertiary">ACCOUNT</a>
+                <a href="profile.html" class="nav-link text-body-tertiary">PROFILE</a>
               </li>
               <li class="nav-item">
                 <a href="#about" class="nav-link text-body-tertiary">ABOUT</a>
@@ -84,7 +84,7 @@ class SiteNavbar extends HTMLElement {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         authControls.innerHTML = `
-          <button class="nav-link btn btn-link text-body-tertiary p-0" id="signOutBtn" type="button">
+          <button class="nav-link btn btn-link text-body-tertiary px-0" id="signOutBtn" type="button">
             LOG OUT
           </button>`;
         authControls

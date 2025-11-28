@@ -33,23 +33,20 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
       rel="stylesheet"
     />
+
     <link rel="stylesheet" href="/src/styles/style.css" />
+    <link rel="stylesheet" href="/src/styles/auto-grouping.css" />
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
     <script type="module" src="/src/components/site-default-footer.js"></script>
-
-    <!--<script type="module" src="/src/components/site-footer.js"></script>-->
   </head>
 
   <body class="bg-brand-light">
     <site-navbar></site-navbar>
     <!-- Main Content -->
     <main class="min-vh-100 d-flex align-items-center justify-content-center">
-      <div
-        class="card border-0 shadow-sm p-4 text-center"
-        style="max-width: 420px"
-      >
+      <div class="auto-grouping border-0 shadow-sm p-4 text-center">
         <h1 class="h4 mb-3">We’re getting you ready…</h1>
         <p id="msg" class="text-secondary mb-3">
           The host has started the ice-breaker. We’re matching you into a

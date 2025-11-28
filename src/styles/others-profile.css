@@ -1,0 +1,21 @@
+#profile {
+  max-width: 720px;
+}
+
+.profile-banner {
+  height: 180px;
+  background: linear-gradient(135deg, #fecdd3, #c4b5fd);
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 2rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+.avatar-color {
+  background: #ffe2e5;
+}

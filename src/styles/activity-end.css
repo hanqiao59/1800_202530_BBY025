@@ -1,0 +1,9 @@
+main {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.trophy {
+  width: 80px;
+  height: 80px;
+}
