@@ -603,9 +603,6 @@ footer a:hover img {
   border-radius: 50%;
 }
 
-/* inline icons in input fields 
-*  icons are placeholders for the functional ones
-*/
 .icon1 {
   background-image: url(/images/envelope.svg);
   background-repeat: no-repeat;
@@ -827,14 +824,11 @@ textarea {
   transform: translateY(0);
 }
 
-body.userprof-body {
-  background-color: #fff;
+.userprof-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  margin: 0;
-  font-family: system-ui, sans-serif;
+  min-height: calc(100vh - 80px);
 }
 
 .userprof-container {
@@ -882,5 +876,88 @@ body.userprof-body {
 @media (min-width: 768px) {
   .userprof-container {
     max-width: 350px;
+  }
+}
+
+.back-btn {
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.back-btn:hover {
+  background-color: #e9eef5;
+  border-color: #0a1333;
+}
+
+/************************************************************
+ * PROFILE PAGE STYLES — safe to paste directly into global.css
+ * All styles are namespaced to #profilePage or .profile-page-root
+ ************************************************************/
+
+/* ---- PROFILE BANNER ---- */
+.profile-banner {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #efeff2, #8b8bc3);
+}
+
+/* ---- PROFILE AVATAR ---- */
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #ffe2e5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #212529;
+  font-size: 42px;
+  font-weight: 600;
+  border: 5px solid white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  text-transform: uppercase;
+}
+
+/* Fix avatar cut-off / page height */
+.profile-header {
+  margin-bottom: 100px !important;
+  padding-bottom: 40px;
+}
+
+/* ---- TEXT ---- */
+#profileName {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #091540;
+  margin-top: 20px; /* adjust to taste */
+}
+
+
+#profileBio {
+  color: #505f74;
+  max-width: 60ch;
+}
+
+/* ---- INTEREST TAGS ---- */
+#profileInterests .tag {
+  display: inline-flex;
+  padding: 8px 14px;
+  background: #eef4ff;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #5167b4;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .profile-avatar {
+    width: 96px;
+    height: 96px;
+    font-size: 34px;
+  }
+  .profile-banner {
+    height: 150px;
   }
 }
