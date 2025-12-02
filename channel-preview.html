@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>COMP1800-Project1-BBY025-PeerLink</title>
+    <title>PeerLink - Channel Preview</title>
     <meta name="comp1800 template" content="My 1800 App" />
 
     <meta charset="utf-8" />
@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -34,18 +34,17 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/styles/style.css" />
+    <link rel="stylesheet" href="/src/styles/channel-preview.css" />
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
     <script type="module" src="/src/components/site-default-footer.js"></script>
-
-    <!--<script type="module" src="/src/components/site-footer.js"></script>-->
   </head>
 
   <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
-    <!-- Channel Title -->
+    <!-- Title -->
     <div
       class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
     >
@@ -59,14 +58,14 @@
       <h3 class="mb-0">Channel Preview</h3>
     </div>
 
-    <!-- Channel Preview Content -->
+    <!-- Main Content -->
     <div
-      class="container-sm px-3 py-4 d-flex flex-column align-items-center gap-4"
-      style="max-width: 720px"
+      id="channel-preview-content"
+      class="container-md px-3 py-4 d-flex flex-column align-items-center gap-4"
     >
       <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
+        <!-- Channel Title -->
         <h5 id="channelTitle" class="fw-semibold mb-1 fs-3">Loading...</h5>
-
         <!-- Owner -->
         <div class="mt-4 mb-4">
           <div class="text-dark label-muted mb-2">Owner</div>
@@ -78,7 +77,6 @@
             </div>
           </a>
         </div>
-
         <!-- Members -->
         <div>
           <div class="text-dark label-muted mb-2">Members</div>
@@ -89,11 +87,11 @@
             >
             <span
               class="member-avatar rounded-circle bg-secondary-subtle fw-bold d-inline-flex justify-content-center align-items-center me-1"
-              >C</span
+              >B</span
             >
             <span
               class="member-avatar rounded-circle bg-secondary-subtle fw-bold d-inline-flex justify-content-center align-items-center me-2"
-              >F</span
+              >C</span
             >
             <a href="group-members.html" class="small">+130 more</a>
           </div>
@@ -177,7 +175,8 @@
     <!-- Your own JavaScript functions go here -->
     <!---------------------------------------------->
     <!-- Link to scripts of your own -->
-    <script type="module" src="/src/app.js"></script>
-    <script type="module" src="/src/channel-preview.js"></script>
+    <site-default-footer></site-default-footer>
+    <script type="module" src="/src/js/app.js"></script>
+    <script type="module" src="/src/js/channel-preview.js"></script>
   </body>
 </html>

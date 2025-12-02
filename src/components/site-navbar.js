@@ -1,7 +1,7 @@
 // site-navbar.js
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "/src/firebaseConfig.js";
-import { logoutUser } from "/src/authentication.js";
+import { auth } from "/src/js/firebaseConfig.js";
+import { logoutUser } from "/src/js/authentication.js";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
@@ -49,10 +49,13 @@ class SiteNavbar extends HTMLElement {
                 <a href="index.html" class="nav-link text-body-tertiary">HOME</a>
               </li>
               <li class="nav-item">
-                <a href="main.html" class="nav-link text-body-tertiary">CHANNEL</a>
+                <a href="main.html" class="nav-link text-body-tertiary">DASHBOARD</a>
               </li>
               <li class="nav-item">
-                <a href="profile.html" class="nav-link text-body-tertiary">ACCOUNT</a>
+                <a href="connections.html" class="nav-link text-body-tertiary">CONNECTIONS</a>
+              </li>
+              <li class="nav-item">
+                <a href="profile.html" class="nav-link text-body-tertiary">PROFILE</a>
               </li>
               <li class="nav-item">
                 <a href="#about" class="nav-link text-body-tertiary">ABOUT</a>
@@ -81,7 +84,7 @@ class SiteNavbar extends HTMLElement {
     onAuthStateChanged(auth, (user) => {
       if (user) {
         authControls.innerHTML = `
-          <button class="nav-link btn btn-link text-body-tertiary p-0" id="signOutBtn" type="button">
+          <button class="nav-link btn btn-link text-body-tertiary px-0" id="signOutBtn" type="button">
             LOG OUT
           </button>`;
         authControls

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>COMP1800-Project1-BBY025-PeerLink</title>
+    <title>PeerLink - Login</title>
     <meta name="comp1800 template" content="My 1800 App" />
 
     <meta charset="utf-8" />
@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -34,6 +34,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/styles/style.css" />
+    <link rel="stylesheet" href="/src/styles/login.css" />
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
@@ -195,8 +196,9 @@
 
     <!-- Firebase and authentication related scripts -->
     <!-- The order of loading matters -->
-    <script type="module" src="/src/firebaseConfig.js"></script>
-    <script type="module" src="/src/authentication.js"></script>
-    <script type="module" src="/src/loginSignup.js"></script>
+    <script type="module" src="/src/js/app.js"></script>
+    <script type="module" src="/src/js/firebaseConfig.js"></script>
+    <script type="module" src="/src/js/authentication.js"></script>
+    <script type="module" src="/src/js/loginSignup.js"></script>
   </body>
 </html>

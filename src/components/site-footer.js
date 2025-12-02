@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "/src/firebaseConfig.js";
-import { logoutUser } from "/src/authentication.js";
+import { auth } from "/src/js/firebaseConfig.js";
+import { logoutUser } from "/src/js/authentication.js";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
@@ -21,7 +21,7 @@ class SiteFooter extends HTMLElement {
               <a class="nav-link text-body" href="index.html">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-body" href="main.html">Channel</a>
+              <a class="nav-link text-body" href="main.html">Dashboard</a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-body" href="profile.html">Account</a>

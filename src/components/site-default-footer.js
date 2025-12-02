@@ -1,6 +1,6 @@
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "/src/firebaseConfig.js";
-import { logoutUser } from "/src/authentication.js";
+import { auth } from "/src/js/firebaseConfig.js";
+import { logoutUser } from "/src/js/authentication.js";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
@@ -21,14 +21,6 @@ class DefaultFooter extends HTMLElement {
           href="index.html"
         >
           PeerLink
-        </a>
-      </div>
-      <div class="col">
-        <a
-          class="text-dark link-underline-opacity-0"
-          href="main.html"
-        >
-          Homepage
         </a>
       </div>
       <div class="col">
@@ -113,14 +105,16 @@ class DefaultFooter extends HTMLElement {
       </div>
     </div>
 
-    <div class="row">
-      <div class="text-secondary small">
-        <i class="bi bi-c-circle"></i>
-        2025 PeerLink <br> made with
-        <i class="bi bi-heart-fill" style="color: red"></i>
-         by Team_BBY025
-      </div>
-    </div>
+<div class="row">
+  <div class="small fw-light" style="color: #A49E9E;">
+    <p><i class="bi bi-c-circle"></i> 2025 COMP1800 PeerLink</p>
+    <p>made with
+    <i class="bi bi-heart-fill" style="color: #ff6b6b;"></i>
+    by Team_BBY025
+    </p>
+  </div>
+</div>
+
   </footer>
 `;
   }

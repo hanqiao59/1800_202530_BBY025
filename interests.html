@@ -24,7 +24,6 @@
     --page-gutter: 30px;
     --topbar-height: 64px;
 
-    /* Shared color used for Edit/Save button AND selected tags */
     --edit-btn-color: #0d6efd; /* Bootstrap primary */
   }
 
@@ -164,12 +163,9 @@
   }
 </style>
 
-
-
-
   </head>
   <script type="module">
-    import { auth, db } from "/src/firebaseConfig.js";
+    import { auth, db } from "/src/js/firebaseConfig.js";
     import { onAuthStateChanged } from "firebase/auth";
     import { doc, getDoc } from "firebase/firestore";
 
@@ -201,7 +197,7 @@
 
       <div class="profile-container">
         <div class="profile-picture">A</div>
-        <h2>Alex Johnson</h2>
+        <h2>User</h2>
         <h4>Interests</h4>
 
         <div id="selected-tags" class="mb-3"></div>
@@ -215,7 +211,7 @@
       </div>
     </main>
 
-    <script type="module" src="src/interestsTags.js"></script>
-    <script type="module" src="src/app.js"></script>
+    <script type="module" src="/src/js/interestsTags.js"></script>
+    <script type="module" src="/src/js/app.js"></script>
   </body>
 </html>

@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -38,17 +38,18 @@
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
     <script type="module" src="/src/components/site-default-footer.js"></script>
-
-    <!--<script type="module" src="/src/components/site-footer.js"></script>-->
   </head>
 
   <body class="bg-white">
     <site-navbar></site-navbar>
+    <!---------------------------------------------->
+    <!-- Your own main content go here -->
+    <!---------------------------------------------->
+    <site-default-footer></site-default-footer>
 
     <!---------------------------------------------->
     <!-- Your own JavaScript functions go here -->
     <!---------------------------------------------->
-
     <!-- Link to scripts of your own -->
     <script type="module" src="/src/app.js"></script>
   </body>

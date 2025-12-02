@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>COMP1800-Project1-BBY025-PeerLink</title>
+    <title>PeerLink</title>
     <meta name="comp1800 template" content="My 1800 App" />
 
     <meta charset="utf-8" />
@@ -20,7 +20,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -34,6 +34,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/src/styles/style.css" />
+    <link rel="stylesheet" href="/src/styles/index.css" />
 
     <!-- Web Components for shared navbar and footer layout -->
     <script type="module" src="/src/components/site-navbar.js"></script>
@@ -43,7 +44,7 @@
   <body>
     <!-- Navbar -->
     <site-navbar></site-navbar>
-    <!-- Page Body Sections -->
+    <!-- Main content -->
     <div class="page">
       <section id="home-banner" class="pt-5">
         <div class="container pb-5">
@@ -52,7 +53,7 @@
             alt="banner"
             class="img-fluid w-75 banner-img"
           />
-          <h1 class="text-white fw-bold">MAKING CONNECTION EASIER</h1>
+          <h1 class="text-white fw-bold">MAKING CONNECTIONS EASIER</h1>
           <p class="px-2">
             Scared of starting conversations？Discover, connect, and break the
             ice — the easy way.
@@ -60,7 +61,6 @@
           <button
             onclick="window.location.href='login.html'"
             class="btn custom-btn btn-lg"
-            hover
             type="button"
           >
             Log in Now
@@ -87,7 +87,8 @@
                   <h4 class="h5 fw-semibold">Breaking the Ice, Naturally</h4>
                   <p class="lead fs-6 mb-0">
                     The best connections start with small moments. We design
-                    low-pressure ice-breakers that feel natural and fun.
+                    low-pressure icebreaker activities that feel natural and
+                    fun.
                   </p>
                 </figcaption>
               </figure>
@@ -194,6 +195,6 @@
     <!---------------------------------------------->
 
     <!-- Link to scripts of your own -->
-    <script type="module" src="/src/app.js"></script>
+    <script type="module" src="/src/js/app.js"></script>
   </body>
 </html>
