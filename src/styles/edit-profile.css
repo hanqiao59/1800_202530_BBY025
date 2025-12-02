@@ -1,0 +1,65 @@
+.userprof-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+}
+
+.userprof-container {
+  text-align: center;
+  width: 90%;
+  max-width: 400px;
+  margin-top: 2rem;
+}
+
+.userprof-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-color: #d6d6d6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 32px;
+  font-weight: 500;
+  margin: 0 auto 10px;
+}
+
+.userprof-name {
+  font-size: 22px;
+  margin-bottom: 25px;
+}
+
+.userprof-btn {
+  background-color: #000;
+  color: #fff;
+  width: 100%;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.userprof-btn:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .userprof-container {
+    max-width: 350px;
+  }
+}
+
+.back-btn {
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.back-btn:hover {
+  background-color: #e9eef5;
+  border-color: #0a1333;
+}

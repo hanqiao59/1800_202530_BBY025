@@ -1,10 +1,8 @@
-// edit-profile.js
 import { auth, db, storage } from "/src/js/firebaseConfig.js";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-// DOM elements
 const bannerInput = document.getElementById("banner");
 const profileInput = document.getElementById("profilePhoto");
 const nameInput = document.getElementById("name");
@@ -18,14 +16,12 @@ const submitButton = form?.querySelector('button[type="submit"]');
 
 let currentUserUID = null;
 
-/* Upload file to Firebase Storage */
 async function uploadFile(file, path) {
   const fileRef = ref(storage, path);
   await uploadBytes(fileRef, file);
   return await getDownloadURL(fileRef);
 }
 
-/* Load existing data into form + previews */
 async function loadUserData(uid) {
   const userRef = doc(db, "users", uid);
   const snap = await getDoc(userRef);
@@ -34,11 +30,9 @@ async function loadUserData(uid) {
 
   const data = snap.data();
 
-  // Load text fields
   nameInput.value = data.fullName || data.name || "";
   bioInput.value = data.bio || "";
 
-  // Load banner preview
   if (data.banner) {
     bannerPreview.innerHTML = "";
     bannerPreview.style.backgroundImage = `url('${data.banner}')`;
@@ -46,7 +40,6 @@ async function loadUserData(uid) {
     bannerPreview.style.backgroundPosition = "center";
   }
 
-  // Load profile picture preview
   if (data.profilePicture) {
     profilePreview.innerHTML = "";
     profilePreview.style.backgroundImage = `url('${data.profilePicture}')`;
@@ -55,7 +48,6 @@ async function loadUserData(uid) {
   }
 }
 
-/* Save profile */
 async function handleSubmit(e) {
   e.preventDefault();
 
@@ -97,7 +89,6 @@ async function handleSubmit(e) {
   }
 }
 
-/* Auth Listener */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "login.html";
@@ -106,13 +97,11 @@ onAuthStateChanged(auth, async (user) => {
 
   currentUserUID = user.uid;
 
-  // Load current data
   await loadUserData(user.uid);
 
   form.addEventListener("submit", handleSubmit);
 });
 
-/** Local previews */
 bannerInput.addEventListener("change", (e) => {
   if (e.target.files.length > 0) {
     const file = URL.createObjectURL(e.target.files[0]);
