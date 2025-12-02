@@ -12,7 +12,7 @@
 }
 
 #main-page-button {
-  grid-template-columns: repeat(2, 200px);
+  grid-template-columns: repeat(2, 1fr);
   justify-content: start;
 }
 
@@ -109,4 +109,11 @@
 
 .input-group .btn:hover {
   border-color: #000 !important;
+}
+
+@media (max-width: 470px) {
+  #main-page-button {
+    grid-template-columns: repeat(1, 100%);
+    justify-content: center;
+  }
 }
