@@ -58,8 +58,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* ----------------------------- Rendering ----------------------------- */
-
 function renderSelectedTags() {
   selectedTagsDiv.innerHTML = "";
 
@@ -70,7 +68,7 @@ function renderSelectedTags() {
 
   selectedTags.forEach((tag) => {
     const el = document.createElement("span");
-    el.className = "tag selected"; // SELECTED = blue now
+    el.className = "tag selected";
     el.textContent = tag;
     selectedTagsDiv.appendChild(el);
   });
@@ -82,18 +80,15 @@ function renderTagSelection() {
   allTags.forEach((tag) => {
     const el = document.createElement("span");
 
-    // Add selected class *only* if user previously chose this tag
     el.className = "tag" + (selectedTags.includes(tag) ? " selected" : "");
     el.textContent = tag;
 
-    // Toggle behavior
     el.addEventListener("click", () => toggleTag(tag, el));
 
     tagSelection.appendChild(el);
   });
 }
 
-/* ---------------------------- Toggle Logic --------------------------- */
 
 function toggleTag(tag, element) {
   if (selectedTags.includes(tag)) {
@@ -105,7 +100,6 @@ function toggleTag(tag, element) {
   }
 }
 
-/* ---------------------------- Edit Button ---------------------------- */
 
 editBtn.addEventListener("click", async () => {
   if (!editing) {
@@ -126,8 +120,6 @@ editBtn.addEventListener("click", async () => {
     }
   }
 });
-
-/* ----------------------------- Firestore ----------------------------- */
 
 async function saveInterests(userId, selectedTags) {
   const userRef = doc(db, "users", userId);
