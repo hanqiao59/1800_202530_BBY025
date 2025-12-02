@@ -52,38 +52,48 @@ onAuthStateChanged(auth, async (user) => {
     await loadUserInterests(user.uid);
   } else {
     console.log("No user logged in — signing in test user...");
-    await signInWithEmailAndPassword(
-      auth,
-      "test@example.com",
-      "password123"
-    ).catch((err) => console.log(err.message));
+    await signInWithEmailAndPassword(auth, "test@example.com", "password123").catch((err) =>
+      console.log(err.message)
+    );
   }
 });
 
+/* ----------------------------- Rendering ----------------------------- */
+
 function renderSelectedTags() {
   selectedTagsDiv.innerHTML = "";
+
   if (selectedTags.length === 0) {
     selectedTagsDiv.innerHTML = "<p>No interests selected.</p>";
-  } else {
-    selectedTags.forEach((tag) => {
-      const el = document.createElement("span");
-      el.className = "tag selected";
-      el.textContent = tag;
-      selectedTagsDiv.appendChild(el);
-    });
+    return;
   }
+
+  selectedTags.forEach((tag) => {
+    const el = document.createElement("span");
+    el.className = "tag selected"; // SELECTED = blue now
+    el.textContent = tag;
+    selectedTagsDiv.appendChild(el);
+  });
 }
 
 function renderTagSelection() {
   tagSelection.innerHTML = "";
+
   allTags.forEach((tag) => {
     const el = document.createElement("span");
+
+    // Add selected class *only* if user previously chose this tag
     el.className = "tag" + (selectedTags.includes(tag) ? " selected" : "");
     el.textContent = tag;
+
+    // Toggle behavior
     el.addEventListener("click", () => toggleTag(tag, el));
+
     tagSelection.appendChild(el);
   });
 }
+
+/* ---------------------------- Toggle Logic --------------------------- */
 
 function toggleTag(tag, element) {
   if (selectedTags.includes(tag)) {
@@ -94,6 +104,8 @@ function toggleTag(tag, element) {
     element.classList.add("selected");
   }
 }
+
+/* ---------------------------- Edit Button ---------------------------- */
 
 editBtn.addEventListener("click", async () => {
   if (!editing) {
@@ -115,6 +127,8 @@ editBtn.addEventListener("click", async () => {
   }
 });
 
+/* ----------------------------- Firestore ----------------------------- */
+
 async function saveInterests(userId, selectedTags) {
   const userRef = doc(db, "users", userId);
   await setDoc(userRef, { interests: selectedTags }, { merge: true });
@@ -124,10 +138,8 @@ async function saveInterests(userId, selectedTags) {
 async function loadUserInterests(userId) {
   const userRef = doc(db, "users", userId);
   const snap = await getDoc(userRef);
-  if (snap.exists()) {
-    selectedTags = snap.data().interests || [];
-  } else {
-    selectedTags = [];
-  }
+
+  selectedTags = snap.exists() ? snap.data().interests || [] : [];
+
   renderSelectedTags();
 }
