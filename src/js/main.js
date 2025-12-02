@@ -16,6 +16,13 @@ import {
   orderBy,
 } from "firebase/firestore";
 
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    // Not logged in → redirect to index page
+    window.location.replace("/index.html");
+  }
+});
+
 /* ========== Bootstrap Tooltips ========== */
 document.addEventListener("DOMContentLoaded", () => {
   const tooltipTriggerList = document.querySelectorAll(

@@ -12,6 +12,7 @@ import {
   limit,
   onSnapshot,
   setDoc,
+  getDocs,
 } from "firebase/firestore";
 
 /* ===== URL params & session storage ===== */
@@ -41,6 +42,11 @@ const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary");
 const ownerQrWrapperEl = ownerHostCard?.querySelector(
   ".d-flex.justify-content-center.mb-3"
 );
+
+//Avatar DOMs
+const ownerAvatarImg = document.querySelector(".owner-avatar");
+const membersContainer = document.querySelector("#membersAvatarsContainer");
+const userAvatar = document.querySelector("#memberJoinCard .user-avatar");
 
 /* ===== Local state ===== */
 let channelData = null;
@@ -104,6 +110,14 @@ function setOwnerActiveUI() {
   if (ownerQrWrapperEl) {
     ownerQrWrapperEl.classList.remove("d-none");
   }
+}
+
+//Show avatars' initials
+function avatarInitials(name) {
+  if (!name) return "?";
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
 /* ===== Owner UI when session has ended ===== */
@@ -175,6 +189,7 @@ function watchOwnerSession() {
 /* ===== Main auth + channel load ===== */
 onAuthStateChanged(auth, async (user) => {
   currentUser = user;
+  console.log("[channel-preview] Current user:", user?.uid || "none");
 
   // Validate channelId
   if (!channelId) {
@@ -191,6 +206,83 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     channelData = snap.data();
+    // ===== Load members and render avatars =====
+    const membersRef = collection(db, "channels", channelId, "members");
+    onSnapshot(membersRef, async (membersSnap) => {
+      try {
+        let members = membersSnap.docs.map((d) => d.id);
+
+        const profiles = [];
+        for (let id of members) {
+          const userDoc = await getDoc(doc(db, "users", id));
+          if (userDoc.exists()) {
+            profiles.push({ id, ...userDoc.data() });
+          }
+        }
+
+        // ---- Render Owner Avatar ----
+        if (ownerAvatarImg) {
+          const ownerProfile = profiles.find(
+            (m) => m.id === channelData.createdBy
+          );
+
+          const ownerName =
+            (currentUser && currentUser.uid === channelData.createdBy
+              ? currentUser.displayName
+              : ownerProfile?.name) || "Owner";
+
+          ownerAvatarImg.textContent = avatarInitials(ownerName);
+          console.log("[channel-preview] Set owner avatar initials.");
+        }
+
+        /* ---- MEMBERS SECTION (excluding owner) ---- */
+        const nonOwnerMembers = profiles.filter(
+          (p) => p.id !== channelData.createdBy && p.name
+        );
+
+        membersContainer.innerHTML = ""; // clear old avatars
+
+        /* ---- CURRENT USER AVATAR ---- */
+        if (userAvatar && currentUser) {
+          const nameFromAuth = currentUser.displayName;
+          userAvatar.textContent = avatarInitials(nameFromAuth);
+          console.log("[channel-preview] Set user avatar initials.");
+        } else {
+          console.log("[channel-preview] No current user for avatar.");
+        }
+
+        if (nonOwnerMembers.length === 0) {
+          const msg = document.createElement("span");
+          msg.className = "text-muted d-block my-2";
+          msg.textContent = "No members yet";
+          membersContainer.appendChild(msg);
+          console.log("[channel-preview] No non-owner members to show.");
+          return;
+        } else {
+          // Render up to 5 avatars
+          nonOwnerMembers.slice(0, 5).forEach((p) => {
+            const avatar = document.createElement("span");
+            avatar.className =
+              "member-avatar rounded-circle bg-secondary-subtle fw-bold " +
+              "d-inline-flex justify-content-center align-items-center me-1";
+            avatar.textContent = avatarInitials(p.name);
+            membersContainer.appendChild(avatar);
+          });
+
+          // (+X more)
+          if (nonOwnerMembers.length > 5) {
+            const link = document.createElement("a");
+            link.href = "group-members.html";
+            link.className = "small ms-2";
+            link.textContent = `+${nonOwnerMembers.length - 5} more`;
+            membersContainer.appendChild(link);
+          }
+        }
+      } catch (err) {
+        console.error("[channel-preview] Failed to render members:", err);
+      }
+    });
+
     // Show channel name
     if (titleEl) {
       titleEl.textContent = channelData.name || "Untitled Channel";
