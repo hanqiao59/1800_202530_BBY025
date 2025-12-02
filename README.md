@@ -61,9 +61,9 @@ elmo-hikes/
 │       ├── others-profile.css
 │       ├── profile.css
 │       ├── select-tags.css
-        ├── interests.css
-        ├── profile.css
-        ├── edit-profile.css
+│       ├── interests.css
+│       ├── profile.css
+│       ├── edit-profile.css
 │   ├── components/
 │       ├── site-default-footer.js
 │       ├── site-footer.js
@@ -82,6 +82,7 @@ elmo-hikes/
 │       ├── ice-breaker-session.js
 │       ├── interestsTags.js
 │       ├── select-tags.js
+│       ├── profile.js
 │   ├── index.html
 │   ├── main.html
 │   ├── activity-end.html
