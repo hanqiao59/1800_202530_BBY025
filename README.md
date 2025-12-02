@@ -48,28 +48,39 @@ elmo-hikes/
 ├── src/
 │   ├── styles/
 │       └── style.css
+│       ├── index.css
+│       ├── main.css
+│       ├── activity-end.css
+│       ├── auto-grouping.css
+│       ├── channel-preview.css
+│       ├── edit-profile.css
+│       ├── group-member.css
+│       ├── ice-breaker-session.css
+│       ├── interests.css
+│       ├── login.css
+│       ├── others-profile.css
+│       ├── profile.css
+│       ├── select-tags.css
 │   ├── components/
 │       ├── site-default-footer.js
 │       ├── site-footer.js
 │       ├── site-navbar.js
-│   ├── js/
-│       ├── app.js
-│       ├── authentication.js
-│       ├── firebaseConfig.js
-│       ├── loginSignup.js
-│       ├── main.js
-│       ├── activity-end.js
-│       ├── auto-grouping.js
-│       ├── channel-preview.js
-│       ├── edit-profile.js
-│       ├── group-members.js
-│       ├── ice-breaker-session.js
-│       ├── interests-tags.js
-│       ├── select-tags.js
-│       ├── show-member.js
+│   ├── app.js
+│   ├── authentication.js
+│   ├── firebaseConfig.js
+│   ├── loginSignup.js
+│   ├── main.js
+│   ├── activity-end.js
+│   ├── auto-grouping.js
+│   ├── channel-preview.js
+│   ├── edit-profile.js
+│   ├── group-members.js
+│   ├── ice-breaker-session.js
+│   ├── interestsTags.js
+│   ├── select-tags.js
+├── public/
 │   ├── index.html
 │   ├── main.html
-│   ├── account.html
 │   ├── activity-end.html
 │   ├── auto-grouping.html
 │   ├── channel-preview.html
@@ -82,7 +93,6 @@ elmo-hikes/
 │   ├── others-profile.html
 │   ├── profile.html
 │   ├── select-tags.html
-│   ├── show-member.html
 │   ├── skeleton.html
 ├── images/
 ├── package.json
