@@ -2,7 +2,7 @@
 
 ## Overview
 
-PeerLink is a web application that helps post-secondary students, especially introverted ones, quickly break the ice and form bonds with their classmates through fun, low-pressure mini icebreaker activities based on shared interests. Students can join channels for their classes or events, set up a personal profile with a display name, profile photo, and interest tags, send friend requests, and participate in low-pressure conversations on both desktop and mobile devices.
+PeerLink is a web application that helps post-secondary students, especially introverted ones, quickly break the ice and quickly form bonds with their peers through fun, low-pressure mini icebreaker activities based on shared interests. Students can join channels for their classes or events, set up a personal profile with a display name, and interest tags, send friend requests, and participate in low-pressure conversations on both desktop and mobile devices.
 
 Developed for the COMP 1800 course, this project applies User-Centred Design practices and agile project management, and demonstrates integration with Firebase backend services for storing user favorites.
 
@@ -11,7 +11,7 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 ## Features
 
 - Join interest-based icebreaker sessions with classmates in the same channel
-- Set up a personal profile with profile photo and interest tags
+- Set up a personal profile with name, bio, and interest tags
 - Send friend request to stay connected after sessions
 - view session history
 - Create and host channels for specific classes or events
@@ -33,11 +33,11 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 ## Usage
 
 1. Open your browser and visit `http://localhost:3000`.
-2. Sign up for a new account or log in with an existing one.
-3. Create a new channel for your class or event, or join an existing channel by using an invite link.
-4. Join an icebreaker sessions with your chosen interest tags.
-5. Send friends request to people you want to stay connected with.
-6. Customize your profile to showcase yourself.
+2. Sign up with new account or log in with an existing one.
+3. Create a new channel for a class or event, or join an existing channel by using an invite link.
+4. Join icebreaker sessions with your chosen interest tags.
+5. Send friends requests to people you want to stay connected with.
+6. Customize your profile to best reflect yourself.
 
 ---
 
@@ -61,6 +61,9 @@ elmo-hikes/
 │       ├── others-profile.css
 │       ├── profile.css
 │       ├── select-tags.css
+        ├── interests.css
+        ├── profile.css
+        ├── edit-profile.css
 │   ├── components/
 │       ├── site-default-footer.js
 │       ├── site-footer.js
