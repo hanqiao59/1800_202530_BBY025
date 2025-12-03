@@ -115,3 +115,19 @@ async function loadUserInterests(userId) {
 
   renderSelectedTags();
 }
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  if (userSnap.exists()) {
+    const userData = userSnap.data();
+
+    document.querySelector("h2").textContent = userData.name || "Unknown User";
+
+    const firstLetter = (userData.name || "U").charAt(0).toUpperCase();
+    document.querySelector(".profile-picture").textContent = firstLetter;
+  }
+});

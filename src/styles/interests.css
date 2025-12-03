@@ -4,7 +4,8 @@
   --edit-btn-color: #0d6efd;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -34,7 +35,10 @@ body {
   padding: 12px var(--page-gutter) !important;
 }
 
-site-navbar { width: 100%; display: block; }
+site-navbar {
+  width: 100%;
+  display: block;
+}
 
 #menuBtn {
   margin-left: auto !important;
@@ -44,19 +48,13 @@ site-navbar { width: 100%; display: block; }
 }
 
 /* Page */
-.page-content {
-  padding-top: calc(var(--topbar-height) + 24px);
-  padding-left: var(--page-gutter);
-  padding-right: var(--page-gutter);
-}
-
 .profile-container {
   max-width: 600px;
   margin: 0 auto 40px auto;
   background: white;
   padding: 30px;
   border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   text-align: center;
 }
 
@@ -73,8 +71,15 @@ site-navbar { width: 100%; display: block; }
   margin: 0 auto 20px auto;
 }
 
-h2 { font-size: 1.8rem; margin-bottom: 10px; }
-h4 { font-size: 1.2rem; margin-top: 18px; font-weight: 600; }
+h2 {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+h4 {
+  font-size: 1.2rem;
+  margin-top: 18px;
+  font-weight: 600;
+}
 
 .tag {
   display: inline-block;
@@ -84,13 +89,14 @@ h4 { font-size: 1.2rem; margin-top: 18px; font-weight: 600; }
   border-radius: 25px;
   margin: 5px;
   cursor: pointer;
-  transition: background-color .15s ease, color .15s ease, transform .08s ease;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    transform 0.08s ease;
   user-select: none;
 }
 
-.tag:hover { 
-  background-color: #d6d8db; 
-  transform: translateY(-1px); 
+.tag:hover {
+  background-color: #d6d8db;
+  transform: translateY(-1px);
 }
 
 #selected-tags .tag.selected,
@@ -100,13 +106,14 @@ h4 { font-size: 1.2rem; margin-top: 18px; font-weight: 600; }
   color: white !important;
 }
 
-.tag-selection { 
-  display: none; 
-  margin-top: 10px; 
+.tag-selection {
+  display: none;
+  margin-top: 10px;
 }
 
-.tag-selection.active { display: block; }
-
+.tag-selection.active {
+  display: block;
+}
 
 .profile-container .btn.btn-edit,
 button.btn-edit,
@@ -120,13 +127,20 @@ button.btn-edit,
 .profile-container .btn.btn-edit:focus,
 .profile-container .btn.btn-edit:active,
 .profile-container .btn.btn-edit:focus-visible {
-  box-shadow: 0 0 0 0.25rem rgba(13,110,253,0.25) !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
 }
 
-#footer { width: 100%; margin-top: 40px; }
+#footer {
+  width: 100%;
+  margin-top: 40px;
+}
 
 @media (max-width: 600px) {
-  :root { --page-gutter: 16px; --topbar-height: 56px; }
-  #topbar { padding: 10px var(--page-gutter) !important; }
-  .page-content { padding-top: calc(var(--topbar-height) + 16px); }
+  :root {
+    --page-gutter: 16px;
+    --topbar-height: 56px;
+  }
+  #topbar {
+    padding: 10px var(--page-gutter) !important;
+  }
 }
