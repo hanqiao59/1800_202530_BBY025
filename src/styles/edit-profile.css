@@ -63,3 +63,7 @@
   background-color: #e9eef5;
   border-color: #0a1333;
 }
+
+form {
+  max-width: 720px;
+}
