@@ -1,4 +1,4 @@
-import { auth, db, storage } from "/src/js/firebaseConfig.js";
+import { auth, db, storage } from "./firebase-config.js";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";

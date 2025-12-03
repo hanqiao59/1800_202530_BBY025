@@ -1,11 +1,11 @@
 // site-navbar.js
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "/src/js/firebaseConfig.js";
-import { logoutUser } from "/src/js/authentication.js";
+import { auth } from "../js/firebase-config.js";
+import { logoutUser } from "../js/authentication.js";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
-import "/src/styles/style.css";
+import "../styles/style.css";
 
 class SiteNavbar extends HTMLElement {
   connectedCallback() {

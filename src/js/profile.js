@@ -1,4 +1,4 @@
-import { auth, db } from "/src/js/firebaseConfig.js";
+import { auth, db } from "./firebase-config.js";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -45,7 +45,6 @@ async function loadProfile(uid) {
         interestsEl.appendChild(badge);
       });
     }
-
   } catch (error) {
     console.error("Error loading profile:", error);
   }
