@@ -61,7 +61,7 @@ async function handleSubmit(e) {
   const userRef = doc(db, "users", currentUserUID);
 
   const updateData = {
-    fullName: nameInput.value.trim(),
+    name: nameInput.value.trim(),
     bio: bioInput.value.trim(),
   };
 
