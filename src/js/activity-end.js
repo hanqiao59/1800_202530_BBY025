@@ -98,7 +98,7 @@ async function initializeFriendSystem(currentUser) {
   members.forEach((member) => {
     const div = document.createElement("div");
     div.className =
-      "friend d-flex flex-wrap align-items-center justify-content-between p-2 mb-2 rounded";
+      "friend d-inline-flex align-items-center gap-2 px-3 py-2 mb-2 rounded-3";
 
     div.innerHTML = `
       <div class="d-flex align-items-center gap-2 flex-shrink-1" style="min-width:0">
