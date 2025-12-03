@@ -2,6 +2,7 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../js/firebase-config.js";
 import { logoutUser } from "../js/authentication.js";
+import logoSrc from "/images/logo.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
@@ -26,7 +27,7 @@ class SiteNavbar extends HTMLElement {
             href="index.html"
             class="brand d-flex align-items-center gap-2 text-decoration-none text-white"
           >
-            <img src="./images/logo.png" alt="PeerLink Logo" width="40" height="40" />
+            <img src="${logoSrc}" alt="PeerLink Logo" width="40" height="40" />
             <span class="fw-semibold fs-5 ms-2">PeerLink</span>
           </a>
           <button class="btn border-0 position-relative" id="menuBtn">

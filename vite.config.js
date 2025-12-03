@@ -1,7 +1,7 @@
 // This Vite config file (vite.config.js) tells Rollup (production bundler)
 // to treat multiple HTML files as entry points so each becomes its own built page.
 
-import { defineConfig, preview } from "vite";
+import { defineConfig } from "vite";
 import { resolve } from "path";
 
 export default defineConfig({

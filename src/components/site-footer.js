@@ -1,6 +1,10 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../js/firebase-config.js";
 import { logoutUser } from "../js/authentication.js";
+import logoSrc from "/images/logo.png";
+import InstagramSrc from "/images/instagram.png";
+import DiscordSrc from "/images/discord.png";
+import FacebookSrc from "/images/facebook.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
@@ -45,7 +49,7 @@ class SiteFooter extends HTMLElement {
               class="d-flex align-items-center mb-2 text-decoration-none text-dark"
             >
               <img
-                src="images/logo.png"
+                src="${logoSrc}"
                 width="35"
                 height="35"
                 alt="PeerLink Logo"
@@ -68,7 +72,7 @@ class SiteFooter extends HTMLElement {
               class="opacity-75 hover-opacity-100"
             >
               <img
-                src="images/instagram.png"
+                src="${InstagramSrc}"
                 width="25"
                 height="25"
                 alt="Instagram"
@@ -79,7 +83,7 @@ class SiteFooter extends HTMLElement {
               class="opacity-75 hover-opacity-100"
             >
               <img
-                src="images/communication.png"
+                src="${FacebookSrc}"
                 width="25"
                 height="25"
                 alt="Chat"
@@ -87,7 +91,7 @@ class SiteFooter extends HTMLElement {
             </a>
             <a href="https://discord.com/" class="opacity-75 hover-opacity-100">
               <img
-                src="images/discord.png"
+                src="${DiscordSrc}"
                 width="25"
                 height="25"
                 alt="Discord"
