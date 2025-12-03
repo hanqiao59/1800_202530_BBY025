@@ -1,26 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAvbVTPcuyiNFzLqsXxNOWYxicpDNJWkiM",
-  authDomain: "peerlink-group-project-1800.firebaseapp.com",
-  projectId: "peerlink-group-project-1800",
-  appId: "1:715710165789:web:cba6413e1a86dd0d3567f4",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+import { db, auth } from "./firebase-config.js";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const editBtn = document.getElementById("editBtn");
 const tagSelection = document.getElementById("tag-selection");
@@ -52,9 +32,11 @@ onAuthStateChanged(auth, async (user) => {
     await loadUserInterests(user.uid);
   } else {
     console.log("No user logged in — signing in test user...");
-    await signInWithEmailAndPassword(auth, "test@example.com", "password123").catch((err) =>
-      console.log(err.message)
-    );
+    await signInWithEmailAndPassword(
+      auth,
+      "test@example.com",
+      "password123"
+    ).catch((err) => console.log(err.message));
   }
 });
 
@@ -89,7 +71,6 @@ function renderTagSelection() {
   });
 }
 
-
 function toggleTag(tag, element) {
   if (selectedTags.includes(tag)) {
     selectedTags = selectedTags.filter((t) => t !== tag);
@@ -99,7 +80,6 @@ function toggleTag(tag, element) {
     element.classList.add("selected");
   }
 }
-
 
 editBtn.addEventListener("click", async () => {
   if (!editing) {

@@ -44,35 +44,32 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 ## Project Structure
 
 ```
-elmo-hikes/
+PeerLink/
 ├── src/
 │   ├── styles/
-│       └── style.css
+│       ├── style.css
 │       ├── index.css
 │       ├── main.css
 │       ├── activity-end.css
 │       ├── auto-grouping.css
 │       ├── channel-preview.css
 │       ├── edit-profile.css
-│       ├── group-member.css
 │       ├── ice-breaker-session.css
 │       ├── interests.css
 │       ├── login.css
 │       ├── others-profile.css
 │       ├── profile.css
 │       ├── select-tags.css
-│       ├── interests.css
-│       ├── profile.css
-│       ├── edit-profile.css
 │   ├── components/
 │       ├── site-default-footer.js
 │       ├── site-footer.js
 │       ├── site-navbar.js
 │   ├── js/
 │       ├── app.js
+│       ├── index.js
 │       ├── authentication.js
-│       ├── firebaseConfig.js
-│       ├── loginSignup.js
+│       ├── firebase-config.js
+│       ├── login-signup.js
 │       ├── main.js
 │       ├── activity-end.js
 │       ├── auto-grouping.js
@@ -80,7 +77,7 @@ elmo-hikes/
 │       ├── edit-profile.js
 │       ├── group-members.js
 │       ├── ice-breaker-session.js
-│       ├── interestsTags.js
+│       ├── interests-tags.js
 │       ├── select-tags.js
 │       ├── profile.js
 │   ├── index.html
@@ -90,7 +87,7 @@ elmo-hikes/
 │   ├── channel-preview.html
 │   ├── connections.html
 │   ├── edit-profile.html
-│   ├── group-member.html
+│   ├── group-members.html
 │   ├── ice-breaker-session.html
 │   ├── interests.html
 │   ├── login.html
@@ -100,6 +97,7 @@ elmo-hikes/
 │   ├── skeleton.html
 ├── images/
 ├── package.json
+├── package-lock.json
 ├── README.md
 ```
 
