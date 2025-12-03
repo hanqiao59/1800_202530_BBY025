@@ -47,6 +47,7 @@ const ownerQrWrapperEl = ownerHostCard?.querySelector(
 const ownerAvatarImg = document.querySelector(".owner-avatar");
 const membersContainer = document.querySelector("#membersAvatarsContainer");
 const userAvatar = document.querySelector("#memberJoinCard .user-avatar");
+const membersAvatar = document.querySelector("#membersAvatars");
 
 /* ===== Local state ===== */
 let channelData = null;
@@ -240,7 +241,7 @@ onAuthStateChanged(auth, async (user) => {
           (p) => p.id !== channelData.createdBy && p.name
         );
 
-        membersContainer.innerHTML = ""; // clear old avatars
+        // membersContainer.innerHTML = ""; // clear old avatars
 
         /* ---- CURRENT USER AVATAR ---- */
         if (userAvatar && currentUser) {
@@ -252,11 +253,11 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         if (nonOwnerMembers.length === 0) {
-          const msg = document.createElement("span");
-          msg.className = "text-muted d-block my-2";
-          msg.textContent = "No members yet";
-          membersContainer.appendChild(msg);
-          console.log("[channel-preview] No non-owner members to show.");
+          // const msg = document.createElement("span");
+          // msg.className = "text-muted d-block my-2";
+          // msg.textContent = "No members yet";
+          // membersContainer.appendChild(msg);
+          // console.log("[channel-preview] No non-owner members to show.");
           return;
         } else {
           // Render up to 5 avatars
@@ -266,7 +267,7 @@ onAuthStateChanged(auth, async (user) => {
               "member-avatar rounded-circle bg-secondary-subtle fw-bold " +
               "d-inline-flex justify-content-center align-items-center me-1";
             avatar.textContent = avatarInitials(p.name);
-            membersContainer.appendChild(avatar);
+            membersAvatar.appendChild(avatar);
           });
 
           // (+X more)
