@@ -1,6 +1,7 @@
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../js/firebase-config.js";
 import { logoutUser } from "../js/authentication.js";
+import logoSrc from "/images/logo.png";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
@@ -59,7 +60,7 @@ class DefaultFooter extends HTMLElement {
         >
           <i class="bi bi-ice-cubes">
             <img
-              src="/images/logo.png"
+              src="logoSrc"
               width="19"
               height="19"
               style="filter: grayscale(); opacity: 75%;"

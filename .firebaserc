@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "peerlink-group-project-1800"
+  },
+  "targets": {
+    "peerlink-group-project-1800": {
+      "hosting": {
+        "app": [
+          "peerlink-1800-app"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
