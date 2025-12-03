@@ -5,15 +5,19 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 const editBtn = document.getElementById("editBtn");
 const tagSelection = document.getElementById("tag-selection");
 const selectedTagsDiv = document.getElementById("selected-tags");
+const editDivider = document.createElement("hr");
+editDivider.className = "divider";
+editDivider.style.display = "none";
+selectedTagsDiv.insertAdjacentElement("afterend", editDivider);
 
 const allTags = [
-  "Technology",
+  "Tech",
   "Art",
   "Music",
   "Gaming",
   "Fitness",
   "Cooking",
-  "Travel",
+  "Traveling",
   "Movies",
   "Science",
   "Reading",
@@ -87,11 +91,16 @@ editBtn.addEventListener("click", async () => {
     tagSelection.classList.add("active");
     renderTagSelection();
     editBtn.textContent = "Save";
+
+    //divider
+    editDivider.style.display = "block";
   } else {
     editing = false;
     tagSelection.classList.remove("active");
     editBtn.textContent = "Edit";
     renderSelectedTags();
+
+    editDivider.style.display = "none";
 
     if (currentUser) {
       await saveInterests(currentUser.uid, selectedTags);

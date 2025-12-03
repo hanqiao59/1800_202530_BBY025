@@ -33,37 +33,26 @@
     <script type="module" src="/src/components/site-default-footer.js"></script>
   </head>
 
-  <body>
+  <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
-    <main class="container-md page-content">
-      <div
-        class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
-      >
-        <a
-          href="main.html"
-          class="position-absolute start-0 top-50 translate-middle-y ms-3 text-decoration-none d-flex align-items-center"
-        >
-          <i class="bi bi-arrow-left me-1"></i> Back
-        </a>
-        <h3 class="mb-0">My Interest Tags</h3>
-      </div>
+    <main class="page-content">
+      <a href="profile.html" class="btn btn-outline-secondary mb-4">← Back</a>
 
       <div class="profile-container">
         <div class="profile-picture">A</div>
         <h2>User</h2>
-        <h4>Interests</h4>
-
+        <h4 class="mt-5">Interest Tags</h4>
         <div id="selected-tags" class="mb-3"></div>
         <div id="tag-selection" class="tag-selection"></div>
 
-        <button id="editBtn" class="btn btn-primary btn-edit">Edit</button>
-      </div>
-
-      <div id="footer" class="my-5">
-        <site-default-footer></site-default-footer>
+        <button id="editBtn" class="btn btn-primary btn-lg btn-edit">
+          Edit
+        </button>
       </div>
     </main>
+
+    <site-default-footer></site-default-footer>
 
     <script type="module" src="/src/js/interests.js"></script>
     <script type="module" src="/src/js/app.js"></script>

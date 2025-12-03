@@ -40,7 +40,7 @@ async function loadProfile(uid) {
     if (Array.isArray(data.interests)) {
       data.interests.forEach((interest) => {
         const badge = document.createElement("span");
-        badge.className = "badge bg-secondary";
+        badge.className = "badge bg-secondary fw-semibold px-2 py-2";
         badge.innerText = interest;
         interestsEl.appendChild(badge);
       });

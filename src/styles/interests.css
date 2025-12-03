@@ -48,13 +48,16 @@ site-navbar {
 }
 
 /* Page */
+.page-content {
+  padding-top: 1rem;
+  padding-left: var(--page-gutter);
+  padding-right: var(--page-gutter);
+}
+
 .profile-container {
   max-width: 600px;
   margin: 0 auto 40px auto;
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  padding: 30px 20px;
   text-align: center;
 }
 
@@ -62,13 +65,17 @@ site-navbar {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: #ccc;
+  background: #ffe2e5;
+  color: #212529;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
-  color: white;
+  font-size: 42px;
   margin: 0 auto 20px auto;
+  font-weight: 600;
+  border: 5px solid white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  text-transform: uppercase;
 }
 
 h2 {
@@ -86,7 +93,7 @@ h4 {
   background-color: #e9ecef;
   color: #111;
   padding: 8px 16px;
-  border-radius: 25px;
+  border-radius: 10px;
   margin: 5px;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease,
@@ -102,8 +109,8 @@ h4 {
 #selected-tags .tag.selected,
 #tag-selection .tag.selected,
 .tag.selected {
-  background-color: var(--edit-btn-color) !important;
-  color: white !important;
+  background-color: #d7eefb !important;
+  color: #232323 !important;
 }
 
 .tag-selection {
@@ -119,9 +126,7 @@ h4 {
 button.btn-edit,
 .btn-edit {
   margin-top: 15px;
-  background-color: var(--edit-btn-color) !important;
-  border-color: var(--edit-btn-color) !important;
-  color: white !important;
+  text-align: center;
 }
 
 .profile-container .btn.btn-edit:focus,
