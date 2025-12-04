@@ -15,7 +15,6 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-
 // ---------------------------------------------------------
 // Read Firebase configuration from Vite environment variables.
 // These are defined in your .env file as:
@@ -33,8 +32,16 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   storageBucket: "peerlink-group-project-1800.appspot.com",
-
 };
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyAvbVTPcuyiNFzLqsXxNOWYxicpDNJWkiM",
+//   authDomain: "peerlink-group-project-1800.firebaseapp.com",
+//   projectId: "peerlink-group-project-1800",
+//   storageBucket: "peerlink-group-project-1800.firebasestorage.app",
+//   messagingSenderId: "715710165789",
+//   appId: "1:715710165789:web:4f2eb9359ae3048d3567f4",
+// };
 
 // ---------------------------------------------------------
 // Initialize the Firebase app instance.
@@ -49,6 +56,6 @@ const app = initializeApp(firebaseConfig);
 // ---------------------------------------------------------
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app); 
+export const storage = getStorage(app);
 
 console.log("[env]", import.meta.env.VITE_FIREBASE_API_KEY);

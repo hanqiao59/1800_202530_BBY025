@@ -206,6 +206,7 @@ async function loadActivityPromptForUser() {
   if (!channelId || !sessionId || !uid || !sessionRef) return;
 
   activityLoaded = true;
+
   try {
     const sessionSnap = await getDoc(sessionRef);
     // session doc must exist
@@ -227,6 +228,17 @@ async function loadActivityPromptForUser() {
         activityPromptEl.textContent =
           sData.activityPrompt ||
           "Share something about yourself or your interests!";
+      }
+
+      if (!uid) {
+        console.warn(
+          "[activity] No uid yet, cannot pick activity by interests."
+        );
+        if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
+        if (activityPromptEl)
+          activityPromptEl.textContent =
+            "Feel free to start by sharing your interests!";
+        return;
       }
 
       // if the session already has tags, render the first tag in the header

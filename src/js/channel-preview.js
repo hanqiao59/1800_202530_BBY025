@@ -223,17 +223,49 @@ onAuthStateChanged(auth, async (user) => {
 
         // ---- Render Owner Avatar ----
         if (ownerAvatarImg) {
-          const ownerProfile = profiles.find(
+          let ownerProfile = profiles.find(
             (m) => m.id === channelData.createdBy
           );
 
-          const ownerName =
-            (currentUser && currentUser.uid === channelData.createdBy
-              ? currentUser.displayName
-              : ownerProfile?.name) || "Owner";
+          // If owner profile not found in members, fetch directly from users collection
+          if (!ownerProfile && channelData?.createdBy) {
+            try {
+              const ownerDoc = await getDoc(
+                doc(db, "users", channelData.createdBy)
+              );
+              if (ownerDoc.exists()) {
+                ownerProfile = {
+                  id: channelData.createdBy,
+                  ...ownerDoc.data(),
+                };
+              }
+            } catch (e) {
+              console.error(
+                "[channel-preview] Failed to load owner profile:",
+                e
+              );
+            }
+          }
+
+          let ownerName = "Owner";
+
+          if (ownerProfile?.name) {
+            // Prefer the name from the users collection
+            ownerName = ownerProfile.name;
+          } else if (
+            currentUser &&
+            currentUser.uid === channelData.createdBy &&
+            currentUser.displayName
+          ) {
+            // If it is the current user, and the profile does not have a name, fall back to Auth's displayName
+            ownerName = currentUser.displayName;
+          }
 
           ownerAvatarImg.textContent = avatarInitials(ownerName);
-          console.log("[channel-preview] Set owner avatar initials.");
+          console.log(
+            "[channel-preview] Owner name used for avatar:",
+            ownerName
+          );
         }
 
         /* ---- MEMBERS SECTION (excluding owner) ---- */
@@ -264,7 +296,7 @@ onAuthStateChanged(auth, async (user) => {
           nonOwnerMembers.slice(0, 5).forEach((p) => {
             const avatar = document.createElement("span");
             avatar.className =
-              "member-avatar rounded-circle bg-secondary-subtle fw-bold " +
+              "member-avatar rounded-circle fw-bold " +
               "d-inline-flex justify-content-center align-items-center me-1";
             avatar.textContent = avatarInitials(p.name);
             membersAvatar.appendChild(avatar);

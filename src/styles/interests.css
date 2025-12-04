@@ -62,19 +62,17 @@ site-navbar {
 }
 
 .profile-picture {
-  width: 100px;
-  height: 100px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  background: #ffe2e5;
+  background: #c3c3ec;
   color: #212529;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 42px;
+  font-size: 2rem;
   margin: 0 auto 20px auto;
   font-weight: 600;
-  border: 5px solid white;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
   text-transform: uppercase;
 }
 
