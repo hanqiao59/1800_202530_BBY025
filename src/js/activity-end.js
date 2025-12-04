@@ -26,6 +26,7 @@ if (link && channelId && sessionId) {
 
   link.href = url.href;
 } else if (link) {
+  // Fallback: go back to main page if params are missing
   link.addEventListener("click", (e) => {
     e.preventDefault();
     window.location.href = "main.html";
@@ -39,7 +40,7 @@ onAuthStateChanged(auth, async (user) => {
     console.error("⛔ No Firebase user logged in.");
     return;
   }
-  // User is logged in
+  // User is logged in → initialize friend system
   initializeFriendSystem(user);
 });
 
@@ -50,60 +51,158 @@ async function initializeFriendSystem(currentUser) {
     console.error("❌ .friends-list container not found!");
     return;
   }
+
   // Clear existing content
   friendsContainer.innerHTML = "";
 
-  //Load channel members
-  const membersRef = collection(db, "channels", channelId, "members");
-  let membersSnapshot;
-  try {
-    membersSnapshot = await getDocs(membersRef);
-  } catch (err) {
-    console.error("Failed to fetch members:", err);
-    friendsContainer.innerHTML = `<p class="text-danger">Failed to load members.</p>`;
-    return;
-  }
-
   const members = [];
-  for (const docSnap of membersSnapshot.docs) {
-    const memberId = docSnap.id;
 
-    if (memberId === currentUser.uid) continue; // skip self
-
-    // fetch global user info
-    let userSnap;
+  /* ---------- Dynamic members from Firestore (real participants) ---------- */
+  if (channelId) {
+    const membersRef = collection(db, "channels", channelId, "members");
+    let membersSnapshot;
     try {
-      userSnap = await getDoc(doc(db, "users", memberId));
+      membersSnapshot = await getDocs(membersRef);
     } catch (err) {
-      console.warn(`Failed to fetch user ${memberId}:`, err);
-      continue;
+      console.error("Failed to fetch members:", err);
+      friendsContainer.innerHTML =
+        '<p class="text-danger">Failed to load members.</p>';
+      return;
     }
-    if (!userSnap.exists()) continue;
 
-    const userData = {
-      id: memberId,
-      name: userSnap.data().name || "Unknown",
-      bio: userSnap.data().bio || "",
-    };
+    for (const docSnap of membersSnapshot.docs) {
+      const memberId = docSnap.id;
 
-    members.push(userData);
+      // Skip current user
+      if (memberId === currentUser.uid) continue;
+
+      // Fetch user profile from /users/{uid}
+      let userSnap;
+      try {
+        userSnap = await getDoc(doc(db, "users", memberId));
+      } catch (err) {
+        console.warn(`Failed to fetch user ${memberId}:`, err);
+        continue;
+      }
+      if (!userSnap.exists()) continue;
+
+      const data = userSnap.data();
+
+      members.push({
+        id: memberId,
+        name: data.name || "Unknown",
+        bio: data.bio || "",
+        colorClass: null, // Real users: use .avatar
+        profileUrl: null, // Real users don't have a hard-coded profile page
+      });
+    }
   }
 
-  // Populate members
+  /* ---------- Hard-coded demo members (for showcasing the feature) ---------- */
+  const demoMembers = [
+    {
+      id: "demo-b",
+      name: "Berry Berrison",
+      bio: "Hi! I'm Barry, a term 1 computer system technology student at BCIT. Looking to connect with like-minded peers! ",
+      colorClass: "avatar-1",
+      profileUrl: "others-profile.html",
+    },
+    {
+      id: "demo-c",
+      name: "Chris",
+      bio: "Game Lover",
+      colorClass: "avatar-2",
+      profileUrl: null,
+    },
+    {
+      id: "demo-f",
+      name: "Felix",
+      bio: "",
+      colorClass: "avatar-3",
+      profileUrl: null,
+    },
+    {
+      id: "demo-j",
+      name: "John",
+      bio: "",
+      colorClass: "avatar-4",
+      profileUrl: null,
+    },
+    {
+      id: "demo-m",
+      name: "Martin",
+      bio: "",
+      colorClass: "avatar-5",
+      profileUrl: null,
+    },
+    {
+      id: "demo-n",
+      name: "Noah",
+      bio: "",
+      colorClass: "avatar-1",
+      profileUrl: null,
+    },
+    {
+      id: "demo-s",
+      name: "Sofia",
+      bio: "",
+      colorClass: "avatar-2",
+      profileUrl: null,
+    },
+    {
+      id: "demo-l",
+      name: "Liam Lee",
+      bio: "",
+      colorClass: "avatar-3",
+      profileUrl: null,
+    },
+    {
+      id: "demo-k",
+      name: "Kai Kim",
+      bio: "Open to new friends",
+      colorClass: "avatar-4",
+      profileUrl: null,
+    },
+  ];
+
+  // Combine real members + demo members
+  demoMembers.forEach((m) => members.push(m));
+
+  // If for some reason there are still no members, show an empty state
   if (members.length === 0) {
     friendsContainer.innerHTML = `<p>Nobody was in this session.</p>
     <div class="text-muted small">Well, that's a shame :/</div>`;
     return;
   }
+
+  /* ---------- Render all members ---------- */
   members.forEach((member) => {
     const div = document.createElement("div");
     div.className =
       "friend d-inline-flex align-items-center gap-2 px-3 py-2 mb-2 rounded-3";
 
-    div.innerHTML = `
+    const initials = getInitials(member.name);
+
+    // Real users: .avatar
+    // Demo users: .avatar-1 / .avatar-2 / ...
+    let avatarClass;
+    if (member.colorClass) {
+      avatarClass = `${member.colorClass} rounded-circle d-flex justify-content-center align-items-center`;
+    } else {
+      avatarClass =
+        "avatar rounded-circle d-flex justify-content-center align-items-center";
+    }
+
+    const avatarHtml = `
+      <div class="${avatarClass}" style="width:40px;height:40px;">
+        ${initials}
+      </div>
+    `;
+
+    // Main block: if profileUrl exists, wrap avatar + text in an <a>
+    const infoInner = `
       <div class="d-flex align-items-center gap-2 flex-shrink-1" style="min-width:0">
-        <div class="avatar bg-secondary-subtle rounded-circle d-flex justify-content-center align-items-center" 
-     style="width:40px;height:40px;">${getInitials(member.name)}</div>
+        ${avatarHtml}
         <div>
           <p class="fw-semibold mb-0 text-truncate" style="max-width: 150px;">${
             member.name
@@ -113,6 +212,14 @@ async function initializeFriendSystem(currentUser) {
           }</p>
         </div>
       </div>
+    `;
+
+    const mainBlock = member.profileUrl
+      ? `<a href="${member.profileUrl}" class="text-decoration-none text-reset">${infoInner}</a>`
+      : infoInner;
+
+    div.innerHTML = `
+      ${mainBlock}
       <i class="bi bi-person-plus add-friend-btn fs-5 ms-2"
          data-id="${member.id}"
          style="cursor:pointer;font-size:1.2rem"></i>
@@ -121,11 +228,10 @@ async function initializeFriendSystem(currentUser) {
     friendsContainer.appendChild(div);
   });
 
-  // Attach click listener once
+  /* ---------- Attach click listener for Add Friend (only once) ---------- */
   if (!friendsContainer.hasListenerAttached) {
     friendsContainer.hasListenerAttached = true;
 
-    // Add click listener for friend requests
     friendsContainer.addEventListener("click", async (e) => {
       const btn = e.target.closest(".add-friend-btn");
       if (!btn) return;
@@ -133,7 +239,17 @@ async function initializeFriendSystem(currentUser) {
       const targetUserId = btn.dataset.id;
       const currentUserId = currentUser.uid;
 
-      // Prevent double sending
+      // Demo users (IDs starting with "demo-") only update UI, no Firestore writes
+      if (targetUserId.startsWith("demo-")) {
+        btn.classList.remove("bi-person-plus");
+        btn.classList.add("bi-check-lg");
+        btn.style.color = "green";
+        btn.style.cursor = "default";
+        btn.style.pointerEvents = "none";
+        return;
+      }
+
+      // Prevent sending the same request multiple times
       if (btn.dataset.sending === "true") return;
       btn.dataset.sending = "true";
 

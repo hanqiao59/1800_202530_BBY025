@@ -285,23 +285,17 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         if (nonOwnerMembers.length === 0) {
-          // const msg = document.createElement("span");
-          // msg.className = "text-muted d-block my-2";
-          // msg.textContent = "No members yet";
-          // membersContainer.appendChild(msg);
-          // console.log("[channel-preview] No non-owner members to show.");
           return;
         } else {
           // Render up to 5 avatars
           nonOwnerMembers.slice(0, 5).forEach((p) => {
             const avatar = document.createElement("span");
             avatar.className =
-              "member-avatar rounded-circle fw-bold " +
+              "member-avatar rounded-circle " +
               "d-inline-flex justify-content-center align-items-center me-1";
             avatar.textContent = avatarInitials(p.name);
             membersAvatar.appendChild(avatar);
           });
-
           // (+X more)
           if (nonOwnerMembers.length > 5) {
             const link = document.createElement("a");
