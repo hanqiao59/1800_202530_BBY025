@@ -32,6 +32,7 @@
   font-size: 1rem;
   border-radius: 50%;
   font-weight: 500;
+  background: #e8e8ff;
 }
 
 .member-avatar:nth-child(1) {

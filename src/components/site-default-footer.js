@@ -60,7 +60,7 @@ class DefaultFooter extends HTMLElement {
         >
           <i class="bi bi-ice-cubes">
             <img
-              src="logoSrc"
+              src="${logoSrc}"
               width="19"
               height="19"
               style="filter: grayscale(); opacity: 75%;"

@@ -48,13 +48,26 @@ function decorateTagLabel(tag) {
 
   try {
     const { onAuthReady } = await import("./authentication.js");
-    onAuthReady((user) => {
+    onAuthReady(async (user) => {
       if (!user) {
         location.href = "login.html";
         return;
       }
 
-      const name = user.displayName || user.email || "User";
+      let name = user.displayName || user.email || "User";
+
+      // Try loading profile name from Firestore
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          name = data.displayName || data.name || data.userName || name;
+        }
+      } catch (err) {
+        console.warn("[dashboard] failed to load profile name:", err);
+      }
+
       nameEl.textContent = `${name}!`;
 
       // Avatar
@@ -63,14 +76,13 @@ function decorateTagLabel(tag) {
           avatarEl.src = user.photoURL;
         } else {
           avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            name
+            avatarInitials(name)
           )}&background=transparent&color=ffffff&size=128&rounded=true`;
         }
       }
 
       // Stats: how many activities this user has joined
       loadUserStats(user).catch(console.error);
-
       // Session cards: show ALL joined sessions stacked in one section
       showAllSessionsForUser(user).catch(console.error);
     });
@@ -78,6 +90,13 @@ function decorateTagLabel(tag) {
     console.warn("[auth] authentication.js Failed:", err);
   }
 })();
+
+function avatarInitials(name) {
+  if (!name) return "?";
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+}
 
 /* ========== Hosted channel banner ========== */
 async function showHostedChannel() {
