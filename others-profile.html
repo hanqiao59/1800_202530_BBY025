@@ -76,7 +76,12 @@
           <p class="text-muted mb-3">Computer Science Student</p>
 
           <div class="d-flex gap-3 mb-4">
-            <button class="btn btn-outline-primary btn-sm">Add Friend</button>
+            <button id="addFriendBtn" class="btn btn-outline-primary btn-sm">
+              Add Friend
+            </button>
+            <p id="friendFeedback" class="text-success small mb-0 d-none">
+              Friend request sent ✅
+            </p>
           </div>
 
           <div class="px-3 pb-4">
@@ -113,5 +118,6 @@
     <!---------------------------------------------->
     <!-- Link to scripts of your own -->
     <script type="module" src="/src/js/app.js"></script>
+    <script type="module" src="/src/js/others-profile.js"></script>
   </body>
 </html>

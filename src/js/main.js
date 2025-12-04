@@ -1,8 +1,8 @@
-/* ===== Firebase imports ===== */
-import { auth, db } from "./firebase-config.js";
-import { onAuthStateChanged } from "firebase/auth";
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+
+import { auth, db } from "./firebase-config.js";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   addDoc,
   collection,
@@ -629,3 +629,7 @@ async function loadUserStats(user) {
     if (channelsEl) channelsEl.textContent = "–";
   }
 }
+
+/* ===== Update Connection Stat ===== */
+const statConnectionsEl = document.getElementById("statConnections");
+// future implementation here
