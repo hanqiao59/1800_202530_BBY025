@@ -1,4 +1,4 @@
-/* ===== Firebase ===== */
+/* ===== Firebase Imports ===== */
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -221,7 +221,7 @@ onAuthStateChanged(auth, async (user) => {
           }
         }
 
-        // ---- Render Owner Avatar ----
+        // Render Owner Avatar
         if (ownerAvatarImg) {
           let ownerProfile = profiles.find(
             (m) => m.id === channelData.createdBy
@@ -268,14 +268,12 @@ onAuthStateChanged(auth, async (user) => {
           );
         }
 
-        /* ---- MEMBERS SECTION (excluding owner) ---- */
+        /* ==== MEMBERS SECTION (excluding owner) ==== */
         const nonOwnerMembers = profiles.filter(
           (p) => p.id !== channelData.createdBy && p.name
         );
 
-        // membersContainer.innerHTML = ""; // clear old avatars
-
-        /* ---- CURRENT USER AVATAR ---- */
+        /* ==== CURRENT USER AVATAR ==== */
         if (userAvatar && currentUser) {
           const nameFromAuth = currentUser.displayName;
           userAvatar.textContent = avatarInitials(nameFromAuth);

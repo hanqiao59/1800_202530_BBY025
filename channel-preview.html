@@ -44,7 +44,7 @@
   <body class="bg-brand-light">
     <site-navbar></site-navbar>
 
-    <!-- Title -->
+    <!-- Header -->
     <div
       class="container-fluid p-4 d-flex justify-content-center align-items-center position-relative bg-white border-bottom sticky-top"
     >
@@ -63,6 +63,7 @@
       id="channel-preview-content"
       class="container-md px-3 py-4 d-flex flex-column align-items-center gap-4"
     >
+      <!-- Channel Overview  -->
       <div class="bg-white rounded-4 shadow-sm p-4 w-100 text-center">
         <!-- Channel Title -->
         <h5 id="channelTitle" class="fw-semibold mb-1 fs-3">Loading...</h5>
@@ -77,11 +78,10 @@
         </div>
         <!-- Members -->
         <div>
-          <!-- <div class="text-dark label-muted mb-2">Members</div> -->
           <div class="d-flex justify-content-center align-items-center">
             <div id="membersAvatarsContainer" class="d-flex gap-3">
               <div>
-                <div class="text-white label-muted mb-2">Members</div>
+                <div class="text-dark label-muted mb-2">Members</div>
                 <div
                   id="membersAvatars"
                   class="d-flex justify-content-center align-items-center"
@@ -157,7 +157,7 @@
           Session is live
         </div>
 
-        <!-- Start session button (owner only) -->
+        <!-- Owner view: Start session button -->
         <button
           id="startIceBreakerBtn"
           type="button"
@@ -166,7 +166,7 @@
           Start ice breaker session
         </button>
 
-        <!-- End session button (owner only, hidden until session is live) -->
+        <!-- Owner view: End session button (hidden until session is live) -->
         <button
           id="endIceBreakerBtn"
           type="button"
@@ -177,10 +177,7 @@
       </div>
     </div>
 
-    <!---------------------------------------------->
-    <!-- Your own JavaScript functions go here -->
-    <!---------------------------------------------->
-    <!-- Link to scripts of your own -->
+    <!-- Link to scripts -->
     <site-default-footer></site-default-footer>
     <script type="module" src="/src/js/app.js"></script>
     <script type="module" src="/src/js/channel-preview.js"></script>

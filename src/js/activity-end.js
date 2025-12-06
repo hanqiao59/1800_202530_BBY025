@@ -57,7 +57,7 @@ async function initializeFriendSystem(currentUser) {
 
   const members = [];
 
-  /* ---------- Dynamic members from Firestore (real participants) ---------- */
+  /* ==== Dynamic members from Firestore (real participants) ==== */
   if (channelId) {
     const membersRef = collection(db, "channels", channelId, "members");
     let membersSnapshot;
@@ -98,7 +98,7 @@ async function initializeFriendSystem(currentUser) {
     }
   }
 
-  /* ---------- Hard-coded demo members (for showcasing the feature) ---------- */
+  /* ==== Hard-coded demo members  ==== */
   const demoMembers = [
     {
       id: "demo-b",
@@ -175,7 +175,7 @@ async function initializeFriendSystem(currentUser) {
     return;
   }
 
-  /* ---------- Render all members ---------- */
+  /* ==== Render all members ==== */
   members.forEach((member) => {
     const div = document.createElement("div");
     div.className =
@@ -183,8 +183,6 @@ async function initializeFriendSystem(currentUser) {
 
     const initials = getInitials(member.name);
 
-    // Real users: .avatar
-    // Demo users: .avatar-1 / .avatar-2 / ...
     let avatarClass;
     if (member.colorClass) {
       avatarClass = `${member.colorClass} rounded-circle d-flex justify-content-center align-items-center`;
@@ -199,7 +197,7 @@ async function initializeFriendSystem(currentUser) {
       </div>
     `;
 
-    // Main block: if profileUrl exists, wrap avatar + text in an <a>
+    // If profileUrl exists, wrap avatar + text into html
     const infoInner = `
       <div class="d-flex align-items-center gap-2 flex-shrink-1" style="min-width:0">
         ${avatarHtml}
@@ -228,7 +226,7 @@ async function initializeFriendSystem(currentUser) {
     friendsContainer.appendChild(div);
   });
 
-  /* ---------- Attach click listener for Add Friend (only once) ---------- */
+  /* ==== Attach click listener for Add Friend ==== */
   if (!friendsContainer.hasListenerAttached) {
     friendsContainer.hasListenerAttached = true;
 
@@ -239,7 +237,7 @@ async function initializeFriendSystem(currentUser) {
       const targetUserId = btn.dataset.id;
       const currentUserId = currentUser.uid;
 
-      // Demo users (IDs starting with "demo-") only update UI, no Firestore writes
+      // Demo users only update UI, no Firestore writes
       if (targetUserId.startsWith("demo-")) {
         btn.classList.remove("bi-person-plus");
         btn.classList.add("bi-check-lg");

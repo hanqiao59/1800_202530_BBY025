@@ -6,7 +6,7 @@ const sessionId = params.get("sessionId");
 const MATCH_DELAY = 3000;
 const AFTER_MATCH_DELAY = 2000;
 
-//delay helper
+//delay helper function
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -31,7 +31,7 @@ function formatTags(tags) {
   return tags.slice(0, 3).join(", ") + " + more";
 }
 
-/* ===== Simulate matching process ===== */
+// Simulate matching process and redirect
 async function runAutoGrouping() {
   // fake "matching" delay
   await delay(MATCH_DELAY);

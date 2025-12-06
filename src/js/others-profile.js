@@ -1,3 +1,4 @@
+/* ==== Add Friend Button Functionality ==== */
 const addFriendBtn = document.getElementById("addFriendBtn");
 const friendFeedback = document.getElementById("friendFeedback");
 
