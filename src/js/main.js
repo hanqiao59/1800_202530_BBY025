@@ -1,6 +1,7 @@
 import * as bootstrap from "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+/* ==== Firebase Imports ==== */
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -23,7 +24,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-/* ========== Bootstrap Tooltips ========== */
+/* ===== Bootstrap Tooltips ===== */
 document.addEventListener("DOMContentLoaded", () => {
   const tooltipTriggerList = document.querySelectorAll(
     '[data-bs-toggle="tooltip"]'
@@ -31,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   [...tooltipTriggerList].forEach((el) => new bootstrap.Tooltip(el));
 });
 
-/* ========== Helper: decorate tags with emojis ========== */
+/* ===== Helper: decorate tags with emojis ===== */
 function decorateTagLabel(tag) {
   const s = String(tag).toLowerCase();
   if (s.includes("gaming")) return "🎮 " + tag;
@@ -40,7 +41,7 @@ function decorateTagLabel(tag) {
   return tag;
 }
 
-/* ========== Dashboard Greeting + Stats + Sessions List ========== */
+/* ===== Dashboard Greeting + Stats + Sessions List ===== */
 (async function showDashboard() {
   const nameEl = document.getElementById("userName");
   const avatarEl = document.getElementById("userAvatar");
@@ -91,6 +92,7 @@ function decorateTagLabel(tag) {
   }
 })();
 
+/* ===== Helper: get initials from name ===== */
 function avatarInitials(name) {
   if (!name) return "?";
   const parts = name.trim().split(" ");
@@ -98,7 +100,8 @@ function avatarInitials(name) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-/* ========== Hosted channel banner ========== */
+/* ===== Hosted channel banner ===== */
+// Show channels created by the user that are currently live or available
 async function showHostedChannel() {
   const container = document.getElementById("hostedChannelContainer");
   const template = document.getElementById("hostedChannelBanner");
@@ -195,10 +198,9 @@ async function showHostedChannel() {
     }
   });
 }
-
 showHostedChannel();
 
-/* ========== Simple search filter for recent sessions ========== */
+/* ===== Simple search filter for recent sessions ===== */
 const searchInput = document.getElementById("dashboardSearch");
 
 if (searchInput) {
@@ -263,7 +265,7 @@ joinForm?.addEventListener("submit", (e) => e.preventDefault());
 // Change the submit button to a regular button so it won't trigger the form
 joinSubmitBtn?.setAttribute("type", "button");
 
-// Extract the channel ID from a full link or raw ID string
+/* ===== Helper: extract channel ID from invite link ===== */
 function extractChannelId(value) {
   // Empty input
   if (!value) return null;
@@ -307,7 +309,6 @@ joinSubmitBtn?.addEventListener("click", () => {
 });
 
 /* ========== Create Channel Modal ========== */
-// Elements
 const createModalEl = document.getElementById("createChannelModal");
 const form = document.getElementById("createChannelForm");
 const nameInput = document.getElementById("channelName");
@@ -406,7 +407,8 @@ copyBtn?.addEventListener("click", async () => {
   }
 });
 
-/* ========== Session Cards  ========== */
+/* ===== Session Cards ===== */
+// Show all sessions the user has joined
 async function showAllSessionsForUser(user) {
   const container = document.getElementById("recentSessionsContainer");
   const template = document.getElementById("recentSessionTemplate");
@@ -558,7 +560,8 @@ async function showAllSessionsForUser(user) {
   }
 }
 
-/* ========== Stats: Activities joined + Channels hosted ========== */
+/* ===== Stats: Activities joined + Channels hosted ===== */
+// Load and display user stats
 async function loadUserStats(user) {
   const activitiesEl = document.getElementById("statActivitiesJoined");
   const channelsEl = document.getElementById("statChannels");

@@ -1,4 +1,4 @@
-/* ==== Firebase ==== */
+/* ==== Firebase Imports ==== */
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -83,6 +83,37 @@ const msgsRef =
     ? collection(db, "channels", channelId, "sessions", sessionId, "messages")
     : null;
 
+/* ==== Formatting time ==== */
+function fmtTime(ts) {
+  try {
+    const d = ts?.toDate ? ts.toDate() : new Date();
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+/* ==== Scroll helpers ==== */
+// check if scroll is at bottom
+function atBottom(el, th = 48) {
+  return el.scrollHeight - el.scrollTop - el.clientHeight < th;
+}
+
+/* ==== Scroll to bottom ==== */
+// scroll element to bottom
+function scrollToBottom(el) {
+  el.scrollTop = el.scrollHeight;
+}
+
+/* ==== Composer enable/disable ==== */
+// enable or disable the message composer
+function setComposerEnabled(enabled) {
+  // enable or disable the message composer
+  if (!formEl || !inputEl || !sendBtn) return;
+  inputEl.disabled = !enabled;
+  sendBtn.disabled = !enabled || !inputEl.value.trim();
+}
+
 /* ==== Load channel metadata ==== */
 async function loadChannelMeta() {
   // load channel name
@@ -98,35 +129,7 @@ async function loadChannelMeta() {
   }
 }
 
-/* ==== Scroll helpers ==== */
-function atBottom(el, th = 48) {
-  return el.scrollHeight - el.scrollTop - el.clientHeight < th;
-}
-
-// scroll to bottom
-function scrollToBottom(el) {
-  el.scrollTop = el.scrollHeight;
-}
-
-/* ==== Formatting ==== */
-function fmtTime(ts) {
-  try {
-    const d = ts?.toDate ? ts.toDate() : new Date();
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return "";
-  }
-}
-
-/* ==== Composer enable/disable ==== */
-function setComposerEnabled(enabled) {
-  // enable or disable the message composer
-  if (!formEl || !inputEl || !sendBtn) return;
-  inputEl.disabled = !enabled;
-  sendBtn.disabled = !enabled || !inputEl.value.trim();
-}
-
-/* ==== Messages live query ==== */
+/* ==== Render message to text bubble ==== */
 function renderMsg(docSnap) {
   const data = docSnap.data();
   const mine = data.uid === uid;
@@ -157,8 +160,23 @@ function renderMsg(docSnap) {
   return row;
 }
 
-let unsubMsgs = null;
+/* ==== Send new messages ==== */
+async function sendMessage(text) {
+  // validate
+  if (!text || !uid || !msgsRef) return;
+  // only allow sending when active
+  if (status !== "active") return;
+  // add new message to Firestore
+  await addDoc(msgsRef, {
+    text: text.trim(),
+    uid,
+    name: displayName,
+    createdAt: serverTimestamp(),
+  });
+}
 
+/* ==== Start live query for messages ==== */
+let unsubMsgs = null;
 async function startLiveQuery() {
   if (!msgsRef || unsubMsgs) return;
 
@@ -168,6 +186,7 @@ async function startLiveQuery() {
     return;
   }
 
+  // query: last 200 messages, ordered by createdAt ascending
   const q = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
 
   listEl.innerHTML = "";
@@ -189,7 +208,7 @@ async function startLiveQuery() {
   );
 }
 
-// stop listening to messages
+/* ==== Stop live query for messages ==== */
 function stopLiveQuery() {
   if (unsubMsgs) {
     unsubMsgs();
@@ -330,9 +349,82 @@ async function loadActivityPromptForUser() {
   }
 }
 
+/* ==== Save session tags helper ==== */
+// Save session tags only if the session does not have tags yet
+async function saveSessionTagsIfEmpty(tags) {
+  if (!sessionRef) return;
+  if (!Array.isArray(tags) || !tags.length) return;
+
+  try {
+    const snap = await getDoc(sessionRef);
+    // session doc must exist
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    if (Array.isArray(data.tags) && data.tags.length) {
+      // Session already has tags, do not overwrite
+      return;
+    }
+
+    // save tags to session doc
+    await updateDoc(sessionRef, {
+      tags: tags,
+    });
+
+    console.log("[session] tags saved on session:", tags);
+  } catch (err) {
+    console.error("[session] Failed to save session tags:", err);
+  }
+}
+
+/* ==== Interest category helpers ==== */
+function pickCategoryFromInterests(interests = []) {
+  const candidates = [];
+  // simple keyword matching
+  interests.forEach((raw) => {
+    const s = String(raw).toLowerCase();
+
+    if (s.includes("gaming")) {
+      candidates.push({ category: "gaming", label: raw });
+    }
+    if (s.includes("tech") || s.includes("code")) {
+      candidates.push({ category: "tech", label: raw });
+    }
+    if (s.includes("traveling")) {
+      candidates.push({ category: "traveling", label: raw });
+    }
+  });
+
+  // pick a random candidate
+  if (!candidates.length) {
+    return { category: null, label: null };
+  }
+  // random choice
+  const choice = candidates[Math.floor(Math.random() * candidates.length)];
+  return choice;
+}
+
+/* ==== Render session tag ==== */
+function renderSessionTag(label) {
+  if (!sessionTagsEl) return;
+
+  sessionTagsEl.innerHTML = "";
+
+  const pill = document.createElement("span");
+  pill.className = "tag-pill me-1";
+  // set label
+  if (label) {
+    pill.textContent = label;
+  } else {
+    pill.textContent = "No interest selected";
+    pill.classList.add("text-muted");
+  }
+
+  sessionTagsEl.appendChild(pill);
+}
+
 /* ==== Remember last session on user profile ==== */
 let lastSessionSaved = false;
-// Save last session info to users/{uid}.lastSession
 async function rememberLastSessionForUser() {
   // avoid duplicate writes
   if (lastSessionSaved) return;
@@ -385,34 +477,6 @@ async function recordSessionParticipation() {
     console.log("[session] recorded participation in joinedSessions");
   } catch (err) {
     console.error("[session] Failed to record participation:", err);
-  }
-}
-
-/* ==== Save session tags helper ==== */
-// Save session tags only if the session does not have tags yet
-async function saveSessionTagsIfEmpty(tags) {
-  if (!sessionRef) return;
-  if (!Array.isArray(tags) || !tags.length) return;
-
-  try {
-    const snap = await getDoc(sessionRef);
-    // session doc must exist
-    if (!snap.exists()) return;
-
-    const data = snap.data();
-    if (Array.isArray(data.tags) && data.tags.length) {
-      // Session already has tags, do not overwrite
-      return;
-    }
-
-    // save tags to session doc
-    await updateDoc(sessionRef, {
-      tags: tags,
-    });
-
-    console.log("[session] tags saved on session:", tags);
-  } catch (err) {
-    console.error("[session] Failed to save session tags:", err);
   }
 }
 
@@ -494,22 +558,8 @@ function watchSession() {
   );
 }
 
-/* ==== Send new messages ==== */
-async function sendMessage(text) {
-  // validate
-  if (!text || !uid || !msgsRef) return;
-  // only allow sending when active
-  if (status !== "active") return;
-  // add new message document
-  await addDoc(msgsRef, {
-    text: text.trim(),
-    uid,
-    name: displayName,
-    createdAt: serverTimestamp(),
-  });
-}
-
 /* ==== Composer wiring ==== */
+// wire up the message composer
 function wireComposer() {
   // validate
   if (!formEl || !inputEl || !sendBtn) return;
@@ -547,25 +597,11 @@ function wireComposer() {
   });
 }
 
-/* ==== Boot chat ==== */
-(function bootChat() {
-  try {
-    wireComposer();
-    loadChannelMeta().catch(console.error);
-    watchSession();
-  } catch (err) {
-    console.error(err);
-    if (listEl) {
-      listEl.innerHTML =
-        '<div class="alert alert-danger">Failed to start the chat. Please refresh.</div>';
-    }
-  }
-})();
-
 /* ==== Emoji picker ==== */
-(() => {
+function initEmojiPicker() {
   const picker = document.getElementById("emojiPicker");
   if (!picker) return;
+
   const summary = picker.querySelector("summary");
   const panel = picker.querySelector(".panel");
   const inputEl = document.getElementById("msgInput");
@@ -575,14 +611,21 @@ function wireComposer() {
   picker.addEventListener("click", (e) => {
     const btn = e.target.closest(".e");
     if (!btn || !inputEl) return;
+
     e.preventDefault();
     const emo = btn.textContent || "";
     const s = inputEl.selectionStart ?? inputEl.value.length;
     const t = inputEl.selectionEnd ?? inputEl.value.length;
+
     inputEl.value = inputEl.value.slice(0, s) + emo + inputEl.value.slice(t);
+
     const pos = s + emo.length;
     requestAnimationFrame(() => inputEl.setSelectionRange(pos, pos));
-    if (!inputEl.disabled && sendBtn) sendBtn.disabled = !inputEl.value.trim();
+
+    if (!inputEl.disabled && sendBtn) {
+      sendBtn.disabled = !inputEl.value.trim();
+    }
+
     picker.open = false;
     inputEl.focus();
   });
@@ -605,7 +648,9 @@ function wireComposer() {
     if (top + ph > window.innerHeight - m) {
       top = r.top - ph - m;
     }
-    if (left + pw > window.innerWidth - m) left = window.innerWidth - pw - m;
+    if (left + pw > window.innerWidth - m) {
+      left = window.innerWidth - pw - m;
+    }
     if (left < m) left = m;
 
     panel.style.left = `${left}px`;
@@ -619,75 +664,52 @@ function wireComposer() {
       if (picker.open) picker.dispatchEvent(new Event("toggle"));
     });
   });
-})();
+}
 
 /* ==== Reaction buttons ==== */
-(() => {
+function initReactions() {
   // handle reaction button clicks
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".rxn");
     if (!btn) return;
+
     const countEl = btn.querySelector(".count");
     const n = parseInt(countEl?.textContent || "0", 10) || 0;
 
     // toggle active state
     if (btn.classList.contains("active")) {
       btn.classList.remove("active");
-      if (countEl) countEl.textContent = String(Math.max(0, n - 1));
+      if (countEl) {
+        countEl.textContent = String(Math.max(0, n - 1));
+      }
     } else {
       btn.classList.add("active");
-      if (countEl) countEl.textContent = String(n + 1);
+      if (countEl) {
+        countEl.textContent = String(n + 1);
+      }
     }
   });
-})();
-
-/* ==== Interest category helpers ==== */
-function pickCategoryFromInterests(interests = []) {
-  const candidates = [];
-  // simple keyword matching
-  interests.forEach((raw) => {
-    const s = String(raw).toLowerCase();
-
-    if (s.includes("gaming")) {
-      candidates.push({ category: "gaming", label: raw });
-    }
-    if (s.includes("tech") || s.includes("code")) {
-      candidates.push({ category: "tech", label: raw });
-    }
-    if (s.includes("traveling")) {
-      candidates.push({ category: "traveling", label: raw });
-    }
-  });
-
-  // pick a random candidate
-  if (!candidates.length) {
-    return { category: null, label: null };
-  }
-  // random choice
-  const choice = candidates[Math.floor(Math.random() * candidates.length)];
-  return choice;
-}
-
-/* ==== Render session tag ==== */
-function renderSessionTag(label) {
-  if (!sessionTagsEl) return;
-
-  sessionTagsEl.innerHTML = "";
-
-  const pill = document.createElement("span");
-  pill.className = "tag-pill me-1";
-  // set label
-  if (label) {
-    pill.textContent = label;
-  } else {
-    pill.textContent = "No interest selected";
-    pill.classList.add("text-muted");
-  }
-
-  sessionTagsEl.appendChild(pill);
 }
 
 /* ==== Leave session button ==== */
 leaveSessionBtn?.addEventListener("click", () => {
   window.location.href = "main.html";
 });
+
+/* ==== Boot chat ==== */
+// initialize the chat session
+(function bootChat() {
+  try {
+    wireComposer();
+    loadChannelMeta().catch(console.error);
+    watchSession();
+    initEmojiPicker();
+    initReactions();
+  } catch (err) {
+    console.error(err);
+    if (listEl) {
+      listEl.innerHTML =
+        '<div class="alert alert-danger">Failed to start the chat. Please refresh.</div>';
+    }
+  }
+})();

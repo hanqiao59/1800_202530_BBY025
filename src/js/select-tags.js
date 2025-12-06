@@ -27,7 +27,8 @@ if (!channelId) {
 }
 
 /* ===== Constants & state ===== */
-const MAX = 4; // Max number of selectable tags
+// Maximum number of interest tags a user can select
+const MAX = 4; //
 
 let uid = auth.currentUser?.uid || null;
 let selected = new Set();
@@ -35,16 +36,6 @@ let groups = {};
 let locked = false;
 
 /* ===== Helper: create DOM element ===== */
-/**
- * Small helper to create a DOM element with attributes and children.
- *
- * Example:
- *   const btn = el(
- *     "button",
- *     { class: "btn btn-primary", type: "button" },
- *     "Click me"
- *   );
- */
 const el = (tag, attrs = {}, ...children) => {
   const n = document.createElement(tag);
 
@@ -97,7 +88,7 @@ async function loadTags() {
   }
 }
 
-// Preload the user's existing interests from /users/{uid}.
+/* ===== Preload user's existing interests ===== */
 async function preloadUser() {
   if (!uid) return;
 
@@ -112,8 +103,8 @@ async function preloadUser() {
   selected = new Set(arr.slice(0, MAX));
 }
 
-/* ===== UI: chips & list ===== */
-// Render a single interest chip (button) for the given item.
+/* ===== UI rendering & interaction ===== */
+// Render a single interest tag for the given item.
 function renderChip(item) {
   const chip = el(
     "button",
@@ -146,27 +137,31 @@ function renderChip(item) {
       selected.add(name);
     }
 
-    syncChips(name);
+    const on = selected.has(name);
+    chip.classList.toggle("bg-dark", on);
+    chip.classList.toggle("text-white", on);
+    chip.classList.toggle("border-dark", on);
     updateContinue();
   });
 
   return chip;
 }
 
-// Sync all chips that have the same data-tag (same interest name).
-function syncChips(name) {
-  const safe = CSS?.escape ? CSS.escape(name) : name;
-  const sel = `[data-tag="${safe}"]`;
+/* ===== Sync all tags that have the same data-tag ===== */
+// there may be multiple rendered instances of the same tag
+// function syncChips(name) {
+//   const safe = CSS?.escape ? CSS.escape(name) : name;
+//   const sel = `[data-tag="${safe}"]`;
 
-  document.querySelectorAll(sel).forEach((chip) => {
-    const on = selected.has(name);
-    chip.classList.toggle("bg-dark", on);
-    chip.classList.toggle("text-white", on);
-    chip.classList.toggle("border-dark", on);
-  });
-}
+//   document.querySelectorAll(sel).forEach((chip) => {
+//     const on = selected.has(name);
+//     chip.classList.toggle("bg-dark", on);
+//     chip.classList.toggle("text-white", on);
+//     chip.classList.toggle("border-dark", on);
+//   });
+// }
 
-// Render the search bar and all grouped interest chips.
+/* ===== Render the search bar and all grouped interest tags ===== */
 function renderUI() {
   content.innerHTML = "";
 
@@ -232,7 +227,7 @@ function renderUI() {
   redraw();
 }
 
-// Enable/disable the "I'm ready!" button based on current state.
+/* ===== Update continue button state ===== */
 function updateContinue() {
   if (!continueButton) return;
 
@@ -285,8 +280,8 @@ async function saveSelection() {
   }
 }
 
-// Watch the latest sessions in this channel and redirect to auto-grouping
-// when an active session is found.
+/* ===== Watch for active session ===== */
+// Listen for any active session created by the host in this channel
 function watchForActiveSession() {
   if (!channelId) return;
 
@@ -321,41 +316,8 @@ function watchForActiveSession() {
   );
 }
 
-/* ===== initial load ===== */
-(async () => {
-  try {
-    if (loading) {
-      loading.style.display = "block";
-    }
-
-    // Ensure we have a UID (auth may not be ready on first load)
-    if (!uid) {
-      await new Promise((resolve) => {
-        const stop = onAuthStateChanged(auth, (u) => {
-          uid = u?.uid || uid;
-          stop();
-          resolve();
-        });
-      });
-    }
-
-    await Promise.all([loadTags(), preloadUser()]);
-    renderUI();
-    updateContinue();
-  } catch (err) {
-    console.error(err);
-    if (content) {
-      content.innerHTML =
-        '<div class="alert alert-danger">Failed to load. Please try again later.</div>';
-    }
-  } finally {
-    if (loading) {
-      loading.style.display = "none";
-    }
-  }
-})();
-
 /* ===== Event listeners ===== */
+// Handle continue button clicks
 if (continueButton) {
   continueButton.addEventListener("click", async () => {
     // First click: lock interests and watch for active session
@@ -422,3 +384,39 @@ if (continueButton) {
     }
   });
 }
+
+/* ===== Initial load ===== */
+async function initSelectTagsPage() {
+  try {
+    if (loading) {
+      loading.style.display = "block";
+    }
+
+    // Ensure we have a UID (auth may not be ready on first load)
+    if (!uid) {
+      await new Promise((resolve) => {
+        const stop = onAuthStateChanged(auth, (u) => {
+          uid = u?.uid || uid;
+          stop();
+          resolve();
+        });
+      });
+    }
+
+    await Promise.all([loadTags(), preloadUser()]);
+    renderUI();
+    updateContinue();
+  } catch (err) {
+    console.error(err);
+    if (content) {
+      content.innerHTML =
+        '<div class="alert alert-danger">Failed to load. Please try again later.</div>';
+    }
+  } finally {
+    if (loading) {
+      loading.style.display = "none";
+    }
+  }
+}
+
+initSelectTagsPage();
