@@ -3,6 +3,7 @@ const groupLabelEl = document.getElementById("groupLabel");
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
+
 const MATCH_DELAY = 3000;
 const AFTER_MATCH_DELAY = 2000;
 

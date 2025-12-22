@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 /* ==== Firebase Imports ==== */
 import { auth, db } from "./firebase-config.js";
-import { onAuthStateChanged } from "firebase/auth";
+import { checkAuthState, onAuthReady } from "./authentication.js";
 import {
   addDoc,
   collection,
@@ -17,12 +17,7 @@ import {
   orderBy,
 } from "firebase/firestore";
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    // Not logged in → redirect to index page
-    window.location.replace("/index.html");
-  }
-});
+checkAuthState(); // Redirect if not authenticated
 
 /* ===== Bootstrap Tooltips ===== */
 document.addEventListener("DOMContentLoaded", () => {
@@ -32,65 +27,55 @@ document.addEventListener("DOMContentLoaded", () => {
   [...tooltipTriggerList].forEach((el) => new bootstrap.Tooltip(el));
 });
 
-/* ===== Helper: decorate tags with emojis ===== */
-function decorateTagLabel(tag) {
-  const s = String(tag).toLowerCase();
-  if (s.includes("gaming")) return "🎮 " + tag;
-  if (s.includes("tech") || s.includes("code")) return "💻 " + tag;
-  if (s.includes("traveling")) return "✈️ " + tag;
-  return tag;
-}
+/* ===== Auth State Listener ===== */
+onAuthReady(async (user) => {
+  if (!user) {
+    window.location.replace("index.html");
+    return;
+  }
 
-/* ===== Dashboard Greeting + Stats + Sessions List ===== */
-(async function showDashboard() {
+  await renderDashboard(user);
+  await showHostedChannelForUser(user);
+});
+
+/* ===== Main Dashboard Rendering ===== */
+// Render user info and load dashboard data
+async function renderDashboard(user) {
   const nameEl = document.getElementById("userName");
   const avatarEl = document.getElementById("userAvatar");
   if (!nameEl) return;
 
+  let name = user.displayName || user.email || "User";
+
+  // Try loading profile name from Firestore
   try {
-    const { onAuthReady } = await import("./authentication.js");
-    onAuthReady(async (user) => {
-      if (!user) {
-        location.href = "login.html";
-        return;
-      }
-
-      let name = user.displayName || user.email || "User";
-
-      // Try loading profile name from Firestore
-      try {
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-          name = data.displayName || data.name || data.userName || name;
-        }
-      } catch (err) {
-        console.warn("[dashboard] failed to load profile name:", err);
-      }
-
-      nameEl.textContent = `${name}!`;
-
-      // Avatar
-      if (avatarEl) {
-        if (user.photoURL) {
-          avatarEl.src = user.photoURL;
-        } else {
-          avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            avatarInitials(name)
-          )}&background=transparent&color=ffffff&size=128&rounded=true`;
-        }
-      }
-
-      // Stats: how many activities this user has joined
-      loadUserStats(user).catch(console.error);
-      // Session cards: show ALL joined sessions stacked in one section
-      showAllSessionsForUser(user).catch(console.error);
-    });
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+      const data = userSnap.data();
+      name = data.displayName || data.name || data.userName || name;
+    }
   } catch (err) {
-    console.warn("[auth] authentication.js Failed:", err);
+    console.warn("[dashboard] failed to load profile name:", err);
   }
-})();
+
+  nameEl.textContent = `${name}!`;
+
+  // Avatar
+  if (avatarEl) {
+    if (user.photoURL) {
+      avatarEl.src = user.photoURL;
+    } else {
+      avatarEl.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        avatarInitials(name)
+      )}&background=transparent&color=ffffff&size=128&rounded=true`;
+    }
+  }
+
+  // Stats + sessions
+  loadUserStats(user).catch(console.error);
+  showAllSessionsForUser(user).catch(console.error);
+}
 
 /* ===== Helper: get initials from name ===== */
 function avatarInitials(name) {
@@ -102,105 +87,96 @@ function avatarInitials(name) {
 
 /* ===== Hosted channel banner ===== */
 // Show channels created by the user that are currently live or available
-async function showHostedChannel() {
+async function showHostedChannelForUser(user) {
   const container = document.getElementById("hostedChannelContainer");
   const template = document.getElementById("hostedChannelBanner");
   if (!container || !template) return;
 
-  const { onAuthReady } = await import("./authentication.js");
+  // clear previous items
+  [...container.querySelectorAll(".hosted-channel-item")].forEach((el) =>
+    el.remove()
+  );
 
-  onAuthReady(async (user) => {
-    // clear previous items
-    [...container.querySelectorAll(".hosted-channel-item")].forEach((el) =>
-      el.remove()
+  // No user: hide the whole section
+  if (!user) {
+    container.classList.add("d-none");
+    return;
+  }
+
+  try {
+    // Find all channels you created
+    const chQ = query(
+      collection(db, "channels"),
+      where("createdBy", "==", user.uid)
     );
+    const chSnap = await getDocs(chQ);
 
-    // No user: hide the whole section
-    if (!user) {
+    // No hosted channels at all
+    if (chSnap.empty) {
       container.classList.add("d-none");
       return;
     }
 
-    try {
-      // Find all channels you created
-      const chQ = query(
-        collection(db, "channels"),
-        where("createdBy", "==", user.uid)
-      );
-      const chSnap = await getDocs(chQ);
+    const items = [];
 
-      // No hosted channels at all
-      if (chSnap.empty) {
-        container.classList.add("d-none");
-        return;
-      }
+    // Check the latest session of each channel
+    for (const chDoc of chSnap.docs) {
+      const chData = chDoc.data();
+      const chId = chDoc.id;
 
-      const items = [];
+      const sessionsRef = collection(db, "channels", chId, "sessions");
+      const sQ = query(sessionsRef, orderBy("createdAt", "desc"), limit(1));
+      const sSnap = await getDocs(sQ);
 
-      // Check the latest session of each channel one by one
-      for (const chDoc of chSnap.docs) {
-        const chData = chDoc.data();
-        const chId = chDoc.id;
-
-        const sessionsRef = collection(db, "channels", chId, "sessions");
-        const sQ = query(sessionsRef, orderBy("createdAt", "desc"), limit(1));
-        const sSnap = await getDocs(sQ);
-
-        // No sessions: treat as an available channel to display
-        if (sSnap.empty) {
-          items.push({ id: chId, name: chData.name || "Untitled Channel" });
-          continue;
-        }
-
-        // For channels with sessions: only show if the latest one is not ended
-        const last = sSnap.docs[0];
-        const status = (last.data().status || "active").toLowerCase();
-
-        // Latest session is ended → skip
-        if (status === "end") {
-          continue;
-        }
-
+      // No sessions: still show the channel
+      if (sSnap.empty) {
         items.push({ id: chId, name: chData.name || "Untitled Channel" });
+        continue;
       }
 
-      // No available hosted channels to show
-      if (!items.length) {
-        container.classList.add("d-none");
-        return;
-      }
+      const last = sSnap.docs[0];
+      const status = (last.data().status || "active").toLowerCase();
 
-      // At least one item to show → clone the template
-      container.classList.remove("d-none");
+      // Latest session is ended → skip
+      if (status === "end") continue;
 
-      items.forEach((item) => {
-        const clone = template.cloneNode(true);
-        clone.id = ""; // Prevent duplicate id
-        clone.classList.remove("d-none");
-        clone.classList.add("hosted-channel-item");
-
-        const nameEl = clone.querySelector(".hostedChannelName");
-        const linkEl = clone.querySelector(".hostedChannelLink");
-
-        if (nameEl) nameEl.textContent = item.name;
-
-        if (linkEl) {
-          const url = new URL("channel-preview.html", window.location.href);
-          url.searchParams.set("id", item.id);
-          linkEl.href = url.href;
-        }
-
-        container.appendChild(clone);
-      });
-    } catch (err) {
-      console.error("[dashboard] Failed to load hosted channels:", err);
-      container.classList.add("d-none");
+      items.push({ id: chId, name: chData.name || "Untitled Channel" });
     }
-  });
-}
-showHostedChannel();
 
-/* ===== Simple search filter for recent sessions ===== */
+    if (!items.length) {
+      container.classList.add("d-none");
+      return;
+    }
+
+    // Show section
+    container.classList.remove("d-none");
+
+    items.forEach((item) => {
+      const clone = template.cloneNode(true);
+      clone.id = "";
+      clone.classList.remove("d-none");
+      clone.classList.add("hosted-channel-item");
+
+      const nameEl = clone.querySelector(".hostedChannelName");
+      const linkEl = clone.querySelector(".hostedChannelLink");
+
+      if (nameEl) nameEl.textContent = item.name;
+
+      if (linkEl) {
+        const url = new URL("channel-preview.html", window.location.href);
+        url.searchParams.set("id", item.id);
+        linkEl.href = url.href;
+      }
+
+      container.appendChild(clone);
+    });
+  } catch (err) {
+    console.error("[dashboard] Failed to load hosted channels:", err);
+    container.classList.add("d-none");
+  }
+}
+
+/* ===== Search filter for recent sessions ===== */
 const searchInput = document.getElementById("dashboardSearch");
 
 if (searchInput) {
@@ -208,6 +184,7 @@ if (searchInput) {
   const searchForm = searchInput.closest("form");
   searchForm?.addEventListener("submit", (e) => e.preventDefault());
 
+  // Filter session cards as user types
   searchInput.addEventListener("input", () => {
     const term = searchInput.value.trim().toLowerCase();
 
@@ -254,7 +231,7 @@ document.getElementById("pasteBtn")?.addEventListener("click", async () => {
   }
 });
 
-// Join form & submit button
+/* ===== Helper: extract channel ID from invite link ===== */
 const joinForm = document.querySelector("#joinChannelModal form");
 const inviteInput = document.getElementById("inviteLink");
 const joinSubmitBtn = joinForm?.querySelector('button[type="submit"]');
@@ -265,10 +242,10 @@ joinForm?.addEventListener("submit", (e) => e.preventDefault());
 // Change the submit button to a regular button so it won't trigger the form
 joinSubmitBtn?.setAttribute("type", "button");
 
-/* ===== Helper: extract channel ID from invite link ===== */
+// Extract the channel ID from a given input value
 function extractChannelId(value) {
-  // Empty input
   if (!value) return null;
+
   const raw = value.trim();
   // Try parsing as a full URL first
   try {
@@ -292,8 +269,8 @@ joinSubmitBtn?.addEventListener("click", () => {
     return;
   }
 
+  //channel ID extraction
   const id = extractChannelId(inviteInput?.value || "");
-  // Invalid or missing ID
   if (!id) {
     alert("Invalid invite link. Please paste a link that contains ?id=...");
     inviteInput?.focus();
@@ -338,6 +315,7 @@ createModalEl?.addEventListener("hidden.bs.modal", () => {
 // Handle Create Channel form submission
 form?.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const name = nameInput.value.trim();
 
   // Validate name
@@ -347,19 +325,20 @@ form?.addEventListener("submit", async (e) => {
     return;
   }
 
-  submitBtn.setAttribute("disabled", "true");
   errEl.classList.add("d-none");
+  submitBtn.setAttribute("disabled", "true");
 
   try {
-    // get current user
-    let uid = null;
-    await new Promise((resolve) => {
-      const unsub = onAuthStateChanged(auth, (user) => {
-        uid = user?.uid || null;
-        unsub();
-        resolve();
-      });
-    });
+    const user = auth.currentUser;
+
+    // If somehow not logged in, block creation
+    if (!user) {
+      errEl.textContent = "Please log in to create a channel.";
+      errEl.classList.remove("d-none");
+      return;
+    }
+
+    const uid = user.uid;
 
     // add to Firestore
     const docRef = await addDoc(collection(db, "channels"), {
@@ -450,7 +429,6 @@ async function showAllSessionsForUser(user) {
       const data = joinedDoc.data();
       const channelId = data.channelId;
       const sessionId = data.sessionId;
-      const joinedAt = data.joinedAt;
 
       // Invalid data
       if (!channelId || !sessionId) continue;
@@ -558,6 +536,15 @@ async function showAllSessionsForUser(user) {
     console.error("[dashboard] Failed to load sessions:", err);
     loadingEl.textContent = "Failed to load your sessions.";
   }
+}
+
+/* ===== Helper: decorate tags with emojis ===== */
+function decorateTagLabel(tag) {
+  const s = String(tag).toLowerCase();
+  if (s.includes("gaming")) return "🎮 " + tag;
+  if (s.includes("tech") || s.includes("code")) return "💻 " + tag;
+  if (s.includes("traveling")) return "✈️ " + tag;
+  return tag;
 }
 
 /* ===== Stats: Activities joined + Channels hosted ===== */

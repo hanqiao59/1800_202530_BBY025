@@ -17,14 +17,11 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-/* ==== URL params ==== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
 const viewMode = params.get("mode");
 const isHistoryView = viewMode === "history";
-
-/* ==== DOM  ==== */
 const sessionNameEl = document.getElementById("sessionChannelName");
 const sessionTagsEl = document.getElementById("sessionTags");
 const listEl = document.getElementById("messages");
@@ -42,7 +39,6 @@ if (!channelId || !sessionId) {
 
 /* ==== Session state ==== */
 // "pending" | "active" | "end"
-// will be overwritten from Firestore
 let status = "pending";
 
 /* ==== Auth state ==== */
@@ -50,6 +46,7 @@ let uid = auth.currentUser?.uid || null;
 let displayName =
   auth.currentUser?.displayName || auth.currentUser?.email || "Anon";
 
+// listen for auth state changes
 onAuthStateChanged(auth, (u) => {
   uid = u?.uid || null;
   displayName = u?.displayName || u?.email || "Anon";
@@ -71,12 +68,12 @@ onAuthStateChanged(auth, (u) => {
   }
 });
 
-/* ==== Firestore references ==== */
 // session document reference
 const sessionRef =
   channelId && sessionId
     ? doc(db, "channels", channelId, "sessions", sessionId)
     : null;
+
 // messages collection reference
 const msgsRef =
   channelId && sessionId
@@ -162,9 +159,8 @@ function renderMsg(docSnap) {
 
 /* ==== Send new messages ==== */
 async function sendMessage(text) {
-  // validate
+  // only send if session is active
   if (!text || !uid || !msgsRef) return;
-  // only allow sending when active
   if (status !== "active") return;
   // add new message to Firestore
   await addDoc(msgsRef, {
@@ -216,16 +212,92 @@ function stopLiveQuery() {
   }
 }
 
+/* ==== Interest category helpers ==== */
+function pickCategoryFromInterests(interests = []) {
+  const candidates = [];
+  // map interests to categories
+  interests.forEach((raw) => {
+    const s = String(raw).toLowerCase();
+
+    // match categories
+    if (s.includes("gaming")) {
+      candidates.push({ category: "gaming", label: raw });
+    }
+    if (s.includes("tech") || s.includes("code")) {
+      candidates.push({ category: "tech", label: raw });
+    }
+    if (s.includes("traveling")) {
+      candidates.push({ category: "traveling", label: raw });
+    }
+  });
+
+  // pick a random candidate
+  if (!candidates.length) {
+    return { category: null, label: null };
+  }
+
+  // random choice
+  const choice = candidates[Math.floor(Math.random() * candidates.length)];
+  return choice;
+}
+
+/* ==== Render session tag ==== */
+function renderSessionTag(label) {
+  if (!sessionTagsEl) return;
+
+  sessionTagsEl.innerHTML = "";
+
+  // create tag pill
+  const pill = document.createElement("span");
+  pill.className = "tag-pill me-1";
+  if (label) {
+    pill.textContent = label;
+  } else {
+    pill.textContent = "No interest selected";
+    pill.classList.add("text-muted");
+  }
+
+  sessionTagsEl.appendChild(pill);
+}
+
+/* ==== Save session tags helper ==== */
+// Save session tags only if the session does not have tags yet
+async function saveSessionTagsIfEmpty(tags) {
+  if (!sessionRef) return;
+  if (!Array.isArray(tags) || !tags.length) return;
+
+  try {
+    const snap = await getDoc(sessionRef);
+    if (!snap.exists()) return;
+
+    // check if session already has tags
+    const data = snap.data();
+    if (Array.isArray(data.tags) && data.tags.length) {
+      // Session already has tags, do not overwrite
+      return;
+    }
+
+    // save tags to session doc
+    await updateDoc(sessionRef, {
+      tags: tags,
+    });
+
+    console.log("[session] tags saved on session:", tags);
+  } catch (err) {
+    console.error("[session] Failed to save session tags:", err);
+  }
+}
+
 /*==== Load activity prompt for user ====*/
 let activityLoaded = false;
 async function loadActivityPromptForUser() {
   // load activity prompt for the current user
   if (activityLoaded) return;
-  // validate
   if (!channelId || !sessionId || !uid || !sessionRef) return;
 
   activityLoaded = true;
 
+  // fetch session doc
   try {
     const sessionSnap = await getDoc(sessionRef);
     // session doc must exist
@@ -249,17 +321,6 @@ async function loadActivityPromptForUser() {
           "Share something about yourself or your interests!";
       }
 
-      if (!uid) {
-        console.warn(
-          "[activity] No uid yet, cannot pick activity by interests."
-        );
-        if (activityTitleEl) activityTitleEl.textContent = "Ice-breaker prompt";
-        if (activityPromptEl)
-          activityPromptEl.textContent =
-            "Feel free to start by sharing your interests!";
-        return;
-      }
-
       // if the session already has tags, render the first tag in the header
       if (Array.isArray(sData.tags) && sData.tags.length) {
         renderSessionTag(sData.tags[0]);
@@ -281,6 +342,7 @@ async function loadActivityPromptForUser() {
       }
     }
 
+    // pick category from interests
     const { category, label } = pickCategoryFromInterests(interests);
     renderSessionTag(label);
 
@@ -349,86 +411,13 @@ async function loadActivityPromptForUser() {
   }
 }
 
-/* ==== Save session tags helper ==== */
-// Save session tags only if the session does not have tags yet
-async function saveSessionTagsIfEmpty(tags) {
-  if (!sessionRef) return;
-  if (!Array.isArray(tags) || !tags.length) return;
-
-  try {
-    const snap = await getDoc(sessionRef);
-    // session doc must exist
-    if (!snap.exists()) return;
-
-    const data = snap.data();
-    if (Array.isArray(data.tags) && data.tags.length) {
-      // Session already has tags, do not overwrite
-      return;
-    }
-
-    // save tags to session doc
-    await updateDoc(sessionRef, {
-      tags: tags,
-    });
-
-    console.log("[session] tags saved on session:", tags);
-  } catch (err) {
-    console.error("[session] Failed to save session tags:", err);
-  }
-}
-
-/* ==== Interest category helpers ==== */
-function pickCategoryFromInterests(interests = []) {
-  const candidates = [];
-  // simple keyword matching
-  interests.forEach((raw) => {
-    const s = String(raw).toLowerCase();
-
-    if (s.includes("gaming")) {
-      candidates.push({ category: "gaming", label: raw });
-    }
-    if (s.includes("tech") || s.includes("code")) {
-      candidates.push({ category: "tech", label: raw });
-    }
-    if (s.includes("traveling")) {
-      candidates.push({ category: "traveling", label: raw });
-    }
-  });
-
-  // pick a random candidate
-  if (!candidates.length) {
-    return { category: null, label: null };
-  }
-  // random choice
-  const choice = candidates[Math.floor(Math.random() * candidates.length)];
-  return choice;
-}
-
-/* ==== Render session tag ==== */
-function renderSessionTag(label) {
-  if (!sessionTagsEl) return;
-
-  sessionTagsEl.innerHTML = "";
-
-  const pill = document.createElement("span");
-  pill.className = "tag-pill me-1";
-  // set label
-  if (label) {
-    pill.textContent = label;
-  } else {
-    pill.textContent = "No interest selected";
-    pill.classList.add("text-muted");
-  }
-
-  sessionTagsEl.appendChild(pill);
-}
-
 /* ==== Remember last session on user profile ==== */
+// save lastSession field on user profile
 let lastSessionSaved = false;
 async function rememberLastSessionForUser() {
   // avoid duplicate writes
   if (lastSessionSaved) return;
-  // validate
+
   if (!uid || !channelId || !sessionId) return;
 
   try {
@@ -454,6 +443,7 @@ async function rememberLastSessionForUser() {
 }
 
 /* ==== Record session participation ==== */
+// record that the user has joined this session
 async function recordSessionParticipation() {
   // validate
   if (!uid || !channelId || !sessionId) return;
@@ -462,8 +452,8 @@ async function recordSessionParticipation() {
     const ref = doc(db, "users", uid, "joinedSessions", sessionId);
     const snap = await getDoc(ref);
 
+    // already recorded
     if (snap.exists()) {
-      // already recorded this session for this user, do nothing
       return;
     }
 
@@ -535,7 +525,6 @@ function applySessionStatus() {
 /* ==== Session watcher ==== */
 // Listen for changes to session status
 function watchSession() {
-  // validate
   if (!sessionRef) {
     return;
   }
@@ -561,7 +550,6 @@ function watchSession() {
 /* ==== Composer wiring ==== */
 // wire up the message composer
 function wireComposer() {
-  // validate
   if (!formEl || !inputEl || !sendBtn) return;
   // update send button state
   const updateBtn = () => {
@@ -574,6 +562,7 @@ function wireComposer() {
   // listen for input changes to update send button state
   inputEl.addEventListener("input", updateBtn);
   updateBtn();
+
   // listen for form submission
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -583,6 +572,7 @@ function wireComposer() {
     inputEl.value = "";
     sendBtn.disabled = true;
 
+    // send the message to Firestore
     try {
       await sendMessage(text);
       scrollToBottom(listEl);
@@ -611,17 +601,23 @@ function initEmojiPicker() {
   picker.addEventListener("click", (e) => {
     const btn = e.target.closest(".e");
     if (!btn || !inputEl) return;
-
     e.preventDefault();
+
+    // get emoji character
     const emo = btn.textContent || "";
+
+    // get cursor position
     const s = inputEl.selectionStart ?? inputEl.value.length;
     const t = inputEl.selectionEnd ?? inputEl.value.length;
 
+    // insert emoji at cursor position
     inputEl.value = inputEl.value.slice(0, s) + emo + inputEl.value.slice(t);
 
+    // move cursor to after inserted emoji
     const pos = s + emo.length;
     requestAnimationFrame(() => inputEl.setSelectionRange(pos, pos));
 
+    // update send button state
     if (!inputEl.disabled && sendBtn) {
       sendBtn.disabled = !inputEl.value.trim();
     }
@@ -645,6 +641,7 @@ function initEmojiPicker() {
     let left = r.left;
     let top = r.bottom + m;
 
+    // adjust position to stay within viewport
     if (top + ph > window.innerHeight - m) {
       top = r.top - ph - m;
     }
@@ -667,34 +664,33 @@ function initEmojiPicker() {
 }
 
 /* ==== Reaction buttons ==== */
+// initialize reaction button handlers
 function initReactions() {
-  // handle reaction button clicks
   document.addEventListener("click", (e) => {
+    // check if a reaction button was clicked
     const btn = e.target.closest(".rxn");
     if (!btn) return;
 
     const countEl = btn.querySelector(".count");
+    // parse current count
     const n = parseInt(countEl?.textContent || "0", 10) || 0;
 
     // toggle active state
     if (btn.classList.contains("active")) {
       btn.classList.remove("active");
+      // decrement count
       if (countEl) {
         countEl.textContent = String(Math.max(0, n - 1));
       }
     } else {
       btn.classList.add("active");
+      // increment count
       if (countEl) {
         countEl.textContent = String(n + 1);
       }
     }
   });
 }
-
-/* ==== Leave session button ==== */
-leaveSessionBtn?.addEventListener("click", () => {
-  window.location.href = "main.html";
-});
 
 /* ==== Boot chat ==== */
 // initialize the chat session
@@ -705,6 +701,11 @@ leaveSessionBtn?.addEventListener("click", () => {
     watchSession();
     initEmojiPicker();
     initReactions();
+
+    // navigate back to main page
+    leaveSessionBtn?.addEventListener("click", () => {
+      window.location.href = "main.html";
+    });
   } catch (err) {
     console.error(err);
     if (listEl) {

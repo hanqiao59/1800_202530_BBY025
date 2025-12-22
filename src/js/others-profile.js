@@ -2,6 +2,7 @@
 const addFriendBtn = document.getElementById("addFriendBtn");
 const friendFeedback = document.getElementById("friendFeedback");
 
+// Handle Add Friend button click
 if (addFriendBtn) {
   addFriendBtn.addEventListener("click", (e) => {
     e.preventDefault();

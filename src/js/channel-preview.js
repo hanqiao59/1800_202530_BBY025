@@ -12,10 +12,9 @@ import {
   limit,
   onSnapshot,
   setDoc,
-  getDocs,
 } from "firebase/firestore";
 
-/* ===== URL params & session storage ===== */
+// valiade channelId from URL
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("id");
 
@@ -37,13 +36,11 @@ const endIceBreakerBtn = document.getElementById("endIceBreakerBtn");
 const joinQrImg = document.getElementById("joinQr");
 const sessionLiveBadge = document.getElementById("sessionLiveBadge");
 
-// Owner message and QR container (inside owner card)
 const ownerHostMessageEl = ownerHostCard?.querySelector("p.text-secondary");
 const ownerQrWrapperEl = ownerHostCard?.querySelector(
   ".d-flex.justify-content-center.mb-3"
 );
 
-//Avatar DOMs
 const ownerAvatarImg = document.querySelector(".owner-avatar");
 const membersContainer = document.querySelector("#membersAvatarsContainer");
 const userAvatar = document.querySelector("#memberJoinCard .user-avatar");
@@ -59,24 +56,28 @@ let activeSessionId = null;
 let unsubSessionWatch = null;
 
 /* ===== UI helpers ===== */
-// Show either member view or owner view
+// Show member view
 function showMemberView() {
   memberJoinCard?.classList.remove("d-none");
   ownerHostCard?.classList.add("d-none");
 }
+
 // Show owner view
 function showOwnerView() {
   memberJoinCard?.classList.add("d-none");
   ownerHostCard?.classList.remove("d-none");
 }
-// Show / hide "Session Live" badge
+
+// Show "Session Live" badge
 function showSessionLiveBadge() {
   sessionLiveBadge?.classList.remove("d-none");
 }
+
 // Hide "Session Live" badge
 function hideSessionLiveBadge() {
   sessionLiveBadge?.classList.add("d-none");
 }
+
 // Owner UI when there is NO live session (idle state)
 function setOwnerIdleUI() {
   startIceBreakerBtn?.classList.remove("d-none");
@@ -95,14 +96,13 @@ function setOwnerIdleUI() {
   activeSessionId = null;
 }
 
-/* ===== Owner UI states ===== */
 // Owner UI when there is an active live session
 function setOwnerActiveUI() {
   startIceBreakerBtn?.classList.add("d-none");
   endIceBreakerBtn?.classList.remove("d-none");
   showSessionLiveBadge();
 
-  // Show live session message and QR code
+  // Show live session message
   if (ownerHostMessageEl) {
     ownerHostMessageEl.textContent =
       "Use the link or scan this QR code to join the channel.";
@@ -121,12 +121,12 @@ function avatarInitials(name) {
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
-/* ===== Owner UI when session has ended ===== */
+// Owner UI when the live session has ended
 function setOwnerEndedUI() {
   startIceBreakerBtn?.classList.add("d-none");
   endIceBreakerBtn?.classList.add("d-none");
   hideSessionLiveBadge();
-  // Show session ended message, hide QR code
+  // Show session ended message
   if (ownerHostMessageEl) {
     ownerHostMessageEl.textContent =
       "This ice-breaker session has ended. You can create a new channel if you want to run it again.";
@@ -165,7 +165,6 @@ function watchOwnerSession() {
 
       console.log("[channel-preview] Latest session:", last.id, status);
 
-      // Update UI based on session status
       if (status === "active") {
         activeSessionId = last.id;
         sessionEnded = false;
@@ -207,6 +206,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 
     channelData = snap.data();
+
     // ===== Load members and render avatars =====
     const membersRef = collection(db, "channels", channelId, "members");
     onSnapshot(membersRef, async (membersSnap) => {
@@ -273,7 +273,7 @@ onAuthStateChanged(auth, async (user) => {
           (p) => p.id !== channelData.createdBy && p.name
         );
 
-        /* ==== CURRENT USER AVATAR ==== */
+        // Clear previous avatars
         if (userAvatar && currentUser) {
           const nameFromAuth = currentUser.displayName;
           userAvatar.textContent = avatarInitials(nameFromAuth);
@@ -282,6 +282,7 @@ onAuthStateChanged(auth, async (user) => {
           console.log("[channel-preview] No current user for avatar.");
         }
 
+        // Clear previous avatars
         if (nonOwnerMembers.length === 0) {
           return;
         } else {
@@ -312,9 +313,11 @@ onAuthStateChanged(auth, async (user) => {
     if (titleEl) {
       titleEl.textContent = channelData.name || "Untitled Channel";
     }
+
     // Build invite link for this channel
     const inviteUrl = new URL("channel-preview.html", window.location.href);
     inviteUrl.searchParams.set("id", channelId);
+
     // Configure "Continue" button for regular members
     if (continueBtn) {
       const tagsUrl = new URL("select-tags.html", window.location.href);
@@ -352,6 +355,7 @@ onAuthStateChanged(auth, async (user) => {
 
         startIceBreakerBtn.disabled = true;
 
+        // Create a new session document
         try {
           const sessionsRef = collection(db, "channels", channelId, "sessions");
           const newSessionRef = await addDoc(sessionsRef, {

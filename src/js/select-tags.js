@@ -14,32 +14,29 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-/* ===== DOM refs & URL params ===== */
 const content = document.getElementById("content");
-const loading = document.getElementById("loading");
 const continueButton = document.getElementById("continue-btn");
 const saveStatus = document.getElementById("saveStatus");
 
+// Get channelId from URL parameters
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 if (!channelId) {
   console.warn("No channelId provided in URL.");
 }
 
-/* ===== Constants & state ===== */
-// Maximum number of interest tags a user can select
-const MAX = 4; //
-
+const MAX = 4; //maximum number of selectable interest tags
 let uid = auth.currentUser?.uid || null;
 let selected = new Set();
 let groups = {};
 let locked = false;
+let unsubActiveSession = null;
 
 /* ===== Helper: create DOM element ===== */
 const el = (tag, attrs = {}, ...children) => {
   const n = document.createElement(tag);
 
-  // Apply attributes
+  // Set attributes
   Object.entries(attrs).forEach(([k, v]) => {
     if (k === "class") {
       n.className = v;
@@ -71,6 +68,8 @@ async function loadTags() {
     const snap = await getDocs(q);
 
     groups = {};
+
+    // Group tags by category
     snap.forEach((d) => {
       const { name, emoji = "", category = "Other", order = 999 } = d.data();
       const item = { name, emoji, order };
@@ -118,9 +117,9 @@ function renderChip(item) {
     el("span", { class: "small fw-semibold" }, item.name)
   );
 
-  // Initial selected state
+  // if this item is selected
   if (selected.has(item.name)) {
-    chip.classList.add("bg-dark", "text-white", "border-dark");
+    chip.classList.add("btn-primary", "text-white", "btn-outline-primary");
   }
 
   chip.addEventListener("click", () => {
@@ -138,34 +137,20 @@ function renderChip(item) {
     }
 
     const on = selected.has(name);
-    chip.classList.toggle("bg-dark", on);
+    chip.classList.toggle("btn-primary", on);
     chip.classList.toggle("text-white", on);
-    chip.classList.toggle("border-dark", on);
+    chip.classList.toggle("btn-outline-primary", on);
     updateContinue();
   });
 
   return chip;
 }
 
-/* ===== Sync all tags that have the same data-tag ===== */
-// there may be multiple rendered instances of the same tag
-// function syncChips(name) {
-//   const safe = CSS?.escape ? CSS.escape(name) : name;
-//   const sel = `[data-tag="${safe}"]`;
-
-//   document.querySelectorAll(sel).forEach((chip) => {
-//     const on = selected.has(name);
-//     chip.classList.toggle("bg-dark", on);
-//     chip.classList.toggle("text-white", on);
-//     chip.classList.toggle("border-dark", on);
-//   });
-// }
-
 /* ===== Render the search bar and all grouped interest tags ===== */
 function renderUI() {
   content.innerHTML = "";
 
-  // Search bar
+  // Search bar ui
   const searchForm = el(
     "form",
     { class: "p-0" },
@@ -195,19 +180,23 @@ function renderUI() {
   // Preferred section order; any other categories go after these
   const SECTION_ORDER = ["Popular", "Outdoors", "Technology", "Other"];
 
+  // Redraw the list based on the current filter
   const redraw = (filter = "") => {
     listWrap.innerHTML = "";
     const f = filter.trim().toLowerCase();
 
+    // Determine section order
     const orderedSections = [
       ...SECTION_ORDER.filter((s) => groups[s]),
       ...Object.keys(groups).filter((s) => !SECTION_ORDER.includes(s)),
     ];
 
+    // Render each section
     orderedSections.forEach((section) => {
       const items = groups[section].filter((it) =>
         it.name.toLowerCase().includes(f)
       );
+
       if (!items.length) return;
 
       const title = el(
@@ -215,6 +204,7 @@ function renderUI() {
         { class: "text-secondary fw-semibold small mb-2" },
         section
       );
+
       const row = el("div", { class: "d-flex flex-wrap gap-2" });
       items.forEach((it) => row.appendChild(renderChip(it)));
 
@@ -222,6 +212,7 @@ function renderUI() {
     });
   };
 
+  // Handle search input
   const q = searchForm.querySelector("#q");
   q.addEventListener("input", (e) => redraw(e.target.value));
   redraw();
@@ -259,10 +250,8 @@ async function saveSelection() {
 
   const writes = [];
 
-  // Save to global user profile
+  // Update user's document
   writes.push(setDoc(doc(db, "users", uid), payload, { merge: true }));
-
-  // Also save under this channel, if we have a channelId
   if (channelId) {
     writes.push(
       setDoc(doc(db, "channels", channelId, "members", uid), payload, {
@@ -273,6 +262,7 @@ async function saveSelection() {
 
   await Promise.all(writes);
 
+  // save to localStorage as well
   try {
     localStorage.setItem("selectedInterests", JSON.stringify(interests));
   } catch (e) {
@@ -285,25 +275,32 @@ async function saveSelection() {
 function watchForActiveSession() {
   if (!channelId) return;
 
+  // If we already have a watcher, stop it first (avoid duplicate listeners)
+  if (typeof unsubActiveSession === "function") {
+    unsubActiveSession();
+    unsubActiveSession = null;
+  }
+
   const sessionsRef = collection(db, "channels", channelId, "sessions");
   const q = query(sessionsRef, orderBy("createdAt", "desc"), limit(5));
 
-  onSnapshot(
+  // Save unsubscribe so we can stop it later
+  unsubActiveSession = onSnapshot(
     q,
     (snap) => {
-      if (snap.empty) {
-        // Host has not started any session yet
-        return;
-      }
+      if (snap.empty) return;
 
       const activeDoc = snap.docs.find((d) => d.data().status === "active");
-      if (!activeDoc) {
-        // No active session yet
-        return;
-      }
+      if (!activeDoc) return;
 
       const sessionId = activeDoc.id;
       console.log("[select-tags] Found active session:", sessionId);
+
+      // Stop listener before navigating (optional but clean)
+      if (typeof unsubActiveSession === "function") {
+        unsubActiveSession();
+        unsubActiveSession = null;
+      }
 
       const url = new URL("auto-grouping.html", window.location.href);
       url.searchParams.set("channelId", channelId);
@@ -326,6 +323,7 @@ if (continueButton) {
 
       continueButton.disabled = true;
 
+      // Save selection
       try {
         await saveSelection();
 
@@ -378,6 +376,7 @@ if (continueButton) {
 
       updateContinue();
 
+      // Update status message
       if (saveStatus) {
         saveStatus.textContent = "Click the button again when you're ready.";
       }
@@ -386,8 +385,11 @@ if (continueButton) {
 }
 
 /* ===== Initial load ===== */
+const loading = document.getElementById("loading");
+
 async function initSelectTagsPage() {
   try {
+    // Show loading indicator
     if (loading) {
       loading.style.display = "block";
     }

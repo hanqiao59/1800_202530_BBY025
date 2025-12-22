@@ -10,7 +10,6 @@ import {
   getDoc,
 } from "firebase/firestore";
 
-/* ===== URL Params ===== */
 const params = new URLSearchParams(window.location.search);
 const channelId = params.get("channelId");
 const sessionId = params.get("sessionId");
@@ -37,7 +36,7 @@ if (link && channelId && sessionId) {
 onAuthStateChanged(auth, async (user) => {
   // User not logged in
   if (!user) {
-    console.error("⛔ No Firebase user logged in.");
+    console.error("No Firebase user logged in.");
     return;
   }
   // User is logged in → initialize friend system
@@ -57,7 +56,7 @@ async function initializeFriendSystem(currentUser) {
 
   const members = [];
 
-  /* ==== Dynamic members from Firestore (real participants) ==== */
+  // Fetch real members from Firestore if channelId is available
   if (channelId) {
     const membersRef = collection(db, "channels", channelId, "members");
     let membersSnapshot;
@@ -70,6 +69,7 @@ async function initializeFriendSystem(currentUser) {
       return;
     }
 
+    // For each member, fetch their profile
     for (const docSnap of membersSnapshot.docs) {
       const memberId = docSnap.id;
 
@@ -84,21 +84,23 @@ async function initializeFriendSystem(currentUser) {
         console.warn(`Failed to fetch user ${memberId}:`, err);
         continue;
       }
+      // Skip if user document doesn't exist
       if (!userSnap.exists()) continue;
 
       const data = userSnap.data();
 
+      // Add to members list
       members.push({
         id: memberId,
         name: data.name || "Unknown",
         bio: data.bio || "",
-        colorClass: null, // Real users: use .avatar
-        profileUrl: null, // Real users don't have a hard-coded profile page
+        colorClass: null,
+        profileUrl: null,
       });
     }
   }
 
-  /* ==== Hard-coded demo members  ==== */
+  // Hard-coded demo members
   const demoMembers = [
     {
       id: "demo-b",
@@ -212,6 +214,7 @@ async function initializeFriendSystem(currentUser) {
       </div>
     `;
 
+    // Main block with optional link
     const mainBlock = member.profileUrl
       ? `<a href="${member.profileUrl}" class="text-decoration-none text-reset">${infoInner}</a>`
       : infoInner;
@@ -226,7 +229,7 @@ async function initializeFriendSystem(currentUser) {
     friendsContainer.appendChild(div);
   });
 
-  /* ==== Attach click listener for Add Friend ==== */
+  // Attach event listener for friend request buttons (only once)
   if (!friendsContainer.hasListenerAttached) {
     friendsContainer.hasListenerAttached = true;
 
