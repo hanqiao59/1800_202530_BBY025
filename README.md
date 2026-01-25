@@ -1,6 +1,6 @@
-# PeerLink
+# 🧊 PeerLink
 
-## Overview
+## 🎯 Overview
 
 PeerLink is a web application that helps post-secondary students, especially introverted ones, quickly break the ice and quickly form bonds with their peers through fun, low-pressure mini icebreaker activities based on shared interests. Students can join channels for their classes or events, set up a personal profile with a display name, and interest tags, send friend requests, and participate in low-pressure conversations on both desktop and mobile devices.
 
@@ -8,7 +8,7 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 
 ---
 
-## Features
+## ✨ Features
 
 - Join interest-based icebreaker sessions with classmates in the same channel
 - Set up a personal profile with name, bio, and interest tags
@@ -19,7 +19,7 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 
 ---
 
-## Technologies Used
+## 🧩 Tech Stack
 
 - **Wireframe**: Figma
 - **Prototype**: Figma
@@ -30,7 +30,7 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 
 ---
 
-## Usage
+## 🧭 Usage
 
 1. Open your browser and visit `http://localhost:3000`.
 2. Sign up with new account or log in with an existing one.
@@ -41,7 +41,7 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 
 ---
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```
 PeerLink/
@@ -103,15 +103,17 @@ PeerLink/
 
 ---
 
-## Contributors
+## 👥 Team
 
-- Hanqiao - CST student @ BCIT | Love exploring new tech & indie games. Fun fact: I have a kitten named Minnie. I love listening to music.
-- Hezekiah - BCIT CST Student. Stares at logical errors blankly while coding. Plays piano. A bigger change
-- Minh Ngoc Ngo - BCIT CST Student with an interest in game development and likes to go outside sometimes. Hates socializing. A quiet fellow set D student.
+| Name | About | Role | Fun fact |
+|--------------------------------|
+| Hanqiao (Claire) Li | CST student @ BCIT, Love exploring new tech and japan. | Developer | Have a kitty cat! |
+| Hezekiah | BCIT CST Student, Stares at logical errors blankly while coding. | Developer | Plays piano |
+| Minh Ngoc Ngo | BCIT CST Student with an interest in game development and likes to go outside sometimes | Developer | Hates socializing |
 
 ---
 
-## Acknowledgments
+## 🤝 Acknowledgments
 
 - Icons are sourced from [bootstrap icons](https://icons.getbootstrap.com/) and illustrations are sourced from [Icons8](https://icons8.com/) and [Freepik](https://www.freepik.com/) (licensed under a Freepik subscription) and are used for demonstration purposes only.
 - Fonts are provided by [Google Fonts](https://fonts.google.com/).
@@ -120,16 +122,14 @@ PeerLink/
 
 ---
 
-## Limitations and Future Work
-
-### Limitations
+## ⚠️ Limitations
 
 - The “auto grouping” logic is simplified and currently just picks a random interest tag from the user’s selection, rather than truly matching them with other users who share that tag.
 - Icebreaker activities are currently pre-saved in Firebase and limited to three categories.
 - No customizable channel settings (e.g., changing the number of icebreaker activities).
 - The friend system is basic (no direct messaging, notifications).
 
-### Future Work
+## 🔮 Future Work
 
 - Expand icebreaker activity prompts.
 - Improve the grouping logic to actually match students with others who share interests.
@@ -138,6 +138,6 @@ PeerLink/
 
 ---
 
-## License
+## 🪪 License
 
 This project is licensed under the MIT License. See the LICENSE file for details.
