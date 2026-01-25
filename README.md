@@ -10,8 +10,9 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 
 ## ✨ Features
 
-- Join interest-based icebreaker sessions with classmates in the same channel
 - Set up a personal profile with name, bio, and interest tags
+- Join interest-based icebreaker sessions with classmates in the same channel
+- Participate in a session with others with shared interests
 - Send friend request to stay connected after sessions
 - view session history
 - Create and host channels for specific classes or events
@@ -23,10 +24,21 @@ Developed for the COMP 1800 course, this project applies User-Centred Design pra
 
 - **Wireframe**: Figma
 - **Prototype**: Figma
-- **Frontend**: HTML5, CSS, Bootstrap, JavaScript
+- **Frontend**: HTML5, CSS3, Bootstrap, JavaScript(ES6+)
 - **Build Tool**: [Vite](https://vitejs.dev/)
-- **Backend**: Firebase for hosting
+- **Backend**: Firebase (Auth, Hosting)
 - **Database**: Firestore
+- **Version Control**: Git/GitHub
+
+---
+
+## 👥 Team
+
+| Name | About | Role | Fun fact |
+|------|-------|------|----------|
+| Hanqiao (Claire) Li | CST student @ BCIT. Loves exploring new tech and Japan. | Developer | Has a kitty cat! |
+| Hezekiah | BCIT CST student. Stares at logical errors blankly while coding. | Developer | Plays piano |
+| Minh Ngoc Ngo | BCIT CST student interested in game development and likes going outside sometimes. | Developer | Hates socializing |
 
 ---
 
@@ -103,22 +115,12 @@ PeerLink/
 
 ---
 
-## 👥 Team
-
-| Name | About | Role | Fun fact |
-|--------------------------------|
-| Hanqiao (Claire) Li | CST student @ BCIT, Love exploring new tech and japan. | Developer | Have a kitty cat! |
-| Hezekiah | BCIT CST Student, Stares at logical errors blankly while coding. | Developer | Plays piano |
-| Minh Ngoc Ngo | BCIT CST Student with an interest in game development and likes to go outside sometimes | Developer | Hates socializing |
-
----
-
 ## 🤝 Acknowledgments
 
 - Icons are sourced from [bootstrap icons](https://icons.getbootstrap.com/) and illustrations are sourced from [Icons8](https://icons8.com/) and [Freepik](https://www.freepik.com/) (licensed under a Freepik subscription) and are used for demonstration purposes only.
 - Fonts are provided by [Google Fonts](https://fonts.google.com/).
 - Code snippets were adapted from COMP 1800 in-class demos.
-- - Additional code snippets and some wording were adapted from [ChatGPT (OpenAI)](https://chat.openai.com) and then customized to fit this project.
+- Additional code snippets and some wording were adapted from [ChatGPT (OpenAI)](https://chat.openai.com) and then customized to fit this project.
 
 ---
 
